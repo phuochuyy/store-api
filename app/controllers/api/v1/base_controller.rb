@@ -10,7 +10,7 @@ class Api::V1::BaseController < ApplicationController
     token = request.headers["Authorization"]&.split(" ")&.last
     return render json: { error: "Token missing" }, status: :unauthorized unless token
 
-    validation_result = JWTDecodeService.validate_token(token)
+    validation_result = JwtDecodeService.validate_token(token)
     return render json: { error: validation_result[:error] }, status: :unauthorized unless validation_result[:valid]
 
     @current_user = validation_result[:user]

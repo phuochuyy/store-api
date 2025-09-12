@@ -6,8 +6,8 @@ class Api::V1::AuthController < Api::V1::BaseController
     user = User.find_by(email: params[:email])
 
     if user&.authenticate(params[:password])
-      token = JWTEncodeService.encode(user)
-      refresh_token = JWTEncodeService.encode_refresh_token(user)
+      token = JwtEncodeService.encode(user)
+      refresh_token = JwtEncodeService.encode_refresh_token(user)
       render json: {
         message: "Login successful",
         token: token,
@@ -29,8 +29,8 @@ class Api::V1::AuthController < Api::V1::BaseController
     user = User.new(user_params)
 
     if user.save
-      token = JWTEncodeService.encode(user)
-      refresh_token = JWTEncodeService.encode_refresh_token(user)
+      token = JwtEncodeService.encode(user)
+      refresh_token = JwtEncodeService.encode_refresh_token(user)
       render json: {
         message: "Registration successful",
         token: token,
@@ -68,8 +68,8 @@ class Api::V1::AuthController < Api::V1::BaseController
     end
 
     # Generate new tokens
-    new_token = JWTEncodeService.encode(user)
-    new_refresh_token = JWTEncodeService.encode_refresh_token(user)
+    new_token = JwtEncodeService.encode(user)
+    new_refresh_token = JwtEncodeService.encode_refresh_token(user)
 
     render json: {
       message: "Token refreshed successfully",

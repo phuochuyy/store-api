@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class JWTDecodeService
+class JwtDecodeService
   SECRET_KEY = Rails.application.credentials.secret_key_base || "fallback_secret_key"
   ALGORITHM = "HS256"
 

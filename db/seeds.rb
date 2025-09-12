@@ -196,7 +196,9 @@ orders_data = [
 ]
 
 orders = orders_data.map do |order_data|
-  Order.create!(order_data)
+  # Remove total_amount from order_data since it will be calculated
+  order_data_without_total = order_data.except(:total_amount)
+  Order.create!(order_data_without_total)
 end
 
 # Create Order Items

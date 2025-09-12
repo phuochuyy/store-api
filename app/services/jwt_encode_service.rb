@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class JWTEncodeService
+class JwtEncodeService
   SECRET_KEY = Rails.application.credentials.secret_key_base || "fallback_secret_key"
   ALGORITHM = "HS256"
   DEFAULT_EXPIRY = 24.hours

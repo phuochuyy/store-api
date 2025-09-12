@@ -19,7 +19,7 @@ class Order < ApplicationRecord
   validates :customer_name, presence: true
   validates :customer_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :customer_phone, presence: true
-  validates :total_amount, presence: true, numericality: { greater_than: 0 }
+  validates :total_amount, numericality: { greater_than: 0 }, allow_nil: true
   validates :status, presence: true, inclusion: { in: %w[pending confirmed shipped delivered cancelled] }
 
   enum :status, {
