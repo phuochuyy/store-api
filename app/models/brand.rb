@@ -1,6 +1,20 @@
+# == Schema Information
+#
+# Table name: brands
+#
+#  id          :integer          not null, primary key
+#  name        :string(255)
+#  description :text(65535)
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#
+
 class Brand < ApplicationRecord
   has_many :phones, dependent: :destroy
 
-  validates :name, presence: true, uniqueness: true
-  validates :description, presence: true
+  validates :name, presence: true, uniqueness: true, length: { minimum: 2, maximum: 50 }
+  validates :description, presence: true, length: { minimum: 10, maximum: 500 }
+
+  # Scope for brands with phones
+  scope :with_phones, -> { joins(:phones).distinct }
 end

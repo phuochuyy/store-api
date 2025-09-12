@@ -1,13 +1,46 @@
+# == Schema Information
+#
+# Table name: phones
+#
+#  id             :integer          not null, primary key
+#  name           :string(255)
+#  description    :text(65535)
+#  price          :decimal(10, 2)
+#  brand_id       :integer          not null
+#  category_id    :integer          not null
+#  stock_quantity :integer
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#
+# Indexes
+#
+#  index_phones_on_brand_id     (brand_id)
+#  index_phones_on_category_id  (category_id)
+#
+
 class Phone < ApplicationRecord
   belongs_to :brand
   belongs_to :category
   has_many :order_items, dependent: :destroy
   has_many :orders, through: :order_items
 
-  validates :name, presence: true
-  validates :description, presence: true
-  validates :price, presence: true, numericality: { greater_than: 0 }
-  validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :image_url, presence: true
-  validates :specifications, presence: true
+  validates :name, presence: true, length: { minimum: 2, maximum: 100 }
+  validates :description, presence: true, length: { minimum: 10, maximum: 1000 }
+  validates :price, presence: true, numericality: { greater_than: 0, less_than: 100000 }
+  validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 10000 }
+
+  # Scope for available phones (in stock)
+  scope :available, -> { where("stock_quantity > 0") }
+
+  # Scope for expensive phones (price > 1000)
+  scope :expensive, -> { where("price > 1000") }
+
+  def in_stock?
+    stock_quantity > 0
+  end
+
+  def reduce_stock(quantity)
+    self.stock_quantity -= quantity
+    save!
+  end
 end

@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id              :integer          not null, primary key
+#  name            :string(255)
+#  email           :string(255)
+#  password_digest :string(255)
+#  role            :string(255)
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#
+
 class User < ApplicationRecord
   has_secure_password
 
@@ -10,21 +23,9 @@ class User < ApplicationRecord
     customer: "customer"
   }
 
-  def generate_jwt
-    JWT.encode(
-      {
-        user_id: id,
-        email: email,
-        role: role,
-        exp: 24.hours.from_now.to_i
-      },
-      Rails.application.credentials.secret_key_base
-    )
-  end
-
-  def self.decode_jwt(token)
-    JWT.decode(token, Rails.application.credentials.secret_key_base)[0]
-  rescue JWT::DecodeError
-    nil
+  # Simple authentication method for demo
+  def self.authenticate(email, password)
+    user = find_by(email: email)
+    user&.authenticate(password)
   end
 end

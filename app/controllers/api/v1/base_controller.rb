@@ -1,5 +1,5 @@
 class Api::V1::BaseController < ApplicationController
-  before_action :authenticate_user!, except: [ :login, :register ]
+  before_action :authenticate_user!
 
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from ActiveRecord::RecordInvalid, with: :record_invalid
@@ -10,12 +10,10 @@ class Api::V1::BaseController < ApplicationController
     token = request.headers["Authorization"]&.split(" ")&.last
     return render json: { error: "Token missing" }, status: :unauthorized unless token
 
-    payload = User.decode_jwt(token)
-    return render json: { error: "Invalid token" }, status: :unauthorized unless payload
+    validation_result = JWTDecodeService.validate_token(token)
+    return render json: { error: validation_result[:error] }, status: :unauthorized unless validation_result[:valid]
 
-    @current_user = User.find(payload["user_id"])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "User not found" }, status: :unauthorized
+    @current_user = validation_result[:user]
   end
 
   def current_user
