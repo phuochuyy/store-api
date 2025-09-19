@@ -37,6 +37,10 @@ Rails.application.routes.draw do
     end
   end
 
+  # API Documentation
+  mount Rswag::Ui::Engine => '/api-docs'
+  mount Rswag::Api::Engine => '/api-docs'
+
   # Root route - health check
   root "api/v1/health#index"
 end

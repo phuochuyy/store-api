@@ -71,3 +71,8 @@ yarn-debug.log*
 
 # Ignore package-lock.json
 package-lock.json
+
+# Ignore documentation files (keep only README.md)
+CHANGELOG.md
+CONTRIBUTING.md
+API_DOCUMENTATION.md

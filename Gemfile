@@ -13,6 +13,8 @@ gem "jwt"
 
 # API
 gem "rack-cors"
+gem "rswag-api"
+gem "rswag-ui"
 
 # Pagination
 gem "kaminari"
@@ -20,6 +22,8 @@ gem "kaminari"
 group :development, :test do
   # Debugging
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+  # API Documentation
+  gem "rswag-specs"
 end
 
 group :development do
@@ -33,4 +37,11 @@ group :test do
   gem "rspec-rails"
   gem "factory_bot_rails"
   gem "faker"
+  # Test Coverage
+  gem "simplecov", require: false
+  gem "simplecov-lcov", require: false
+  # API Testing
+  gem "rspec_junit_formatter"
+  # Database Cleaner
+  gem "database_cleaner-active_record"
 end
