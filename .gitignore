@@ -22,15 +22,12 @@
 !/tmp/pids/
 !/tmp/pids/.keep
 
-# Ignore storage (uploaded files in development and any SQLite databases).
+# Ignore uploaded files in development.
 /storage/*
 !/storage/.keep
 /tmp/storage/*
 !/tmp/storage/
 !/tmp/storage/.keep
-
-/public/assets
-.byebug_history
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
@@ -61,20 +58,16 @@
 ehthumbs.db
 Thumbs.db
 
-# Ignore node_modules if using any frontend assets
-node_modules/
-
 # Ignore coverage reports
 /coverage/
 
-# Ignore test artifacts
-/test/tmp/
-/test/version_tmp/
+# Ignore node modules if any
+node_modules/
 
 # Ignore yarn files
 yarn-error.log
 yarn-debug.log*
 .yarn-integrity
 
-# Ignore Docker volumes
-mysql_data/
+# Ignore package-lock.json
+package-lock.json

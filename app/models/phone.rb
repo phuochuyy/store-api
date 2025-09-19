@@ -23,6 +23,9 @@ class Phone < ApplicationRecord
   belongs_to :category
   has_many :order_items, dependent: :destroy
   has_many :orders, through: :order_items
+  
+  # Active Storage for image uploads
+  has_one_attached :image
 
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :description, presence: true, length: { minimum: 10, maximum: 1000 }

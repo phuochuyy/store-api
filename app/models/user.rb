@@ -28,4 +28,14 @@ class User < ApplicationRecord
     user = find_by(email: email)
     user&.authenticate(password)
   end
+
+  # Check if user is admin
+  def admin?
+    role == "admin"
+  end
+
+  # Check if user is customer
+  def customer?
+    role == "customer"
+  end
 end

@@ -1,6 +1,6 @@
 class Api::V1::PhonesController < Api::V1::BaseController
-  before_action :set_phone, only: [ :show, :update, :destroy ]
-  before_action :admin_only!, only: [ :create, :update, :destroy ]
+  before_action :set_phone, only: [ :show, :update, :destroy, :upload_image, :remove_image ]
+  before_action :admin_only!, only: [ :create, :update, :destroy, :upload_image, :remove_image ]
 
   # GET /api/v1/phones
   def index
@@ -96,6 +96,25 @@ class Api::V1::PhonesController < Api::V1::BaseController
     render json: { message: "Phone deleted successfully" }
   end
 
+  # POST /api/v1/phones/:id/upload_image
+  def upload_image
+    if params[:image].present?
+      @phone.image.attach(params[:image])
+      render json: {
+        message: "Image uploaded successfully",
+        image_url: url_for(@phone.image) if @phone.image.attached?
+      }
+    else
+      render json: { error: "No image provided" }, status: :bad_request
+    end
+  end
+
+  # DELETE /api/v1/phones/:id/remove_image
+  def remove_image
+    @phone.image.purge if @phone.image.attached?
+    render json: { message: "Image removed successfully" }
+  end
+
   private
 
   def set_phone
@@ -114,6 +133,7 @@ class Api::V1::PhonesController < Api::V1::BaseController
       price: phone.price,
       stock_quantity: phone.stock_quantity,
       in_stock: phone.in_stock?,
+      image_url: phone.image.attached? ? url_for(phone.image) : phone.image_url,
       brand: {
         id: phone.brand.id,
         name: phone.brand.name
