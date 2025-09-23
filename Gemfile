@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 # Core Rails
 gem "rails", "~> 8.0.2", ">= 8.0.2.1"
-gem "mysql2", "~> 0.5"
+gem "pg", "~> 1.1"
 gem "puma", ">= 5.0"
 gem "bootsnap", require: false
 gem "tzinfo-data", platforms: %i[windows jruby]
@@ -15,6 +15,7 @@ gem "jwt"
 gem "rack-cors"
 gem "rswag-api"
 gem "rswag-ui"
+gem "active_model_serializers"
 
 # Pagination
 gem "kaminari"

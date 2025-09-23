@@ -1,0 +1,49 @@
+# Ruby LSP Configuration
+# Minimal configuration to avoid connection issues
+
+# Enable essential features only
+enabledFeatures:
+  - completion
+  - diagnostics
+  - documentSymbols
+  - hover
+  - signatureHelp
+
+# Disable problematic features
+disabledFeatures:
+  - codeActions
+  - codeLens
+  - documentHighlights
+  - documentLink
+  - foldingRanges
+  - inlayHint
+  - onTypeFormatting
+  - selectionRanges
+  - semanticHighlighting
+  - typeHierarchy
+  - workspaceSymbol
+  - formatting
+
+# Configure logging
+logging:
+  level: "warn"
+  file: "log/ruby-lsp.log"
+
+# Configure indexing
+indexing:
+  enabled: true
+  # Exclude certain directories from indexing
+  exclude:
+    - "tmp/**/*"
+    - "log/**/*"
+    - "storage/**/*"
+    - "node_modules/**/*"
+    - "vendor/**/*"
+
+# Ruby configuration
+ruby:
+  version: "3.3.9"
+  command: "/home/huy/.rvm/rubies/ruby-3.3.9/bin/ruby"
+
+
+

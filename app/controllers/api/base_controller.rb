@@ -1,7 +1,10 @@
-class ApplicationController < ActionController::API
-  include ErrorHandler
+class Api::BaseController < ApplicationController
+  include Api::Authentication
+  include Api::ErrorHandling
+  include Common::Pagination
+  include Common::Filtering
 
-  # Set default response format
+  before_action :authenticate_user!
   before_action :set_default_response_format
 
   private

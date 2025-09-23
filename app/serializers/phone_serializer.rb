@@ -1,14 +1,58 @@
-class PhoneSerializer < ActiveModel::Serializer
-  attributes :id, :name, :description, :price, :stock_quantity, :image_url, :specifications, :created_at, :updated_at
+class PhoneSerializer
+  def initialize(phone)
+    @phone = phone
+  end
 
-  belongs_to :brand
-  belongs_to :category
+  def as_json
+    {
+      id: @phone.id,
+      name: @phone.name,
+      description: @phone.description,
+      price: @phone.price,
+      stock_quantity: @phone.stock_quantity,
+      in_stock: @phone.in_stock?,
+      image_url: image_url,
+      specifications: specifications,
+      brand: brand_data,
+      category: category_data,
+      created_at: @phone.created_at&.iso8601,
+      updated_at: @phone.updated_at&.iso8601
+    }
+  end
+
+  private
 
   def image_url
-    if object.image.attached?
-      Rails.application.routes.url_helpers.rails_blob_url(object.image, only_path: true)
+    if @phone.image.attached?
+      Rails.application.routes.url_helpers.rails_blob_url(@phone.image)
     else
-      object.read_attribute(:image_url)
+      @phone.read_attribute(:image_url)
     end
+  end
+
+  def specifications
+    return {} unless @phone.specifications.present?
+    
+    if @phone.specifications.is_a?(String)
+      JSON.parse(@phone.specifications)
+    else
+      @phone.specifications
+    end
+  rescue JSON::ParserError
+    {}
+  end
+
+  def brand_data
+    {
+      id: @phone.brand.id,
+      name: @phone.brand.name
+    }
+  end
+
+  def category_data
+    {
+      id: @phone.category.id,
+      name: @phone.category.name
+    }
   end
 end

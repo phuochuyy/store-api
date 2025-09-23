@@ -16,8 +16,13 @@ module StoreApi
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
     
-    # Add services to autoload paths
-    config.autoload_paths += %W(#{config.root}/app/services)
+    # Add custom paths to autoload
+    config.autoload_paths += %W(
+      #{config.root}/app/services
+      #{config.root}/app/validators
+      #{config.root}/app/policies
+      #{config.root}/app/middleware
+    )
 
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.

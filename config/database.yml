@@ -13,14 +13,13 @@
 # gem "pg"
 #
 default: &default
-  adapter: mysql2
-  encoding: utf8mb4
+  adapter: postgresql
+  encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: store_api
   password: userpw
   host: 127.0.0.1
-  port: 3306
-  socket: ""
+  port: 5432
 
 development:
   <<: *default
