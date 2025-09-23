@@ -24,16 +24,16 @@ Style/StringLiterals:
 Style/FrozenStringLiteralComment:
   Enabled: false
 
-Metrics/LineLength:
+Layout/LineLength:
   Max: 120
 
-Metrics/MethodLength:
+Layout/MethodLength:
   Max: 20
 
-Metrics/AbcSize:
+Layout/AbcSize:
   Max: 20
 
-Metrics/ClassLength:
+Layout/ClassLength:
   Max: 150
 
 Layout/EmptyLinesAroundBlockBody:
