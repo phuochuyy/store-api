@@ -1,8 +1,8 @@
-# 📱 Phone Store API
+# Phone Store API
 
 A modern RESTful API for a phone store built with Ruby on Rails 8.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Ruby 3.3.9
@@ -20,12 +20,12 @@ A modern RESTful API for a phone store built with Ruby on Rails 8.
 
 2. **Start with Docker**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. **Setup database**
    ```bash
-   docker-compose exec web rails db:create db:migrate db:seed
+   docker compose exec web rails db:create db:migrate db:seed
    ```
 
 4. **Access the API**
@@ -33,7 +33,7 @@ A modern RESTful API for a phone store built with Ruby on Rails 8.
    - Health Check: http://localhost:3000/api/v1/health
    - Documentation: http://localhost:3000/api-docs (after generating docs)
 
-## 🔑 Authentication
+## Authentication
 
 The API uses JWT authentication. Get your token by logging in:
 
@@ -49,7 +49,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
   http://localhost:3000/api/v1/phones
 ```
 
-## 📋 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/v1/auth/login` - Login
@@ -68,7 +68,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 - `GET /api/v1/categories` - List categories
 - `GET /api/v1/orders` - List orders
 
-## 🏗️ Architecture
+## Architecture
 
 The API follows enterprise-grade architecture patterns:
 
@@ -82,7 +82,7 @@ app/
 └── models/          # Database models
 ```
 
-## 🛠️ Development
+## Development
 
 ### Code Quality
 ```bash
@@ -99,25 +99,25 @@ bundle exec rspec
 ### Database
 ```bash
 # Reset database
-docker-compose exec web rails db:reset
+docker compose exec web rails db:reset
 
 # Run migrations
-docker-compose exec web rails db:migrate
+docker compose exec web rails db:migrate
 ```
 
-## 📊 Features
+## Features
 
-- ✅ **JWT Authentication** with role-based access
-- ✅ **RESTful API** with consistent responses
-- ✅ **Pagination & Filtering** for all resources
-- ✅ **Image Upload** support via Active Storage
-- ✅ **API Documentation** with Swagger UI
-- ✅ **Security Scanning** with Brakeman
-- ✅ **Code Quality** with RuboCop
-- ✅ **Testing** with RSpec
-- ✅ **Docker** containerization
+- **JWT Authentication** with role-based access
+- **RESTful API** with consistent responses
+- **Pagination & Filtering** for all resources
+- **Image Upload** support via Active Storage
+- **API Documentation** with Swagger UI
+- **Security Scanning** with Brakeman
+- **Code Quality** with RuboCop
+- **Testing** with RSpec
+- **Docker** containerization
 
-## 🔒 Security
+## Security
 
 - JWT token authentication
 - Role-based authorization (Admin/Customer)
@@ -125,7 +125,7 @@ docker-compose exec web rails db:migrate
 - Security vulnerability scanning
 - CORS configuration
 
-## 📝 Response Format
+## Response Format
 
 All API responses follow this format:
 
@@ -147,36 +147,32 @@ All API responses follow this format:
 }
 ```
 
-## 🐳 Docker Commands
+## Docker Commands
 
 ```bash
 # Start services
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f web
+docker compose logs -f web
 
 # Execute commands
-docker-compose exec web rails console
-docker-compose exec web bundle exec rspec
+docker compose exec web rails console
+docker compose exec web bundle exec rspec
 
 # Stop services
-docker-compose down
+docker compose down
 ```
 
-## 📚 Documentation
+## Documentation
 
 - **Health Check**: http://localhost:3000/api/v1/health
 - **API Docs**: http://localhost:3000/api-docs (run `rails rswag:specs:swaggerize` to generate)
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Run tests and quality checks
 5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
