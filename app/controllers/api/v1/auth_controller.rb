@@ -1,111 +1,72 @@
 class Api::V1::AuthController < Api::V1::BaseController
-  skip_before_action :authenticate_user!, only: [ :login, :register, :refresh_token ]
+  skip_before_action :authenticate_user!, only: [:login, :register, :refresh_token]
 
   # POST /api/v1/auth/login
   def login
-    user = User.find_by(email: params[:email])
-
-    if user&.authenticate(params[:password])
-      token = JwtEncodeService.encode(user)
-      refresh_token = JwtEncodeService.encode_refresh_token(user)
-      render json: {
-        message: "Login successful",
-        token: token,
-        refresh_token: refresh_token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      }
+    result = Auth::AuthService.login(params[:email], params[:password])
+    
+    if result[:success]
+      render_success({
+        token: result[:tokens][:token],
+        refresh_token: result[:tokens][:refresh_token],
+        user: result[:user]
+      }, result[:message])
     else
-      render json: { error: "Invalid email or password" }, status: :unauthorized
+      render_error(result[:error], :unauthorized)
     end
   end
 
   # POST /api/v1/auth/register
   def register
-    user = User.new(user_params)
-
-    if user.save
-      token = JwtEncodeService.encode(user)
-      refresh_token = JwtEncodeService.encode_refresh_token(user)
-      render json: {
-        message: "Registration successful",
-        token: token,
-        refresh_token: refresh_token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      }, status: :created
+    result = Auth::AuthService.register(user_params)
+    
+    if result[:success]
+      render_success({
+        token: result[:tokens][:token],
+        refresh_token: result[:tokens][:refresh_token],
+        user: result[:user]
+      }, result[:message], :created)
     else
-      render json: { errors: user.errors }, status: :unprocessable_entity
+      render_error("Registration failed", :unprocessable_entity, result[:errors])
     end
   end
 
   # POST /api/v1/auth/refresh_token
   def refresh_token
-    refresh_token = params[:refresh_token]
-
-    if refresh_token.blank?
-      return render json: { error: "Refresh token is required" }, status: :bad_request
+    result = Auth::AuthService.refresh_token(params[:refresh_token])
+    
+    if result[:success]
+      render_success(result[:tokens], result[:message])
+    else
+      status = result[:error].include?("required") ? :bad_request : :unauthorized
+      render_error(result[:error], status)
     end
-
-    payload = JWTDecodeService.decode_refresh_token(refresh_token)
-
-    if payload.nil?
-      return render json: { error: "Invalid or expired refresh token" }, status: :unauthorized
-    end
-
-    user = User.find_by(id: payload["user_id"])
-
-    if user.nil?
-      return render json: { error: "User not found" }, status: :unauthorized
-    end
-
-    # Generate new tokens
-    new_token = JwtEncodeService.encode(user)
-    new_refresh_token = JwtEncodeService.encode_refresh_token(user)
-
-    render json: {
-      message: "Token refreshed successfully",
-      token: new_token,
-      refresh_token: new_refresh_token
-    }
   end
 
   # POST /api/v1/auth/logout
   def logout
-    # In a stateless JWT system, logout is typically handled client-side
-    # by removing the token from storage. However, we can add token blacklisting
-    # or other server-side logic here if needed.
-
-    render json: { message: "Logged out successfully" }
+    result = Auth::AuthService.logout
+    render_success(nil, result[:message])
   end
 
   # GET /api/v1/auth/me
   def me
-    if current_user
-      render json: {
-        user: {
-          id: current_user.id,
-          name: current_user.name,
-          email: current_user.email,
-          role: current_user.role
-        }
-      }
+    result = Auth::AuthService.get_current_user(current_user)
+    
+    if result[:success]
+      render_success(result[:user], "User retrieved successfully")
     else
-      render json: { error: "Not authenticated" }, status: :unauthorized
+      render_error(result[:error], :unauthorized)
     end
   end
 
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :password_confirmation, :role)
+    # Only allow role for admin users, otherwise default to customer
+    permitted_params = [:name, :email, :password, :password_confirmation]
+    permitted_params << :role if current_user&.admin?
+    
+    params.require(:user).permit(permitted_params)
   end
 end

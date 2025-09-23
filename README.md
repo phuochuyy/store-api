@@ -1,153 +1,182 @@
-# Phone Store API
+# 📱 Phone Store API
 
-RESTful API for a phone store built with Ruby on Rails.
+A modern RESTful API for a phone store built with Ruby on Rails 8.
 
-## Features
-
-- JWT Authentication with role-based access control
-- Product Management (Brands, Categories, Phones)
-- Order Management with nested order items
-- Image Upload for phones using Active Storage
-- Search & Filter capabilities
-- Pagination support
-- Admin Statistics Dashboard
-- Comprehensive error handling
-
-## Tech Stack
-
-- **Backend**: Ruby 3.3.9, Rails 8.0.2
-- **Database**: MySQL 8.0
-- **Cache**: Redis 7.0
-- **Authentication**: JWT tokens
-- **File Storage**: Active Storage
-- **Testing**: RSpec
-- **Containerization**: Docker
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Ruby 3.3.9+
-- Rails 8.0+
-- MySQL 8.0+
-- Redis 7.0+
+- Ruby 3.3.9
+- PostgreSQL 15
+- Redis 7
 - Docker & Docker Compose
 
 ### Installation
 
-1. **Clone and setup**:
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd store-api
+   ```
+
+2. **Start with Docker**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Setup database**
+   ```bash
+   docker-compose exec web rails db:create db:migrate db:seed
+   ```
+
+4. **Access the API**
+   - API: http://localhost:3000
+   - Health Check: http://localhost:3000/api/v1/health
+   - Documentation: http://localhost:3000/api-docs (after generating docs)
+
+## 🔑 Authentication
+
+The API uses JWT authentication. Get your token by logging in:
 
 ```bash
-git clone <repository-url>
-cd store-api
-cp .env.example .env
-bundle install
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"password"}'
 ```
 
-2. **Start services**:
-
+Use the token in subsequent requests:
 ```bash
-sudo docker compose up -d
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:3000/api/v1/phones
 ```
 
-3. **Setup database**:
-
-```bash
-rails db:create db:migrate db:seed
-```
-
-4. **Start server**:
-
-```bash
-rails server
-```
-
-API runs at `http://localhost:3000`
-
-## API Endpoints
+## 📋 API Endpoints
 
 ### Authentication
-
 - `POST /api/v1/auth/login` - Login
 - `POST /api/v1/auth/register` - Register
+- `POST /api/v1/auth/refresh_token` - Refresh token
 - `GET /api/v1/auth/me` - Get current user
 
-### Products
+### Resources
+- `GET /api/v1/phones` - List phones (with filters & pagination)
+- `GET /api/v1/phones/:id` - Get phone details
+- `POST /api/v1/phones` - Create phone (Admin only)
+- `PUT /api/v1/phones/:id` - Update phone (Admin only)
+- `DELETE /api/v1/phones/:id` - Delete phone (Admin only)
 
 - `GET /api/v1/brands` - List brands
 - `GET /api/v1/categories` - List categories
-- `GET /api/v1/phones` - List phones (with search, filter, pagination)
-- `GET /api/v1/phones/:id` - Get phone details
-- `POST /api/v1/phones/:id/upload_image` - Upload phone image (Admin)
-- `DELETE /api/v1/phones/:id/remove_image` - Remove phone image (Admin)
-
-### Orders
-
 - `GET /api/v1/orders` - List orders
-- `POST /api/v1/orders` - Create order
-- `POST /api/v1/orders/:id/order_items` - Add item to order
-- `GET /api/v1/orders/:id/order_items` - List order items
 
-### Admin Only
+## 🏗️ Architecture
 
-- `POST /api/v1/brands` - Create brand
-- `POST /api/v1/categories` - Create category
-- `POST /api/v1/phones` - Create phone
-- `GET /api/v1/statistics/dashboard` - Dashboard stats
-
-## Query Parameters
-
-**Phones:**
-
-- `page`, `per_page` - Pagination
-- `brand_id`, `category_id` - Filter
-- `search` - Search by name
-- `min_price`, `max_price` - Price range
-
-**Orders:**
-
-- `page`, `per_page` - Pagination
-- `status` - Filter by status (pending, confirmed, shipped, delivered, cancelled)
-
-## Authentication
-
-All endpoints (except login/register) require JWT token in Authorization header:
+The API follows enterprise-grade architecture patterns:
 
 ```
-Authorization: Bearer <your_jwt_token>
+app/
+├── controllers/     # API endpoints
+├── services/        # Business logic
+├── serializers/     # Data formatting
+├── validators/      # Input validation
+├── policies/        # Authorization
+└── models/          # Database models
 ```
 
-## API Documentation
+## 🛠️ Development
 
-- **Swagger UI**: `http://localhost:3000/api-docs`
-- **API Spec**: `http://localhost:3000/api-docs/v1/swagger.yaml`
+### Code Quality
+```bash
+# Run RuboCop
+bundle exec rubocop
 
-## Development
+# Security scan
+bundle exec brakeman
 
-### Testing
+# Run tests
+bundle exec rspec
+```
+
+### Database
+```bash
+# Reset database
+docker-compose exec web rails db:reset
+
+# Run migrations
+docker-compose exec web rails db:migrate
+```
+
+## 📊 Features
+
+- ✅ **JWT Authentication** with role-based access
+- ✅ **RESTful API** with consistent responses
+- ✅ **Pagination & Filtering** for all resources
+- ✅ **Image Upload** support via Active Storage
+- ✅ **API Documentation** with Swagger UI
+- ✅ **Security Scanning** with Brakeman
+- ✅ **Code Quality** with RuboCop
+- ✅ **Testing** with RSpec
+- ✅ **Docker** containerization
+
+## 🔒 Security
+
+- JWT token authentication
+- Role-based authorization (Admin/Customer)
+- Input validation and sanitization
+- Security vulnerability scanning
+- CORS configuration
+
+## 📝 Response Format
+
+All API responses follow this format:
+
+**Success:**
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "Operation successful"
+}
+```
+
+**Error:**
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "status": "error_code"
+}
+```
+
+## 🐳 Docker Commands
 
 ```bash
-bundle exec rspec          # Run tests
-bundle exec rubocop        # Code style check
-bundle exec brakeman       # Security scan
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f web
+
+# Execute commands
+docker-compose exec web rails console
+docker-compose exec web bundle exec rspec
+
+# Stop services
+docker-compose down
 ```
 
-### CI/CD
+## 📚 Documentation
 
-- Automated testing on push/PR
-- Security scanning with Brakeman
-- Docker build and test
-- Code quality checks
+- **Health Check**: http://localhost:3000/api/v1/health
+- **API Docs**: http://localhost:3000/api-docs (run `rails rswag:specs:swaggerize` to generate)
 
-## Environment Variables
+## 🤝 Contributing
 
-Copy `.env.example` to `.env` and configure:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and quality checks
+5. Submit a pull request
 
-- Database credentials
-- JWT secret keys
-- Redis URL
-- File upload settings
+## 📄 License
 
-## License
-
-MIT License
+This project is licensed under the MIT License.

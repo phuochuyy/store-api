@@ -25,6 +25,11 @@ group :development, :test do
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
   # API Documentation
   gem "rswag-specs"
+  # Code Quality & Security
+  gem "rubocop", require: false
+  gem "rubocop-rails", require: false
+  gem "rubocop-rspec", require: false
+  gem "brakeman", require: false
 end
 
 group :development do
