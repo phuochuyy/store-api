@@ -23,11 +23,11 @@ class Order < ApplicationRecord
   validates :status, presence: true, inclusion: { in: %w[pending confirmed shipped delivered cancelled] }
 
   enum :status, {
-    pending: "pending",
-    confirmed: "confirmed",
-    shipped: "shipped",
-    delivered: "delivered",
-    cancelled: "cancelled"
+    pending: 'pending',
+    confirmed: 'confirmed',
+    shipped: 'shipped',
+    delivered: 'delivered',
+    cancelled: 'cancelled'
   }
 
   # Scope for recent orders

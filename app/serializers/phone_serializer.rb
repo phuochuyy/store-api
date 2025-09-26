@@ -31,8 +31,8 @@ class PhoneSerializer
   end
 
   def specifications
-    return {} unless @phone.specifications.present?
-    
+    return {} if @phone.specifications.blank?
+
     if @phone.specifications.is_a?(String)
       JSON.parse(@phone.specifications)
     else

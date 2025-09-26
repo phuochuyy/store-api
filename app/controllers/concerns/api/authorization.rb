@@ -1,26 +1,28 @@
-module Api::Authorization
-  extend ActiveSupport::Concern
+module Api
+  module Authorization
+    extend ActiveSupport::Concern
 
-  private
+    private
 
-  def authorize!(resource, action)
-    result = Auth::AuthenticationService.authorize(current_user, resource, action)
-    
-    unless result[:success]
-      render json: { 
-        success: false, 
-        error: result[:error], 
-        status: :forbidden 
+    def authorize!(resource, action)
+      result = Auth::AuthenticationService.authorize(current_user, resource, action)
+
+      return if result[:success]
+
+      render json: {
+        success: false,
+        error: result[:error],
+        status: :forbidden
       }, status: :forbidden
     end
-  end
 
-  def admin_only!
-    unless current_user&.admin?
-      render json: { 
-        success: false, 
-        error: "Admin access required", 
-        status: :forbidden 
+    def admin_only!
+      return if current_user&.admin?
+
+      render json: {
+        success: false,
+        error: 'Admin access required',
+        status: :forbidden
       }, status: :forbidden
     end
   end

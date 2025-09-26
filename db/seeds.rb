@@ -6,10 +6,10 @@ Phone.destroy_all
 Order.destroy_all
 OrderItem.destroy_all
 
-puts 'Creating demo data...'
+Rails.logger.debug 'Creating demo data...'
 
 # Create Users
-admin_user = User.create!(
+User.create!(
   name: 'Admin User',
   email: 'admin@example.com',
   password: 'password',
@@ -17,7 +17,7 @@ admin_user = User.create!(
   role: 'admin'
 )
 
-customer_user = User.create!(
+User.create!(
   name: 'John Customer',
   email: 'customer@example.com',
   password: 'password',
@@ -25,7 +25,7 @@ customer_user = User.create!(
   role: 'customer'
 )
 
-puts "Created #{User.count} users"
+Rails.logger.debug { "Created #{User.count} users" }
 
 # Create Brands
 brands_data = [
@@ -40,7 +40,7 @@ brands = brands_data.map do |brand_data|
   Brand.create!(brand_data)
 end
 
-puts "Created #{Brand.count} brands"
+Rails.logger.debug { "Created #{Brand.count} brands" }
 
 # Create Categories
 categories_data = [
@@ -55,7 +55,7 @@ categories = categories_data.map do |category_data|
   Category.create!(category_data)
 end
 
-puts "Created #{Category.count} categories"
+Rails.logger.debug { "Created #{Category.count} categories" }
 
 # Create Phones
 phones_data = [
@@ -161,7 +161,7 @@ phones = phones_data.map do |phone_data|
   Phone.create!(phone_data)
 end
 
-puts "Created #{Phone.count} phones"
+Rails.logger.debug { "Created #{Phone.count} phones" }
 
 # Create Sample Orders
 orders_data = [
@@ -225,18 +225,18 @@ end
 # Update order totals
 orders.each(&:update_total_amount)
 
-puts "Created #{Order.count} orders with #{OrderItem.count} order items"
+Rails.logger.debug { "Created #{Order.count} orders with #{OrderItem.count} order items" }
 
-puts "\nDemo data created successfully!"
-puts '=' * 50
-puts 'Login credentials:'
-puts 'Admin: admin@example.com / password'
-puts 'Customer: customer@example.com / password'
-puts '=' * 50
-puts 'Total records created:'
-puts "- Users: #{User.count}"
-puts "- Brands: #{Brand.count}"
-puts "- Categories: #{Category.count}"
-puts "- Phones: #{Phone.count}"
-puts "- Orders: #{Order.count}"
-puts "- Order Items: #{OrderItem.count}"
+Rails.logger.debug "\nDemo data created successfully!"
+Rails.logger.debug '=' * 50
+Rails.logger.debug 'Login credentials:'
+Rails.logger.debug 'Admin: admin@example.com / password'
+Rails.logger.debug 'Customer: customer@example.com / password'
+Rails.logger.debug '=' * 50
+Rails.logger.debug 'Total records created:'
+Rails.logger.debug { "- Users: #{User.count}" }
+Rails.logger.debug { "- Brands: #{Brand.count}" }
+Rails.logger.debug { "- Categories: #{Category.count}" }
+Rails.logger.debug { "- Phones: #{Phone.count}" }
+Rails.logger.debug { "- Orders: #{Order.count}" }
+Rails.logger.debug { "- Order Items: #{OrderItem.count}" }

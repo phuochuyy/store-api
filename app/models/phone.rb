@@ -23,23 +23,23 @@ class Phone < ApplicationRecord
   belongs_to :category
   has_many :order_items, dependent: :destroy
   has_many :orders, through: :order_items
-  
+
   # Active Storage for image uploads
   has_one_attached :image
 
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :description, presence: true, length: { minimum: 10, maximum: 1000 }
-  validates :price, presence: true, numericality: { greater_than: 0, less_than: 100000 }
-  validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 10000 }
+  validates :price, presence: true, numericality: { greater_than: 0, less_than: 100_000 }
+  validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 10_000 }
 
   # Scope for available phones (in stock)
-  scope :available, -> { where("stock_quantity > 0") }
+  scope :available, -> { where('stock_quantity > 0') }
 
   # Scope for expensive phones (price > 1000)
-  scope :expensive, -> { where("price > 1000") }
+  scope :expensive, -> { where('price > 1000') }
 
   def in_stock?
-    stock_quantity > 0
+    stock_quantity.positive?
   end
 
   def reduce_stock(quantity)

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class JwtDecodeService
-  SECRET_KEY = Rails.application.credentials.secret_key_base || "fallback_secret_key"
-  ALGORITHM = "HS256"
+  SECRET_KEY = Rails.application.credentials.secret_key_base || 'fallback_secret_key'
+  ALGORITHM = 'HS256'
 
   class << self
     # Decode and verify a JWT token
@@ -25,7 +25,7 @@ class JwtDecodeService
       payload = decode(token)
       return nil unless payload
 
-      user_id = payload["user_id"]
+      user_id = payload['user_id']
       return nil unless user_id
 
       User.find_by(id: user_id)
@@ -39,7 +39,7 @@ class JwtDecodeService
     def decode_refresh_token(token)
       payload = decode(token)
       return nil unless payload
-      return nil unless payload["type"] == "refresh"
+      return nil unless payload['type'] == 'refresh'
 
       payload
     end
@@ -50,7 +50,7 @@ class JwtDecodeService
     def decode_password_reset_token(token)
       payload = decode(token)
       return nil unless payload
-      return nil unless payload["type"] == "password_reset"
+      return nil unless payload['type'] == 'password_reset'
 
       payload
     end
@@ -61,7 +61,7 @@ class JwtDecodeService
     def decode_email_verification_token(token)
       payload = decode(token)
       return nil unless payload
-      return nil unless payload["type"] == "email_verification"
+      return nil unless payload['type'] == 'email_verification'
 
       payload
     end
@@ -73,7 +73,7 @@ class JwtDecodeService
       payload = decode(token)
       return true unless payload
 
-      exp = payload["exp"]
+      exp = payload['exp']
       return true unless exp
 
       Time.current.to_i > exp
@@ -86,10 +86,10 @@ class JwtDecodeService
       payload = decode(token)
       return nil unless payload
 
-      exp = payload["exp"]
+      exp = payload['exp']
       return nil unless exp
 
-      Time.at(exp)
+      Time.zone.at(exp)
     end
 
     # Get time until token expires
@@ -106,17 +106,15 @@ class JwtDecodeService
     # @param token [String] The JWT token to validate
     # @return [Hash] Validation result with status and details
     def validate_token(token)
-      return { valid: false, error: "Token is blank" } if token.blank?
+      return { valid: false, error: 'Token is blank' } if token.blank?
 
       payload = decode(token)
-      return { valid: false, error: "Invalid token format" } unless payload
+      return { valid: false, error: 'Invalid token format' } unless payload
 
-      if expired?(token)
-        return { valid: false, error: "Token has expired" }
-      end
+      return { valid: false, error: 'Token has expired' } if expired?(token)
 
-      user = User.find_by(id: payload["user_id"])
-      return { valid: false, error: "User not found" } unless user
+      user = User.find_by(id: payload['user_id'])
+      return { valid: false, error: 'User not found' } unless user
 
       { valid: true, user: user, payload: payload }
     rescue StandardError => e

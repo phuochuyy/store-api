@@ -24,28 +24,28 @@ class PhoneValidator
   private
 
   def brand_exists
-    return unless brand_id.present?
-    
-    unless Brand.exists?(brand_id)
-      errors.add(:brand_id, "Brand does not exist")
-    end
+    return if brand_id.blank?
+
+    return if Brand.exists?(brand_id)
+
+    errors.add(:brand_id, 'Brand does not exist')
   end
 
   def category_exists
-    return unless category_id.present?
-    
-    unless Category.exists?(category_id)
-      errors.add(:category_id, "Category does not exist")
-    end
+    return if category_id.blank?
+
+    return if Category.exists?(category_id)
+
+    errors.add(:category_id, 'Category does not exist')
   end
 
   def valid_specifications
-    return unless specifications.present?
-    
+    return if specifications.blank?
+
     begin
       JSON.parse(specifications) if specifications.is_a?(String)
     rescue JSON::ParserError
-      errors.add(:specifications, "Invalid JSON format")
+      errors.add(:specifications, 'Invalid JSON format')
     end
   end
 end

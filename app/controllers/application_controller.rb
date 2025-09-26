@@ -18,8 +18,8 @@ class ApplicationController < ActionController::API
   end
 
   def render_error(message, status = :bad_request, errors = nil)
-    response_data = { 
-      success: false, 
+    response_data = {
+      success: false,
       error: message,
       status: status
     }

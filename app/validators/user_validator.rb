@@ -20,9 +20,9 @@ class UserValidator
 
   def passwords_match
     return unless password.present? && password_confirmation.present?
-    
-    unless password == password_confirmation
-      errors.add(:password_confirmation, "doesn't match Password")
-    end
+
+    return if password == password_confirmation
+
+    errors.add(:password_confirmation, "doesn't match Password")
   end
 end

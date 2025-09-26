@@ -19,19 +19,19 @@ RSpec.describe Phone, type: :model do
     it 'is invalid with name too short' do
       phone = build(:phone, name: 'A', brand: brand, category: category)
       expect(phone).not_to be_valid
-      expect(phone.errors[:name]).to include("is too short (minimum is 2 characters)")
+      expect(phone.errors[:name]).to include('is too short (minimum is 2 characters)')
     end
 
     it 'is invalid with negative price' do
       phone = build(:phone, price: -100, brand: brand, category: category)
       expect(phone).not_to be_valid
-      expect(phone.errors[:price]).to include("must be greater than 0")
+      expect(phone.errors[:price]).to include('must be greater than 0')
     end
 
     it 'is invalid with negative stock quantity' do
       phone = build(:phone, stock_quantity: -1, brand: brand, category: category)
       expect(phone).not_to be_valid
-      expect(phone.errors[:stock_quantity]).to include("must be greater than or equal to 0")
+      expect(phone.errors[:stock_quantity]).to include('must be greater than or equal to 0')
     end
   end
 
@@ -52,14 +52,14 @@ RSpec.describe Phone, type: :model do
     let!(:unavailable_phone) { create(:phone, stock_quantity: 0, brand: brand, category: category) }
 
     it 'returns available phones' do
-      expect(Phone.available).to include(available_phone)
-      expect(Phone.available).not_to include(unavailable_phone)
+      expect(described_class.available).to include(available_phone)
+      expect(described_class.available).not_to include(unavailable_phone)
     end
 
     it 'returns expensive phones' do
       expensive_phone = create(:phone, price: 1500, brand: brand, category: category)
-      expect(Phone.expensive).to include(expensive_phone)
-      expect(Phone.expensive).not_to include(available_phone)
+      expect(described_class.expensive).to include(expensive_phone)
+      expect(described_class.expensive).not_to include(available_phone)
     end
   end
 

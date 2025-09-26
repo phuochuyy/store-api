@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class JwtEncodeService
-  SECRET_KEY = Rails.application.credentials.secret_key_base || "fallback_secret_key"
-  ALGORITHM = "HS256"
+  SECRET_KEY = Rails.application.credentials.secret_key_base || 'fallback_secret_key'
+  ALGORITHM = 'HS256'
   DEFAULT_EXPIRY = 24.hours
 
   class << self
@@ -28,7 +28,7 @@ class JwtEncodeService
     def encode_refresh_token(user, expiry: 7.days)
       payload = {
         user_id: user.id,
-        type: "refresh",
+        type: 'refresh',
         iat: Time.current.to_i,
         exp: (Time.current + expiry).to_i
       }
@@ -43,7 +43,7 @@ class JwtEncodeService
     def encode_password_reset_token(user, expiry: 1.hour)
       payload = {
         user_id: user.id,
-        type: "password_reset",
+        type: 'password_reset',
         iat: Time.current.to_i,
         exp: (Time.current + expiry).to_i
       }
@@ -59,7 +59,7 @@ class JwtEncodeService
       payload = {
         user_id: user.id,
         email: user.email,
-        type: "email_verification",
+        type: 'email_verification',
         iat: Time.current.to_i,
         exp: (Time.current + expiry).to_i
       }

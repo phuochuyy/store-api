@@ -1,54 +1,54 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
 # Core Rails
-gem "rails", "~> 8.0.2", ">= 8.0.2.1"
-gem "pg", "~> 1.1"
-gem "puma", ">= 5.0"
-gem "bootsnap", require: false
-gem "tzinfo-data", platforms: %i[windows jruby]
-gem "ostruct"
+gem 'bootsnap', require: false
+gem 'ostruct'
+gem 'pg', '~> 1.1'
+gem 'puma', '>= 5.0'
+gem 'rails', '~> 8.0.2', '>= 8.0.2.1'
+gem 'tzinfo-data', platforms: %i[windows jruby]
 
 # Authentication
-gem "bcrypt", "~> 3.1.7"
-gem "jwt"
+gem 'bcrypt', '~> 3.1.7'
+gem 'jwt'
 
 # API
-gem "rack-cors"
-gem "rswag-api"
-gem "rswag-ui"
-gem "active_model_serializers"
+gem 'active_model_serializers'
+gem 'rack-cors'
+gem 'rswag-api'
+gem 'rswag-ui'
 
 # Pagination
-gem "kaminari"
+gem 'kaminari'
 
 group :development, :test do
   # Debugging
-  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+  gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
   # API Documentation
-  gem "rswag-specs"
+  gem 'rswag-specs'
   # Code Quality & Security
-  gem "rubocop", require: false
-  gem "rubocop-rails", require: false
-  gem "rubocop-rspec", require: false
-  gem "brakeman", require: false
+  gem 'brakeman', require: false
+  gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false
+  gem 'rubocop-rspec', require: false
 end
 
 group :development do
   # Development Tools
-  gem "better_errors"               # Better error pages
-  gem "binding_of_caller"           # Better debugging
+  gem 'better_errors'               # Better error pages
+  gem 'binding_of_caller'           # Better debugging
 end
 
 group :test do
   # Testing Framework
-  gem "rspec-rails"
-  gem "factory_bot_rails"
-  gem "faker"
+  gem 'factory_bot_rails'
+  gem 'faker'
+  gem 'rspec-rails'
   # Test Coverage
-  gem "simplecov", require: false
-  gem "simplecov-lcov", require: false
+  gem 'simplecov', require: false
+  gem 'simplecov-lcov', require: false
   # API Testing
-  gem "rspec_junit_formatter"
+  gem 'rspec_junit_formatter'
   # Database Cleaner
-  gem "database_cleaner-active_record"
+  gem 'database_cleaner-active_record'
 end

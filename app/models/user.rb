@@ -19,8 +19,8 @@ class User < ApplicationRecord
   validates :role, presence: true, inclusion: { in: %w[admin customer] }
 
   enum :role, {
-    admin: "admin",
-    customer: "customer"
+    admin: 'admin',
+    customer: 'customer'
   }
 
   # Simple authentication method for demo
@@ -31,11 +31,11 @@ class User < ApplicationRecord
 
   # Check if user is admin
   def admin?
-    role == "admin"
+    role == 'admin'
   end
 
   # Check if user is customer
   def customer?
-    role == "customer"
+    role == 'customer'
   end
 end

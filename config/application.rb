@@ -1,6 +1,6 @@
-require_relative "boot"
+require_relative 'boot'
 
-require "rails/all"
+require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -15,14 +15,14 @@ module StoreApi
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
-    
+
     # Add custom paths to autoload
-    config.autoload_paths += %W(
+    config.autoload_paths += %W[
       #{config.root}/app/services
       #{config.root}/app/validators
       #{config.root}/app/policies
       #{config.root}/app/middleware
-    )
+    ]
 
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.

@@ -12,7 +12,7 @@ module ErrorHandler
 
   def record_not_found(exception)
     render json: {
-      error: "Record not found",
+      error: 'Record not found',
       message: exception.message,
       status: 404
     }, status: :not_found
@@ -20,7 +20,7 @@ module ErrorHandler
 
   def record_invalid(exception)
     render json: {
-      error: "Validation failed",
+      error: 'Validation failed',
       message: exception.message,
       errors: exception.record.errors.full_messages,
       status: 422
@@ -29,7 +29,7 @@ module ErrorHandler
 
   def parameter_missing(exception)
     render json: {
-      error: "Missing parameter",
+      error: 'Missing parameter',
       message: exception.message,
       status: 400
     }, status: :bad_request
@@ -40,8 +40,8 @@ module ErrorHandler
     Rails.logger.error exception.backtrace.join("\n")
 
     render json: {
-      error: "Internal server error",
-      message: Rails.env.development? ? exception.message : "Something went wrong",
+      error: 'Internal server error',
+      message: Rails.env.development? ? exception.message : 'Something went wrong',
       status: 500
     }, status: :internal_server_error
   end
