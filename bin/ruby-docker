@@ -1,0 +1,5 @@
+#!/bin/bash
+# Ruby Docker Wrapper Script
+# Forces Ruby LSP to use Docker environment
+
+exec docker compose exec web ruby "$@"

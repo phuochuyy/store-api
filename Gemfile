@@ -6,6 +6,7 @@ gem "pg", "~> 1.1"
 gem "puma", ">= 5.0"
 gem "bootsnap", require: false
 gem "tzinfo-data", platforms: %i[windows jruby]
+gem "ostruct"
 
 # Authentication
 gem "bcrypt", "~> 3.1.7"

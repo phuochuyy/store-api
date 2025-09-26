@@ -1,6 +1,6 @@
 class Api::V1::OrdersController < Api::V1::BaseController
-  before_action :set_order, only: [ :show, :update, :destroy ]
-  before_action :admin_only!, only: [ :index, :update, :destroy ]
+  before_action :set_order, only: %i[show update destroy]
+  before_action :admin_only!, only: %i[index update destroy]
 
   # GET /api/v1/orders (Admin only)
   def index
@@ -46,7 +46,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
       end
 
       render json: {
-        message: "Order created successfully",
+        message: 'Order created successfully',
         order: order_serializer(@order)
       }, status: :created
     else
@@ -60,7 +60,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
   def update
     if @order.update(order_params)
       render json: {
-        message: "Order updated successfully",
+        message: 'Order updated successfully',
         order: order_serializer(@order)
       }
     else
@@ -73,7 +73,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
   # DELETE /api/v1/orders/:id (Admin only)
   def destroy
     @order.destroy
-    render json: { message: "Order deleted successfully" }
+    render json: { message: 'Order deleted successfully' }
   end
 
   private

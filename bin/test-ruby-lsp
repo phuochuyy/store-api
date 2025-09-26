@@ -1,0 +1,29 @@
+#!/bin/bash
+# Test Ruby LSP Configuration
+# Verifies that Ruby LSP uses Docker environment
+
+echo "🔍 Testing Ruby LSP Configuration..."
+echo
+
+echo "1. Local Ruby version:"
+which ruby
+ruby --version
+echo
+
+echo "2. Docker Ruby version:"
+docker compose exec web ruby --version
+echo
+
+echo "3. Wrapper script version:"
+./bin/ruby-docker --version
+echo
+
+echo "4. Testing class reference in Docker:"
+./bin/ruby-docker -e "require_relative 'config/environment'; puts 'User class: ' + User.to_s; puts 'Phone class: ' + Phone.to_s"
+echo
+
+echo "5. Testing gem loading in Docker:"
+./bin/ruby-docker -e "require_relative 'config/environment'; puts 'ActiveRecord version: ' + ActiveRecord::VERSION::STRING"
+echo
+
+echo "✅ Ruby LSP should now use Docker environment!"

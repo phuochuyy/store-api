@@ -1,28 +1,43 @@
-# Ruby LSP Configuration
-# Minimal configuration to avoid connection issues
+# Ruby LSP Configuration for Docker Compose
+# Optimized for Rails API development with Docker
 
-# Enable essential features only
-enabledFeatures:
+# Enable essential features for development
+enabled_features:
   - completion
   - diagnostics
-  - documentSymbols
+  - document_symbols
   - hover
-  - signatureHelp
-
-# Disable problematic features
-disabledFeatures:
-  - codeActions
-  - codeLens
-  - documentHighlights
-  - documentLink
-  - foldingRanges
-  - inlayHint
-  - onTypeFormatting
-  - selectionRanges
-  - semanticHighlighting
-  - typeHierarchy
-  - workspaceSymbol
+  - signature_help
+  - code_actions
   - formatting
+  - inlay_hint
+  - selection_ranges
+
+# Disable problematic features that might cause issues
+disabled_features:
+  - code_lens
+  - document_highlights
+  - document_link
+  - folding_ranges
+  - on_type_formatting
+  - semantic_highlighting
+  - type_hierarchy
+  - workspace_symbol
+
+# Docker Compose configuration (RECOMMENDED)
+docker_compose:
+  enabled: true
+  service: "web"
+  configuration_file: "docker-compose.yml"
+
+# Ruby configuration - force Docker usage
+ruby:
+  version: "3.4.5"
+  command: "./bin/ruby-docker"
+  # Force Docker environment
+  environment:
+    BUNDLE_GEMFILE: "/rails/Gemfile"
+    RAILS_ENV: "development"
 
 # Configure logging
 logging:
@@ -32,18 +47,27 @@ logging:
 # Configure indexing
 indexing:
   enabled: true
-  # Exclude certain directories from indexing
   exclude:
     - "tmp/**/*"
     - "log/**/*"
     - "storage/**/*"
     - "node_modules/**/*"
     - "vendor/**/*"
+    - ".git/**/*"
+    - "db/migrate/**/*"
+    - "spec/factories/**/*"
+    - "coverage/**/*"
+    - "public/**/*"
+    - "config/credentials.yml.enc"
+    - "*.log"
 
-# Ruby configuration
-ruby:
-  version: "3.3.9"
-  command: "/home/huy/.rvm/rubies/ruby-3.3.9/bin/ruby"
+# Additional configuration for better performance
+formatter:
+  enabled: true
+  command: "docker compose exec web bundle exec rubocop"
 
-
+# Linting configuration
+linter:
+  enabled: true
+  command: "docker compose exec web bundle exec rubocop"
 
