@@ -1,6 +1,6 @@
 module Api
   module V1
-    class StatisticsController < ApplicationController
+    class StatisticsController < Api::V1::BaseController
       before_action :authenticate_user!
       before_action :admin_only!
 
@@ -13,19 +13,10 @@ module Api
           total_orders: Order.count,
           total_revenue: Order.sum(:total_amount),
           total_phones: Phone.count,
-          total_customers: User.where(role: 'customer').count,
-          orders_by_status: Order.group(:status).count,
-          top_selling_phones: OrderItem.joins(:phone)
-                                       .group('phones.name')
-                                       .sum(:quantity)
-                                       .sort_by { |_, quantity| -quantity }
-                                       .first(5),
-          revenue_by_month: Order.where(created_at: 12.months.ago..Time.current)
-                                 .group("DATE_FORMAT(created_at, '%Y-%m')")
-                                 .sum(:total_amount)
+          total_customers: User.where(role: 'customer').count
         }
 
-        render json: stats
+        render_success(stats, 'Dashboard statistics retrieved successfully')
       end
 
       # GET /api/v1/statistics/inventory
@@ -38,7 +29,7 @@ module Api
           phones_by_category: Phone.joins(:category).group('categories.name').count
         }
 
-        render json: inventory_stats
+        render_success(inventory_stats, 'Inventory statistics retrieved successfully')
       end
 
       # GET /api/v1/statistics/sales
@@ -68,24 +59,6 @@ module Api
       end
 
       private
-
-      def authenticate_user!
-        token = request.headers['Authorization']&.split&.last
-        return render json: { error: 'Token missing' }, status: :unauthorized unless token
-
-        payload = User.decode_jwt(token)
-        return render json: { error: 'Invalid token' }, status: :unauthorized unless payload
-
-        @current_user = User.find(payload['user_id'])
-      rescue ActiveRecord::RecordNotFound
-        render json: { error: 'User not found' }, status: :unauthorized
-      end
-
-      attr_reader :current_user
-
-      def admin_only!
-        render json: { error: 'Admin access required' }, status: :forbidden unless current_user&.admin?
-      end
 
       def record_not_found
         render json: { error: 'Record not found' }, status: :not_found

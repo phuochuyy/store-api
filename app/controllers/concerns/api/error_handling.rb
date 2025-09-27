@@ -12,7 +12,7 @@ module Api
     private
 
     def record_not_found(exception)
-      render_error('Record not found', :not_found, [exception.message])
+      render_error('Record not found', :not_found)
     end
 
     def record_invalid(exception)

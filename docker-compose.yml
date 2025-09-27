@@ -24,6 +24,8 @@ services:
     environment:
       - RAILS_ENV=development
       - DATABASE_URL=postgresql://store_api:userpw@db:5432/store_api_development
+    volumes:
+      - .:/rails
     depends_on:
       - db
       - redis

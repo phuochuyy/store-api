@@ -2,14 +2,13 @@ module Api
   module V1
     class CategoriesController < Api::V1::BaseController
       before_action :set_category, only: %i[show update destroy]
-      before_action :admin_only!, only: %i[create update destroy]
 
       # GET /api/v1/categories
       def index
         @categories = Category.includes(:phones)
         @categories = @categories.page(params[:page]).per(params[:per_page] || 10)
 
-        render json: {
+        data = {
           categories: @categories.map { |category| category_serializer(category) },
           pagination: {
             current_page: @categories.current_page,
@@ -18,53 +17,62 @@ module Api
             per_page: @categories.limit_value
           }
         }
+
+        render_success(data, 'Categories retrieved successfully')
       end
 
       # GET /api/v1/categories/:id
       def show
-        render json: {
+        data = {
           category: category_serializer(@category),
           phones: @category.phones.limit(10).map { |phone| phone_serializer(phone) }
         }
+
+        render_success(data, 'Category retrieved successfully')
       end
 
       # POST /api/v1/categories
       def create
+        return unless ensure_admin!
+
         @category = Category.new(category_params)
 
         if @category.save
-          render json: {
-            message: 'Category created successfully',
-            category: category_serializer(@category)
-          }, status: :created
+          data = { category: category_serializer(@category) }
+          render_success(data, 'Category created successfully', :created)
         else
-          render json: {
-            errors: @category.errors.full_messages
-          }, status: :unprocessable_entity
+          render_error('Category could not be created', :unprocessable_entity, @category.errors.full_messages)
         end
       end
 
       # PATCH/PUT /api/v1/categories/:id
       def update
+        return unless ensure_admin!
+
         if @category.update(category_params)
-          render json: {
-            message: 'Category updated successfully',
-            category: category_serializer(@category)
-          }
+          data = { category: category_serializer(@category) }
+          render_success(data, 'Category updated successfully')
         else
-          render json: {
-            errors: @category.errors.full_messages
-          }, status: :unprocessable_entity
+          render_error('Category could not be updated', :unprocessable_entity, @category.errors.full_messages)
         end
       end
 
       # DELETE /api/v1/categories/:id
       def destroy
+        return unless ensure_admin!
+
         @category.destroy
-        render json: { message: 'Category deleted successfully' }
+        render_success(nil, 'Category deleted successfully')
       end
 
       private
+
+      def ensure_admin!
+        return if current_user&.admin?
+
+        render_error('Admin access required', :forbidden)
+        false
+      end
 
       def set_category
         @category = Category.find(params[:id])

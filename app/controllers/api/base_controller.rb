@@ -1,6 +1,7 @@
 module Api
   class BaseController < ApplicationController
     include Api::Authentication
+    include Api::Authorization
     include Api::ErrorHandling
     include Common::Pagination
     include Common::Filtering
@@ -12,6 +13,7 @@ module Api
 
     def set_default_response_format
       request.format = :json
+      response.headers['Content-Type'] = 'application/json'
     end
 
     def render_success(data = nil, message = nil, status = :ok)
