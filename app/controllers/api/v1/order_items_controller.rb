@@ -43,7 +43,7 @@ module Api
       end
 
       # DELETE /api/v1/order_items/:id
-      def destroy
+      def destrohãy
         order = @order_item.order
         @order_item.destroy
         # Update order total

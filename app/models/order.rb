@@ -19,7 +19,7 @@ class Order < ApplicationRecord
   validates :customer_name, presence: true
   validates :customer_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :customer_phone, presence: true
-  validates :total_amount, numericality: { greater_than: 0 }, allow_nil: true
+  validates :total_amount, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :status, presence: true, inclusion: { in: %w[pending confirmed shipped delivered cancelled] }
 
   enum :status, {
@@ -33,8 +33,15 @@ class Order < ApplicationRecord
   # Scope for recent orders
   scope :recent, -> { order(created_at: :desc) }
 
+  # Default ordering
+  default_scope -> { order(created_at: :desc) }
+
   def update_total_amount
     total = order_items.sum(&:total_price)
     update_column(:total_amount, total)
+  end
+
+  def total_items
+    order_items.sum(:quantity)
   end
 end

@@ -21,9 +21,24 @@ class OrderItem < ApplicationRecord
   belongs_to :phone
 
   validates :quantity, presence: true, numericality: { greater_than: 0 }
-  validates :unit_price, presence: true, numericality: { greater_than: 0 }
+  validates :unit_price, presence: true, numericality: { greater_than_or_equal_to: 0 }
+
+  before_validation :set_unit_price_from_phone, if: -> { unit_price.nil? && phone.present? }
+  after_create :update_order_total
+  after_update :update_order_total
+  after_destroy :update_order_total
 
   def total_price
     quantity * unit_price
+  end
+
+  private
+
+  def set_unit_price_from_phone
+    self.unit_price = phone.price
+  end
+
+  def update_order_total
+    order.update_total_amount
   end
 end
