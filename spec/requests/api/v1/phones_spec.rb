@@ -5,8 +5,8 @@ RSpec.describe 'Api::V1::Phones', type: :request do
   let(:category) { create(:category) }
   let(:admin_user) { create(:user, role: 'admin') }
   let(:customer_user) { create(:user, role: 'customer') }
-  let(:admin_token) { JWTEncodeService.encode(admin_user) }
-  let(:customer_token) { JWTEncodeService.encode(customer_user) }
+  let(:admin_token) { JwtEncodeService.encode(admin_user) }
+  let(:customer_token) { JwtEncodeService.encode(customer_user) }
 
   describe 'GET /api/v1/phones' do
     let!(:phones) { create_list(:phone, 3, brand: brand, category: category) }
@@ -47,7 +47,7 @@ RSpec.describe 'Api::V1::Phones', type: :request do
     let!(:phone) { create(:phone, brand: brand, category: category) }
 
     it 'returns a specific phone' do
-      get "/api/v1/phones/#{phone.id}"
+      get "/api/v1/phones/#{phone.id}", headers: { Authorization: "Bearer #{admin_token}" }
       expect(response).to have_http_status(:ok)
 
       json_response = response.parsed_body
@@ -138,7 +138,7 @@ RSpec.describe 'Api::V1::Phones', type: :request do
 
     context 'as customer' do
       it 'returns forbidden' do
-        put "/api/v1/phones/#{phone.id}", params: update_params,
+        put "/api/v1/phones/#{phone.id}", params: update_params, headers: { Authorization: "Bearer #{admin_token}" },
                                           headers: { 'Authorization' => "Bearer #{customer_token}" }
         expect(response).to have_http_status(:forbidden)
       end
@@ -161,7 +161,8 @@ RSpec.describe 'Api::V1::Phones', type: :request do
 
     context 'as customer' do
       it 'returns forbidden' do
-        delete "/api/v1/phones/#{phone.id}", headers: { 'Authorization' => "Bearer #{customer_token}" }
+        delete "/api/v1/phones/#{phone.id}", headers: { Authorization: "Bearer #{admin_token}" },
+                                             headers: { 'Authorization' => "Bearer #{customer_token}" }
         expect(response).to have_http_status(:forbidden)
       end
     end

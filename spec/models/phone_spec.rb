@@ -58,8 +58,9 @@ RSpec.describe Phone, type: :model do
 
     it 'returns expensive phones' do
       expensive_phone = create(:phone, price: 1500, brand: brand, category: category)
+      cheap_phone = create(:phone, price: 500, brand: brand, category: category)
       expect(described_class.expensive).to include(expensive_phone)
-      expect(described_class.expensive).not_to include(available_phone)
+      expect(described_class.expensive).not_to include(cheap_phone)
     end
   end
 
