@@ -24,6 +24,16 @@ class EmailVerificationMailer < ApplicationMailer
   private
 
   def verification_url(token)
-    "#{Rails.application.routes.url_helpers.root_url}api/v1/auth/verify_email?token=#{token}"
+    host = Rails.application.config.default_url_options[:host]
+    port = Rails.application.config.default_url_options[:port]
+    protocol = Rails.application.config.default_url_options[:protocol] || 'http'
+
+    base_url = if port
+                 "#{protocol}://#{host}:#{port}"
+               else
+                 "#{protocol}://#{host}"
+               end
+
+    "#{base_url}/api/v1/auth/verify_email?token=#{token}"
   end
 end
