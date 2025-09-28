@@ -61,7 +61,8 @@ module Api
       private
 
       def set_brand
-        @brand = Brand.find(params[:id])
+        @brand = Brand.find_by(id: params[:id])
+        render_error('Brand not found', :not_found) unless @brand
       end
 
       def authorize_brand

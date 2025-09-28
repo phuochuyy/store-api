@@ -25,9 +25,9 @@ RSpec.describe 'Api::V1::Categories', type: :request do
       expect(response).to have_http_status(:ok)
       json_response = response.parsed_body
 
-      expect(json_response['categories']).to be_an(Array)
-      expect(json_response['categories'].length).to eq(3)
-      expect(json_response['categories'].first).to include('id', 'name', 'description')
+      expect(json_response['data']['categories']).to be_an(Array)
+      expect(json_response['data']['categories'].length).to eq(3)
+      expect(json_response['data']['categories'].first).to include('id', 'name', 'description')
     end
 
     it 'supports pagination' do

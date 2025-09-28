@@ -1,0 +1,39 @@
+---
+openapi: 3.0.1
+info:
+  title: Phone Store API V1
+  version: v1
+  description: RESTful API for a phone store built with Ruby on Rails
+paths: {}
+servers:
+- url: http://localhost:3000
+  description: Development server
+components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        status:
+          type: string
+    success_response:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        message:
+          type: string
+security:
+- bearer_auth: []

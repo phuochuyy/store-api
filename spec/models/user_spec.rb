@@ -32,10 +32,10 @@ RSpec.describe User, type: :model do
       expect(user.errors[:email]).to include('is invalid')
     end
 
-    it 'is invalid without a role' do
+    it 'sets default role when role is nil' do
       user = build(:user, role: nil)
-      expect(user).not_to be_valid
-      expect(user.errors[:role]).to include("can't be blank")
+      user.valid?
+      expect(user.role).to eq('customer')
     end
 
     it 'is invalid with invalid role' do

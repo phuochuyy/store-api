@@ -75,11 +75,12 @@ module Api
       end
 
       def set_category
-        @category = Category.find(params[:id])
+        @category = Category.find_by(id: params[:id])
+        render_error('Category not found', :not_found) unless @category
       end
 
       def category_params
-        params.expect(category: %i[name description])
+        params.require(:category).permit(:name, :description)
       end
 
       def category_serializer(category)

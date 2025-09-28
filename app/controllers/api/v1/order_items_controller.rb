@@ -43,7 +43,7 @@ module Api
       end
 
       # DELETE /api/v1/order_items/:id
-      def destrohãy
+      def destroy
         order = @order_item.order
         @order_item.destroy
         # Update order total
@@ -62,7 +62,7 @@ module Api
       end
 
       def order_item_params
-        params.expect(order_item: %i[phone_id quantity])
+        params.require(:order_item).permit(:phone_id, :quantity)
       end
     end
   end

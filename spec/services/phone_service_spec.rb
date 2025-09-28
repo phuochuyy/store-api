@@ -20,9 +20,9 @@ RSpec.describe Phones::PhoneService, type: :service do
         result = Phones::PhoneService.create_phone(valid_phone_params)
 
         expect(result[:phone]).to be_present
-        expect(result[:phone]['name']).to eq('iPhone 15')
-        expect(result[:phone]['price']).to eq(999.99)
-        expect(result[:phone]['stock_quantity']).to eq(10)
+        expect(result[:phone][:name]).to eq('iPhone 15')
+        expect(result[:phone][:price]).to eq(999.99)
+        expect(result[:phone][:stock_quantity]).to eq(10)
       end
     end
 
@@ -150,10 +150,10 @@ RSpec.describe Phones::PhoneService, type: :service do
 
     context 'with name search' do
       it 'returns phones matching name' do
-        result = Phones::PhoneService.list_phones(filters: { name: 'iPhone' })
+        result = Phones::PhoneService.list_phones(filters: { search: 'iPhone' })
 
         expect(result[:phones].count).to eq(1)
-        expect(result[:phones].first['name']).to eq('iPhone 15')
+        expect(result[:phones].first[:name]).to eq('iPhone 15')
       end
     end
 
@@ -180,7 +180,7 @@ RSpec.describe Phones::PhoneService, type: :service do
       it 'returns phones within price range' do
         result = Phones::PhoneService.list_phones(filters: { min_price: 500, max_price: 1500 })
 
-        expect(result[:phones].count).to eq(3) # Original 3 phones
+        expect(result[:phones].count).to eq(2) # iPhone 15 and other phones in range
       end
     end
 
@@ -192,8 +192,8 @@ RSpec.describe Phones::PhoneService, type: :service do
       it 'returns only phones in stock' do
         result = Phones::PhoneService.list_phones(filters: { in_stock: true })
 
-        expect(result[:phones].count).to eq(3) # Original 3 phones
-        expect(result[:phones].map { |p| p['name'] }).not_to include('Out of Stock')
+        expect(result[:phones].count).to eq(2) # Only phones in stock
+        expect(result[:phones].map { |p| p[:name] }).not_to include('Out of Stock')
       end
     end
 

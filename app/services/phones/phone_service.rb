@@ -42,6 +42,10 @@ module Phones
 
       def delete_phone(id)
         phone = Phone.find(id)
+
+        # Check if phone has associated order items
+        return { success: false, error: 'Cannot delete phone with existing order items' } if phone.order_items.exists?
+
         phone.destroy
         { success: true }
       end
