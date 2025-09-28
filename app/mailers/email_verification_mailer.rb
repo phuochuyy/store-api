@@ -24,9 +24,11 @@ class EmailVerificationMailer < ApplicationMailer
   private
 
   def verification_url(token)
-    host = Rails.application.config.default_url_options[:host]
-    port = Rails.application.config.default_url_options[:port]
-    protocol = Rails.application.config.default_url_options[:protocol] || 'http'
+    # Use action_mailer default_url_options which is properly configured
+    url_options = Rails.application.config.action_mailer.default_url_options || {}
+    host = url_options[:host] || 'localhost'
+    port = url_options[:port]
+    protocol = url_options[:protocol] || 'http'
 
     base_url = if port
                  "#{protocol}://#{host}:#{port}"

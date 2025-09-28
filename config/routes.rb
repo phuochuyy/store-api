@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       get 'auth/me', to: 'auth#me'
       get 'auth/verify_email', to: 'auth#verify_email'
       post 'auth/resend_verification', to: 'auth#resend_verification'
+      post 'auth/revoke_all_tokens', to: 'auth#revoke_all_tokens'
 
       # Main resources
       resources :products do

@@ -56,10 +56,9 @@ module Auth
         }
       end
 
-      def logout
-        # In a stateless JWT system, logout is typically handled client-side
-        # by removing the token from storage. However, we can add token blacklisting
-        # or other server-side logic here if needed.
+      def logout(token = nil)
+        # Blacklist the current token if provided
+        JwtBlacklistService.blacklist_token(token) if token.present?
 
         { success: true, message: 'Logged out successfully' }
       end

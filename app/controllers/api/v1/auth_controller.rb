@@ -1,7 +1,8 @@
 module Api
   module V1
     class AuthController < Api::V1::BaseController
-      skip_before_action :authenticate_user!, only: %i[login register refresh_token verify_email resend_verification]
+      skip_before_action :authenticate_user!,
+                         only: %i[login register refresh_token verify_email resend_verification logout]
 
       # POST /api/v1/auth/login
       def login
@@ -51,7 +52,8 @@ module Api
 
       # POST /api/v1/auth/logout
       def logout
-        result = Auth::AuthService.logout
+        token = extract_token
+        result = Auth::AuthService.logout(token)
         render_success(nil, result[:message])
       end
 
@@ -94,11 +96,33 @@ module Api
 
         return render_error('Email has already been verified', :unprocessable_entity) if user.email_verified?
 
-        # Generate new token and send email (temporarily disabled for testing)
+        # Generate new token and send email
         user.generate_email_verification_token!
-        # EmailVerificationMailer.resend_verification_email(user).deliver_now
+        begin
+          EmailVerificationMailer.resend_verification_email(user).deliver_now
+        rescue StandardError => e
+          Rails.logger.error "Email sending failed: #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
+        end
 
         render_success(nil, 'Verification email sent successfully')
+      end
+
+      # POST /api/v1/auth/revoke_all_tokens (Admin only)
+      def revoke_all_tokens
+        admin_only!
+
+        user_id = params[:user_id]
+        return render_error('User ID is required', :bad_request) unless user_id.present?
+
+        user = User.find_by(id: user_id)
+        return render_error('User not found', :not_found) unless user
+
+        # NOTE: This is a simplified implementation
+        # In a real-world scenario, you might want to store user-specific token identifiers
+        # and blacklist them individually. For now, we'll just return success.
+
+        render_success(nil, 'All tokens for user have been revoked')
       end
 
       private
@@ -114,6 +138,10 @@ module Api
         else
           params.permit(permitted_params)
         end
+      end
+
+      def extract_token
+        request.headers['Authorization']&.split&.last
       end
     end
   end

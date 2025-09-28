@@ -11,6 +11,9 @@ class JwtDecodeService
     def decode(token)
       return nil if token.blank?
 
+      # Check if token is blacklisted first
+      return nil if JwtBlacklistService.blacklisted?(token)
+
       decoded_token = JWT.decode(token, SECRET_KEY, true, { algorithm: ALGORITHM })
       decoded_token.first
     rescue JWT::DecodeError, JWT::ExpiredSignature, JWT::VerificationError => e
@@ -107,6 +110,9 @@ class JwtDecodeService
     # @return [Hash] Validation result with status and details
     def validate_token(token)
       return { valid: false, error: 'Token is blank' } if token.blank?
+
+      # Check if token is blacklisted
+      return { valid: false, error: 'Token has been revoked' } if JwtBlacklistService.blacklisted?(token)
 
       payload = decode(token)
       return { valid: false, error: 'Invalid token format' } unless payload
