@@ -27,6 +27,18 @@ Rails.application.routes.draw do
 
       resources :brands
       resources :categories
+
+      # Shopping Cart routes
+      resources :carts do
+        member do
+          delete :clear
+        end
+        collection do
+          post :merge
+        end
+        resources :cart_items
+      end
+
       resources :orders do
         resources :order_items
       end
@@ -40,8 +52,9 @@ Rails.application.routes.draw do
   end
 
   # API Documentation
-  mount Rswag::Ui::Engine => '/api-docs'
-  mount Rswag::Api::Engine => '/api-docs'
+  get '/api-docs', to: 'api_docs#index'
+  get '/swagger/v1/swagger.yaml', to: 'api_docs#swagger_yaml'
+  get '/swagger/v1/swagger.json', to: 'api_docs#swagger_json'
 
   # Root route - health check
   root 'api/v1/health#index'

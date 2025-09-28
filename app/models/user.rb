@@ -15,6 +15,7 @@ class User < ApplicationRecord
   ROLES = %w[admin customer].freeze
 
   has_secure_password
+  has_many :carts, dependent: :destroy
 
   validates :name,
             presence: true,

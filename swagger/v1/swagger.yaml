@@ -1,20 +1,1111 @@
 ---
 openapi: 3.0.1
 info:
-  title: Phone Store API V1
+  title: Store API V1
   version: v1
-  description: RESTful API for a phone store built with Ruby on Rails
-paths: {}
+  description: RESTful API for an e-commerce store built with Ruby on Rails
+  contact:
+    name: Store API Support
+    email: support@store-api.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 servers:
 - url: http://localhost:3000
   description: Development server
+- url: https://api.store.com
+  description: Production server
+
+tags:
+- name: Authentication
+  description: User authentication and email verification
+- name: Users
+  description: User management
+- name: Products
+  description: Product catalog management
+- name: Brands
+  description: Brand management
+- name: Categories
+  description: Category management
+- name: Shopping Cart
+  description: Shopping cart operations
+- name: Orders
+  description: Order management
+- name: Health
+  description: System health checks
+
+paths:
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the API is running and healthy
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "v1"
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                            example: "eyJhbGciOiJIUzI1NiJ9..."
+                          refresh_token:
+                            type: string
+                            example: "eyJhbGciOiJIUzI1NiJ9..."
+                          user:
+                            $ref: '#/components/schemas/user'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 50
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: "password123"
+                role:
+                  type: string
+                  enum: [customer, admin]
+                  default: customer
+                  example: "customer"
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                          refresh_token:
+                            type: string
+                          user:
+                            $ref: '#/components/schemas/user'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/auth/verify_email:
+    get:
+      tags:
+        - Authentication
+      summary: Verify email address
+      description: Verify user email address using verification token
+      security: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Email verification token
+          example: "abc123def456"
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/user'
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/auth/resend_verification:
+    post:
+      tags:
+        - Authentication
+      summary: Resend verification email
+      description: Resend email verification link to user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+      responses:
+        '200':
+          description: Verification email sent successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Get current authenticated user information
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/user'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Logout current user and invalidate token
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+        '401':
+          $ref: '#/components/responses/unauthorized'
+
+  /api/v1/auth/refresh_token:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Get new access token using refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiJ9..."
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                          refresh_token:
+                            type: string
+        '401':
+          $ref: '#/components/responses/unauthorized'
+
+  /api/v1/carts:
+    get:
+      tags:
+        - Shopping Cart
+      summary: Get user's cart
+      description: Retrieve current user's shopping cart
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+                          total_items:
+                            type: integer
+                            example: 5
+                          total_amount:
+                            type: number
+                            format: decimal
+                            example: 299.99
+        '401':
+          $ref: '#/components/responses/unauthorized'
+
+    post:
+      tags:
+        - Shopping Cart
+      summary: Create new cart
+      description: Create a new shopping cart for the user
+      responses:
+        '201':
+          description: Cart created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+
+  /api/v1/carts/{id}:
+    get:
+      tags:
+        - Shopping Cart
+      summary: Get cart details
+      description: Get detailed information about a specific cart
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+      responses:
+        '200':
+          description: Cart details retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+                          total_items:
+                            type: integer
+                          total_amount:
+                            type: number
+                            format: decimal
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+    put:
+      tags:
+        - Shopping Cart
+      summary: Update cart
+      description: Update cart information (e.g., status)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [active, abandoned, completed]
+                      example: "abandoned"
+      responses:
+        '200':
+          description: Cart updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+    delete:
+      tags:
+        - Shopping Cart
+      summary: Delete cart
+      description: Delete a shopping cart
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+      responses:
+        '200':
+          description: Cart deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        nullable: true
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/carts/{id}/clear:
+    delete:
+      tags:
+        - Shopping Cart
+      summary: Clear cart
+      description: Remove all items from the cart
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+      responses:
+        '200':
+          description: Cart cleared successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/carts/merge:
+    post:
+      tags:
+        - Shopping Cart
+      summary: Merge carts
+      description: Merge guest cart with user cart after login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - guest_session_id
+              properties:
+                guest_session_id:
+                  type: string
+                  description: Session ID of the guest cart
+                  example: "abc123def456"
+      responses:
+        '200':
+          description: Carts merged successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/carts/{cart_id}/cart_items:
+    get:
+      tags:
+        - Shopping Cart
+      summary: Get cart items
+      description: Get all items in a specific cart
+      parameters:
+        - name: cart_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+      responses:
+        '200':
+          description: Cart items retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+                          total_items:
+                            type: integer
+                          total_amount:
+                            type: number
+                            format: decimal
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+    post:
+      tags:
+        - Shopping Cart
+      summary: Add item to cart
+      description: Add a product to the shopping cart
+      parameters:
+        - name: cart_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cart_item
+              properties:
+                cart_item:
+                  type: object
+                  required:
+                    - product_id
+                  properties:
+                    product_id:
+                      type: integer
+                      description: Product ID to add to cart
+                      example: 1
+                    quantity:
+                      type: integer
+                      minimum: 1
+                      default: 1
+                      description: Quantity of the product
+                      example: 2
+      responses:
+        '201':
+          description: Item added to cart successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/carts/{cart_id}/cart_items/{id}:
+    get:
+      tags:
+        - Shopping Cart
+      summary: Get cart item
+      description: Get details of a specific cart item
+      parameters:
+        - name: cart_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart item ID
+          example: 1
+      responses:
+        '200':
+          description: Cart item retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart_item:
+                            $ref: '#/components/schemas/cart_item'
+                          product:
+                            $ref: '#/components/schemas/product'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+    put:
+      tags:
+        - Shopping Cart
+      summary: Update cart item
+      description: Update quantity of a cart item
+      parameters:
+        - name: cart_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart item ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cart_item
+              properties:
+                cart_item:
+                  type: object
+                  required:
+                    - quantity
+                  properties:
+                    quantity:
+                      type: integer
+                      minimum: 0
+                      description: New quantity (0 to remove item)
+                      example: 3
+      responses:
+        '200':
+          description: Cart item updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+    delete:
+      tags:
+        - Shopping Cart
+      summary: Remove cart item
+      description: Remove a specific item from the cart
+      parameters:
+        - name: cart_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart ID
+          example: 1
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Cart item ID
+          example: 1
+      responses:
+        '200':
+          description: Cart item removed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cart:
+                            $ref: '#/components/schemas/cart'
+                          cart_items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/cart_item'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
 components:
   securitySchemes:
     bearer_auth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: JWT token obtained from login endpoint
   schemas:
+    user:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        role:
+          type: string
+          enum:
+          - customer
+          - admin
+          example: "customer"
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "iPhone 15 Pro"
+        description:
+          type: string
+          example: "Latest iPhone with advanced features"
+        price:
+          type: number
+          format: decimal
+          example: 999.99
+        stock_quantity:
+          type: integer
+          example: 50
+        brand_id:
+          type: integer
+          example: 1
+        category_id:
+          type: integer
+          example: 1
+        brand:
+          $ref: '#/components/schemas/brand'
+        category:
+          $ref: '#/components/schemas/category'
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://example.com/images/iphone15pro.jpg"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    brand:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Apple"
+        description:
+          type: string
+          example: "Technology company"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Smartphones"
+        description:
+          type: string
+          example: "Mobile phones and accessories"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+    cart:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          nullable: true
+          example: 1
+        session_id:
+          type: string
+          example: "abc123def456"
+        status:
+          type: string
+          enum:
+          - active
+          - abandoned
+          - completed
+          example: "active"
+        total_amount:
+          type: number
+          format: decimal
+          example: 299.99
+        total_items:
+          type: integer
+          example: 3
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    cart_item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        cart_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 2
+        unit_price:
+          type: number
+          format: decimal
+          example: 99.99
+        total_price:
+          type: number
+          format: decimal
+          example: 199.98
+        product:
+          $ref: '#/components/schemas/product'
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [pending, confirmed, shipped, delivered, cancelled]
+          example: "pending"
+        total_amount:
+          type: number
+          format: decimal
+          example: 299.99
+        shipping_address:
+          type: string
+          example: "123 Main St, City, Country"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    order_item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        order_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 2
+        unit_price:
+          type: number
+          format: decimal
+          example: 99.99
+        total_price:
+          type: number
+          format: decimal
+          example: 199.98
+        product:
+          $ref: '#/components/schemas/product'
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
     error:
       type: object
       properties:
@@ -23,8 +1114,18 @@ components:
           example: false
         error:
           type: string
+          example: "Error message"
         status:
           type: string
+          example: "unauthorized"
+        errors:
+          type: array
+          items:
+            type: string
+          example:
+          - "Email can't be blank"
+          - "Password is too short"
+
     success_response:
       type: object
       properties:
@@ -35,5 +1136,74 @@ components:
           type: object
         message:
           type: string
+          example: "Operation completed successfully"
+  responses:
+    bad_request:
+      description: Bad request - Invalid parameters
+      content:
+        application/json:
+          schema:
+            allOf:
+            - "$ref": "#/components/schemas/error"
+            - type: object
+              properties:
+                status:
+                  example: "bad_request"
+
+    unauthorized:
+      description: Unauthorized - Invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            allOf:
+            - "$ref": "#/components/schemas/error"
+            - type: object
+              properties:
+                status:
+                  example: "unauthorized"
+
+    not_found:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            allOf:
+            - "$ref": "#/components/schemas/error"
+            - type: object
+              properties:
+                status:
+                  example: "not_found"
+
+    validation_error:
+      description: Validation error - Invalid input data
+      content:
+        application/json:
+          schema:
+            allOf:
+            - "$ref": "#/components/schemas/error"
+            - type: object
+              properties:
+                status:
+                  example: "unprocessable_entity"
+                errors:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                  - "Email can't be blank"
+                  - "Password is too short"
+
+    internal_server_error:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            allOf:
+            - "$ref": "#/components/schemas/error"
+            - type: object
+              properties:
+                status:
+                  example: "internal_server_error"
+
 security:
 - bearer_auth: []
