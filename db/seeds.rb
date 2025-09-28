@@ -2,7 +2,7 @@
 User.destroy_all
 Brand.destroy_all
 Category.destroy_all
-Phone.destroy_all
+Product.destroy_all
 Order.destroy_all
 OrderItem.destroy_all
 
@@ -57,8 +57,8 @@ end
 
 Rails.logger.debug { "Created #{Category.count} categories" }
 
-# Create Phones
-phones_data = [
+# Create Products
+products_data = [
   {
     name: 'iPhone 15 Pro',
     description: 'The most advanced iPhone with titanium design and A17 Pro chip. Features include Pro camera system, Action button, and USB-C connectivity.',
@@ -157,11 +157,11 @@ phones_data = [
   }
 ]
 
-phones = phones_data.map do |phone_data|
-  Phone.create!(phone_data)
+products = products_data.map do |product_data|
+  Product.create!(product_data)
 end
 
-Rails.logger.debug { "Created #{Phone.count} phones" }
+Rails.logger.debug { "Created #{Product.count} products" }
 
 # Create Sample Orders
 orders_data = [
@@ -204,18 +204,18 @@ end
 # Create Order Items
 order_items_data = [
   # Order 1 - Alice
-  { order: orders[0], phone: phones[0], quantity: 1, unit_price: phones[0].price },
-  { order: orders[0], phone: phones[2], quantity: 1, unit_price: phones[2].price },
+  { order: orders[0], product: products[0], quantity: 1, unit_price: products[0].price },
+  { order: orders[0], product: products[2], quantity: 1, unit_price: products[2].price },
 
   # Order 2 - Bob
-  { order: orders[1], phone: phones[1], quantity: 2, unit_price: phones[1].price },
+  { order: orders[1], product: products[1], quantity: 2, unit_price: products[1].price },
 
   # Order 3 - Carol
-  { order: orders[2], phone: phones[4], quantity: 1, unit_price: phones[4].price },
-  { order: orders[2], phone: phones[6], quantity: 1, unit_price: phones[6].price },
+  { order: orders[2], product: products[4], quantity: 1, unit_price: products[4].price },
+  { order: orders[2], product: products[6], quantity: 1, unit_price: products[6].price },
 
   # Order 4 - David
-  { order: orders[3], phone: phones[9], quantity: 3, unit_price: phones[9].price }
+  { order: orders[3], product: products[9], quantity: 3, unit_price: products[9].price }
 ]
 
 order_items_data.each do |item_data|
@@ -237,6 +237,6 @@ Rails.logger.debug 'Total records created:'
 Rails.logger.debug { "- Users: #{User.count}" }
 Rails.logger.debug { "- Brands: #{Brand.count}" }
 Rails.logger.debug { "- Categories: #{Category.count}" }
-Rails.logger.debug { "- Phones: #{Phone.count}" }
+Rails.logger.debug { "- Products: #{Product.count}" }
 Rails.logger.debug { "- Orders: #{Order.count}" }
 Rails.logger.debug { "- Order Items: #{OrderItem.count}" }

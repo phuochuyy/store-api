@@ -16,6 +16,7 @@ class User < ApplicationRecord
 
   has_secure_password
   has_many :carts, dependent: :destroy
+  has_many :notifications, dependent: :destroy
 
   validates :name,
             presence: true,
