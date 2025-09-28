@@ -90,7 +90,10 @@ RSpec.describe 'Api::V1::Categories', type: :request do
     context 'as customer' do
       it 'returns forbidden' do
         post '/api/v1/categories', params: valid_category_params,
-                                   headers: { 'Authorization' => "Bearer #{customer_token}" }
+                                   headers: { 'Authorization' => "Bearer #{customer_token}", 'Host' => 'localhost' }
+
+        puts "Response status: #{response.status}"
+        puts "Response body: #{response.body}"
 
         expect(response).to have_http_status(:forbidden)
         json_response = response.parsed_body
