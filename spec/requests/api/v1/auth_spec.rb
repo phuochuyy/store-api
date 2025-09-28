@@ -35,6 +35,17 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         expect(json_response['data']).to include('token', 'refresh_token', 'user')
         expect(json_response['data']['user']['email']).to eq('test@example.com')
         expect(json_response['data']['user']['role']).to eq('customer')
+        expect(json_response['message']).to include('Please check your email to verify your account')
+      end
+
+      it 'sends verification email after registration' do
+        expect do
+          post '/api/v1/auth/register', params: valid_user_params
+        end.to change { ActionMailer::Base.deliveries.count }.by(1)
+
+        email = ActionMailer::Base.deliveries.last
+        expect(email.to).to include('test@example.com')
+        expect(email.subject).to include('Xác thực email của bạn')
       end
 
       it 'creates admin user with admin role' do
@@ -209,6 +220,116 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         expect(response).to have_http_status(:unauthorized)
         json_response = response.parsed_body
         expect(json_response['success']).to be false
+      end
+    end
+  end
+
+  describe 'GET /api/v1/auth/verify_email' do
+    let!(:user) { create(:user, email_verification_token: 'test_token') }
+
+    context 'with valid token' do
+      it 'verifies user email successfully' do
+        get '/api/v1/auth/verify_email', params: { token: 'test_token' }
+
+        expect(response).to have_http_status(:ok)
+        json_response = response.parsed_body
+
+        expect(json_response['success']).to be true
+        expect(json_response['message']).to eq('Email verified successfully')
+
+        user.reload
+        expect(user.email_verified?).to be true
+        expect(user.email_verification_token).to be_nil
+      end
+    end
+
+    context 'with invalid token' do
+      it 'returns not found for invalid token' do
+        get '/api/v1/auth/verify_email', params: { token: 'invalid_token' }
+
+        expect(response).to have_http_status(:not_found)
+        json_response = response.parsed_body
+        expect(json_response['success']).to be false
+        expect(json_response['error']).to eq('Invalid or expired verification token')
+      end
+
+      it 'returns bad request for missing token' do
+        get '/api/v1/auth/verify_email'
+
+        expect(response).to have_http_status(:bad_request)
+        json_response = response.parsed_body
+        expect(json_response['success']).to be false
+        expect(json_response['error']).to eq('Verification token is required')
+      end
+    end
+
+    context 'with already verified user' do
+      let!(:verified_user) do
+        create(:user, email_verified_at: Time.current, email_verification_token: 'verified_token')
+      end
+
+      it 'returns error for already verified email' do
+        get '/api/v1/auth/verify_email', params: { token: 'verified_token' }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json_response = response.parsed_body
+        expect(json_response['success']).to be false
+        expect(json_response['error']).to eq('Email has already been verified')
+      end
+    end
+  end
+
+  describe 'POST /api/v1/auth/resend_verification' do
+    let!(:user) { create(:user, email: 'test@example.com', email_verified_at: nil) }
+
+    context 'with valid email' do
+      it 'sends verification email successfully' do
+        expect do
+          post '/api/v1/auth/resend_verification', params: { email: 'test@example.com' }
+        end.to change { ActionMailer::Base.deliveries.count }.by(1)
+
+        expect(response).to have_http_status(:ok)
+        json_response = response.parsed_body
+
+        expect(json_response['success']).to be true
+        expect(json_response['message']).to eq('Verification email sent successfully')
+
+        email = ActionMailer::Base.deliveries.last
+        expect(email.to).to include('test@example.com')
+        expect(email.subject).to include('Gửi lại email xác thực')
+      end
+    end
+
+    context 'with invalid email' do
+      it 'returns not found for non-existent email' do
+        post '/api/v1/auth/resend_verification', params: { email: 'nonexistent@example.com' }
+
+        expect(response).to have_http_status(:not_found)
+        json_response = response.parsed_body
+        expect(json_response['success']).to be false
+        expect(json_response['error']).to eq('User not found')
+      end
+
+      it 'returns bad request for missing email' do
+        post '/api/v1/auth/resend_verification'
+
+        expect(response).to have_http_status(:bad_request)
+        json_response = response.parsed_body
+        expect(json_response['success']).to be false
+        expect(json_response['error']).to eq('Email is required')
+      end
+    end
+
+    context 'with already verified user' do
+      let!(:verified_user) { create(:user, email: 'verified@example.com', email_verified_at: Time.current) }
+
+      it 'returns error for already verified email' do
+        post '/api/v1/auth/resend_verification', params: { email: 'verified@example.com' }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json_response = response.parsed_body
+        expect(json_response['success']).to be false
+        expect(json_response['error']).to eq('Email has already been verified')
       end
     end
   end

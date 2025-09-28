@@ -11,6 +11,8 @@ abort('The Rails environment is running in production mode!') if Rails.env.produ
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 require 'factory_bot_rails'
+require 'database_cleaner/active_record'
+require 'faker'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -69,10 +71,16 @@ RSpec.configure do |config|
   # Include FactoryBot methods
   config.include FactoryBot::Syntax::Methods
 
+  # Email testing configuration
+  config.before do
+    ActionMailer::Base.deliveries.clear
+  end
+
   # Database cleaner configuration
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
+    DatabaseCleaner.allow_remote_database_url = true
+    DatabaseCleaner.clean_with(:truncation, except: %w[ar_internal_metadata schema_migrations])
   end
 
   config.around do |example|

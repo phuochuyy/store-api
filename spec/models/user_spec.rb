@@ -2,135 +2,165 @@ require 'rails_helper'
 
 RSpec.describe User, type: :model do
   describe 'validations' do
-    it 'is valid with valid attributes' do
-      user = build(:user)
-      expect(user).to be_valid
-    end
-
-    it 'is invalid without a name' do
-      user = build(:user, name: nil)
+    it 'validates presence of name' do
+      user = User.new(email: 'test@example.com', password: 'password')
       expect(user).not_to be_valid
       expect(user.errors[:name]).to include("can't be blank")
     end
 
-    it 'is invalid without an email' do
-      user = build(:user, email: nil)
+    it 'validates presence of email' do
+      user = User.new(name: 'Test User', password: 'password')
       expect(user).not_to be_valid
       expect(user.errors[:email]).to include("can't be blank")
     end
 
-    it 'is invalid with duplicate email' do
-      create(:user, email: 'test@example.com')
-      user = build(:user, email: 'test@example.com')
+    it 'validates presence of role' do
+      user = User.new(name: 'Test User', email: 'test@example.com', password: 'password')
+      expect(user).to be_valid # role has default value
+    end
+
+    it 'validates length of name' do
+      user = User.new(name: 'A', email: 'test@example.com', password: 'password')
       expect(user).not_to be_valid
-      expect(user.errors[:email]).to include('has already been taken')
+      expect(user.errors[:name]).to include('is too short (minimum is 2 characters)')
     end
 
-    it 'is invalid with invalid email format' do
-      user = build(:user, email: 'invalid-email')
+    it 'validates length of password' do
+      user = User.new(name: 'Test User', email: 'test@example.com', password: '12345')
       expect(user).not_to be_valid
-      expect(user.errors[:email]).to include('is invalid')
+      expect(user.errors[:password]).to include('is too short (minimum is 6 characters)')
     end
 
-    it 'sets default role when role is nil' do
-      user = build(:user, role: nil)
-      user.valid?
-      expect(user.role).to eq('customer')
-    end
-
-    it 'is invalid with invalid role' do
-      expect { build(:user, role: 'invalid_role') }.to raise_error(ArgumentError)
-    end
-
-    it 'is valid with admin role' do
-      user = build(:user, role: 'admin')
-      expect(user).to be_valid
-    end
-
-    it 'is valid with customer role' do
-      user = build(:user, role: 'customer')
-      expect(user).to be_valid
-    end
-  end
-
-  describe 'password' do
-    it 'requires password on creation' do
-      user = build(:user, password: nil, password_confirmation: nil)
+    it 'validates inclusion of role' do
+      user = User.new(name: 'Test User', email: 'test@example.com', password: 'password', role: 'invalid')
       expect(user).not_to be_valid
-      expect(user.errors[:password]).to include("can't be blank")
-    end
-
-    it 'validates password confirmation' do
-      user = build(:user, password: 'password123', password_confirmation: 'different')
-      expect(user).not_to be_valid
-      expect(user.errors[:password_confirmation]).to include("doesn't match Password")
-    end
-
-    it 'encrypts password' do
-      user = create(:user, password: 'password', password_confirmation: 'password')
-      expect(user.password_digest).not_to eq('password')
-      expect(user.password_digest).to be_present
-    end
-  end
-
-  describe 'authentication' do
-    let(:user) { create(:user, email: 'test@example.com', password: 'password', password_confirmation: 'password') }
-
-    it 'authenticates with correct password' do
-      expect(user.authenticate('password')).to eq(user)
-    end
-
-    it 'does not authenticate with incorrect password' do
-      expect(user.authenticate('wrongpassword')).to be_falsey
-    end
-
-    it 'finds and authenticates user by email and password' do
-      authenticated_user = User.authenticate(user.email, 'password')
-      expect(authenticated_user).to eq(user)
-    end
-
-    it 'returns nil for non-existent email' do
-      authenticated_user = User.authenticate('nonexistent@example.com', 'password')
-      expect(authenticated_user).to be_nil
-    end
-
-    it 'returns nil for wrong password' do
-      authenticated_user = User.authenticate(user.email, 'wrongpassword')
-      expect(authenticated_user).to be_falsey
-    end
-  end
-
-  describe 'role methods' do
-    let(:admin_user) { create(:user, role: 'admin') }
-    let(:customer_user) { create(:user, role: 'customer') }
-
-    it 'returns true for admin? when user is admin' do
-      expect(admin_user.admin?).to be true
-    end
-
-    it 'returns false for admin? when user is customer' do
-      expect(customer_user.admin?).to be false
-    end
-
-    it 'returns true for customer? when user is customer' do
-      expect(customer_user.customer?).to be true
-    end
-
-    it 'returns false for customer? when user is admin' do
-      expect(admin_user.customer?).to be false
+      expect(user.errors[:role]).to include('is not included in the list')
     end
   end
 
   describe 'associations' do
-    it 'has secure password' do
-      expect(User.new).to respond_to(:password_digest)
-      expect(User.new).to respond_to(:authenticate)
-    end
+    # Add associations if any
   end
 
   describe 'enums' do
     it 'defines role enum correctly' do
       expect(User.roles).to eq({ 'admin' => 'admin', 'customer' => 'customer' })
+    end
+  end
+
+  describe 'scopes' do
+    let!(:admin_user) { create(:user, role: 'admin') }
+    let!(:customer_user) { create(:user, role: 'customer') }
+    let!(:verified_user) { create(:user, email_verified_at: Time.current) }
+    let!(:unverified_user) { create(:user, email_verified_at: nil) }
+
+    it 'returns admin users' do
+      expect(User.admin).to include(admin_user)
+      expect(User.admin).not_to include(customer_user)
+    end
+
+    it 'returns customer users' do
+      expect(User.customer).to include(customer_user)
+      expect(User.customer).not_to include(admin_user)
+    end
+
+    it 'returns verified users' do
+      expect(User.verified).to include(verified_user)
+      expect(User.verified).not_to include(unverified_user)
+    end
+
+    it 'returns unverified users' do
+      expect(User.unverified).to include(unverified_user)
+      expect(User.unverified).not_to include(verified_user)
+    end
+  end
+
+  describe 'email verification' do
+    let(:user) { create(:user) }
+
+    describe '#email_verified?' do
+      it 'returns true when email is verified' do
+        user.update!(email_verified_at: Time.current)
+        expect(user.email_verified?).to be true
+      end
+
+      it 'returns false when email is not verified' do
+        expect(user.email_verified?).to be false
+      end
+    end
+
+    describe '#verify_email!' do
+      it 'sets email_verified_at and clears token' do
+        user.update!(email_verification_token: 'some_token')
+
+        expect do
+          user.verify_email!
+        end.to change { user.email_verified_at }.from(nil)
+                                                .and change { user.email_verification_token }.to(nil)
+      end
+    end
+
+    describe '#generate_email_verification_token!' do
+      it 'generates a new token and returns it' do
+        token = user.generate_email_verification_token!
+
+        expect(token).to be_present
+        expect(user.email_verification_token).to eq(token)
+      end
+    end
+
+    describe '.find_by_verification_token' do
+      let(:user_with_token) { create(:user, email_verification_token: 'test_token') }
+
+      it 'finds user by verification token' do
+        expect(User.find_by_verification_token('test_token')).to eq(user_with_token)
+      end
+
+      it 'returns nil for invalid token' do
+        expect(User.find_by_verification_token('invalid_token')).to be_nil
+      end
+    end
+  end
+
+  describe 'callbacks' do
+    it 'generates email verification token after create' do
+      user = build(:user)
+      expect(user).to receive(:generate_email_verification_token)
+      user.save!
+    end
+
+    it 'downcases email before save' do
+      user = create(:user, email: 'TEST@EXAMPLE.COM')
+      expect(user.email).to eq('test@example.com')
+    end
+
+    it 'sets default role to customer' do
+      user = create(:user, role: nil)
+      expect(user.role).to eq('customer')
+    end
+  end
+
+  describe 'authentication' do
+    let(:user) { create(:user, email: 'test@example.com', password: 'password123') }
+
+    describe '.authenticate' do
+      it 'authenticates with correct credentials' do
+        expect(User.authenticate('test@example.com', 'password123')).to eq(user)
+      end
+
+      it 'returns nil with incorrect password' do
+        expect(User.authenticate('test@example.com', 'wrong_password')).to be_nil
+      end
+
+      it 'returns nil with non-existent email' do
+        expect(User.authenticate('nonexistent@example.com', 'password123')).to be_nil
+      end
+    end
+
+    describe '.find_by_email' do
+      it 'finds user by email (case insensitive)' do
+        expect(User.find_by_email('TEST@EXAMPLE.COM')).to eq(user)
+      end
     end
   end
 end

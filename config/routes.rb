@@ -11,6 +11,8 @@ Rails.application.routes.draw do
       post 'auth/refresh_token', to: 'auth#refresh_token'
       post 'auth/logout', to: 'auth#logout'
       get 'auth/me', to: 'auth#me'
+      get 'auth/verify_email', to: 'auth#verify_email'
+      post 'auth/resend_verification', to: 'auth#resend_verification'
 
       # Main resources
       resources :products do

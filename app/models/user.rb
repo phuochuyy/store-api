@@ -43,11 +43,14 @@ class User < ApplicationRecord
 
   before_validation :set_default_role, on: :create
   before_save :downcase_email
+  after_create :generate_email_verification_token
 
   scope :admin, -> { where(role: 'admin') }
   scope :customer, -> { where(role: 'customer') }
   scope :recent, -> { order(created_at: :desc) }
   scope :by_name, -> { order(:name) }
+  scope :verified, -> { where.not(email_verified_at: nil) }
+  scope :unverified, -> { where(email_verified_at: nil) }
 
   def display_name
     name.presence || email.split('@').first
@@ -61,6 +64,20 @@ class User < ApplicationRecord
     role == 'customer'
   end
 
+  def email_verified?
+    email_verified_at.present?
+  end
+
+  def verify_email!
+    update!(email_verified_at: Time.current, email_verification_token: nil)
+  end
+
+  def generate_email_verification_token!
+    token = SecureRandom.urlsafe_base64(32)
+    update!(email_verification_token: token)
+    token
+  end
+
   def self.authenticate(email, password)
     user = find_by(email: email.downcase)
     user&.authenticate(password)
@@ -68,6 +85,10 @@ class User < ApplicationRecord
 
   def self.find_by_email(email)
     find_by(email: email.downcase)
+  end
+
+  def self.find_by_verification_token(token)
+    find_by(email_verification_token: token)
   end
 
   private
@@ -78,6 +99,10 @@ class User < ApplicationRecord
 
   def downcase_email
     self.email = email.downcase if email.present?
+  end
+
+  def generate_email_verification_token
+    self.email_verification_token = SecureRandom.urlsafe_base64(32)
   end
 
   # def password_complexity

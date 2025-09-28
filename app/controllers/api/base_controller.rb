@@ -6,7 +6,6 @@ module Api
     include Common::Pagination
     include Common::Filtering
 
-    before_action :authenticate_user!
     before_action :set_default_response_format
 
     private

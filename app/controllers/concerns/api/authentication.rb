@@ -3,7 +3,7 @@ module Api
     extend ActiveSupport::Concern
 
     included do
-      before_action :authenticate_user!, except: [:health]
+      before_action :authenticate_user!
     end
 
     private
