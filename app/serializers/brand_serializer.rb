@@ -9,7 +9,7 @@ class BrandSerializer
       name: @brand.name,
       description: @brand.description,
       logo_url: logo_url,
-      phones_count: @brand.phones.count,
+      products_count: @brand.products.count,
       created_at: @brand.created_at&.iso8601,
       updated_at: @brand.updated_at&.iso8601
     }

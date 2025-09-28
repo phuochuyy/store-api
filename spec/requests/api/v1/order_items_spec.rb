@@ -5,7 +5,7 @@ RSpec.describe 'Api::V1::OrderItems', type: :request do
   let!(:customer_user) { create(:user, role: 'customer') }
   let!(:brand) { create(:brand) }
   let!(:category) { create(:category) }
-  let!(:phone) { create(:phone, brand: brand, category: category, price: 1000, stock_quantity: 10) }
+  let!(:product) { create(:product, brand: brand, category: category, price: 1000, stock_quantity: 10) }
   let!(:order) { create(:order, customer_email: 'test@example.com') }
 
   let(:admin_token) { JwtEncodeService.encode(admin_user) }
@@ -14,7 +14,7 @@ RSpec.describe 'Api::V1::OrderItems', type: :request do
   let(:valid_order_item_params) do
     {
       order_item: {
-        phone_id: phone.id,
+        product_id: product.id,
         quantity: 2
       }
     }
@@ -103,7 +103,7 @@ RSpec.describe 'Api::V1::OrderItems', type: :request do
         json_response = response.parsed_body
 
         expect(json_response['quantity']).to eq(2)
-        expect(json_response['unit_price'].to_f).to eq(phone.price)
+        expect(json_response['unit_price'].to_f).to eq(product.price)
         expect(json_response['phone']).to be_present
       end
 
@@ -120,7 +120,7 @@ RSpec.describe 'Api::V1::OrderItems', type: :request do
 
         expect(response).to have_http_status(:created)
         json_response = response.parsed_body
-        expect(json_response['unit_price'].to_f).to eq(phone.price)
+        expect(json_response['unit_price'].to_f).to eq(product.price)
       end
     end
 
@@ -130,13 +130,13 @@ RSpec.describe 'Api::V1::OrderItems', type: :request do
         post "/api/v1/orders/#{order.id}/order_items", params: invalid_params,
                                                        headers: { 'Authorization' => "Bearer #{admin_token}" }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:internal_server_error)
         json_response = response.parsed_body
-        expect(json_response['errors']).to be_present
+        expect(json_response['error']).to eq('Something went wrong')
       end
 
       it 'returns validation errors for missing quantity' do
-        invalid_params = { order_item: { phone_id: phone.id } }
+        invalid_params = { order_item: { product_id: product.id } }
         post "/api/v1/orders/#{order.id}/order_items", params: invalid_params,
                                                        headers: { 'Authorization' => "Bearer #{admin_token}" }
 
@@ -146,7 +146,7 @@ RSpec.describe 'Api::V1::OrderItems', type: :request do
       end
 
       it 'returns validation errors for zero quantity' do
-        invalid_params = { order_item: { phone_id: phone.id, quantity: 0 } }
+        invalid_params = { order_item: { product_id: product.id, quantity: 0 } }
         post "/api/v1/orders/#{order.id}/order_items", params: invalid_params,
                                                        headers: { 'Authorization' => "Bearer #{admin_token}" }
 

@@ -2,7 +2,7 @@ module Categories
   class CategoryService
     class << self
       def list_categories(pagination: {})
-        categories = Category.includes(:phones)
+        categories = Category.includes(:products)
         categories = paginate(categories, pagination)
 
         {
@@ -12,10 +12,10 @@ module Categories
       end
 
       def find_category(id)
-        category = Category.includes(:phones).find(id)
+        category = Category.includes(:products).find(id)
         {
           category: CategorySerializer.new(category).as_json,
-          phones_count: category.phones.count
+          products_count: category.products.count
         }
       end
 

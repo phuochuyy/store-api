@@ -9,7 +9,7 @@ class CategorySerializer
       name: @category.name,
       description: @category.description,
       icon_url: icon_url,
-      phones_count: @category.phones.count,
+      products_count: @category.products.count,
       created_at: @category.created_at&.iso8601,
       updated_at: @category.updated_at&.iso8601
     }

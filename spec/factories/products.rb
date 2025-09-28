@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :phone do
+  factory :product do
     name { Faker::Device.model_name }
     description { Faker::Lorem.paragraph(sentence_count: 3) }
     price { Faker::Commerce.price(range: 100..2000) }

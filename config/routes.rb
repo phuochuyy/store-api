@@ -13,7 +13,7 @@ Rails.application.routes.draw do
       get 'auth/me', to: 'auth#me'
 
       # Main resources
-      resources :phones do
+      resources :products do
         collection do
           get :search
         end

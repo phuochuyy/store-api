@@ -1,4 +1,4 @@
-class PhonePolicy < BasePolicy
+class ProductPolicy < BasePolicy
   def index?
     authenticated?
   end

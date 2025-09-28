@@ -6,13 +6,13 @@ module Api
 
       # GET /api/v1/orders/:order_id/order_items
       def index
-        @order_items = @order.order_items.includes(:phone)
-        render json: @order_items, include: :phone
+        @order_items = @order.order_items.includes(:product)
+        render json: @order_items, include: :product
       end
 
       # GET /api/v1/order_items/:id
       def show
-        render json: @order_item, include: :phone
+        render json: @order_item, include: :product
       end
 
       # POST /api/v1/orders/:order_id/order_items
@@ -54,15 +54,17 @@ module Api
       private
 
       def set_order_item
-        @order_item = OrderItem.find(params[:id])
+        @order_item = OrderItem.find_by(id: params[:id])
+        render_error('Order item not found', :not_found) unless @order_item
       end
 
       def set_order
-        @order = Order.find(params[:order_id])
+        @order = Order.find_by(id: params[:order_id])
+        render_error('Order not found', :not_found) unless @order
       end
 
       def order_item_params
-        params.require(:order_item).permit(:phone_id, :quantity)
+        params.require(:order_item).permit(:product_id, :quantity)
       end
     end
   end

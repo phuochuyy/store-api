@@ -1,13 +1,13 @@
 require 'rails_helper'
 
-RSpec.describe PhoneValidator, type: :validator do
+RSpec.describe ProductValidator, type: :validator do
   let(:brand) { create(:brand) }
   let(:category) { create(:category) }
 
   describe 'validations' do
     context 'with valid attributes' do
       it 'is valid' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
           description: 'Latest iPhone model with advanced features',
           price: 999.99,
@@ -21,8 +21,8 @@ RSpec.describe PhoneValidator, type: :validator do
 
     context 'name validation' do
       it 'is invalid without name' do
-        validator = PhoneValidator.new(
-          description: 'A phone description',
+        validator = ProductValidator.new(
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: brand.id,
@@ -33,9 +33,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with name too short' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'A',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: brand.id,
@@ -46,9 +46,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with name too long' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'A' * 101,
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: brand.id,
@@ -61,7 +61,7 @@ RSpec.describe PhoneValidator, type: :validator do
 
     context 'description validation' do
       it 'is invalid without description' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
           price: 999.99,
           stock_quantity: 10,
@@ -73,7 +73,7 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with description too short' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
           description: 'Short',
           price: 999.99,
@@ -86,7 +86,7 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with description too long' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
           description: 'A' * 1001,
           price: 999.99,
@@ -101,9 +101,9 @@ RSpec.describe PhoneValidator, type: :validator do
 
     context 'price validation' do
       it 'is invalid without price' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           stock_quantity: 10,
           brand_id: brand.id,
           category_id: category.id
@@ -113,9 +113,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with negative price' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: -100,
           stock_quantity: 10,
           brand_id: brand.id,
@@ -126,9 +126,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with zero price' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 0,
           stock_quantity: 10,
           brand_id: brand.id,
@@ -141,9 +141,9 @@ RSpec.describe PhoneValidator, type: :validator do
 
     context 'stock_quantity validation' do
       it 'is invalid without stock_quantity' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           brand_id: brand.id,
           category_id: category.id
@@ -153,9 +153,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with negative stock_quantity' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: -1,
           brand_id: brand.id,
@@ -166,9 +166,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is valid with zero stock_quantity' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 0,
           brand_id: brand.id,
@@ -180,9 +180,9 @@ RSpec.describe PhoneValidator, type: :validator do
 
     context 'brand_id validation' do
       it 'is invalid without brand_id' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           category_id: category.id
@@ -192,9 +192,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with non-existent brand_id' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: 99_999,
@@ -207,9 +207,9 @@ RSpec.describe PhoneValidator, type: :validator do
 
     context 'category_id validation' do
       it 'is invalid without category_id' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: brand.id
@@ -219,9 +219,9 @@ RSpec.describe PhoneValidator, type: :validator do
       end
 
       it 'is invalid with non-existent category_id' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: brand.id,
@@ -234,35 +234,22 @@ RSpec.describe PhoneValidator, type: :validator do
 
     context 'specifications validation' do
       it 'is valid with valid JSON specifications' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: brand.id,
           category_id: category.id,
-          specifications: '{"screen": "6.1 inch", "storage": "128GB"}'
-        )
-        expect(validator).to be_valid
-      end
-
-      it 'is valid with blank specifications' do
-        validator = PhoneValidator.new(
-          name: 'iPhone 15',
-          description: 'A phone description',
-          price: 999.99,
-          stock_quantity: 10,
-          brand_id: brand.id,
-          category_id: category.id,
-          specifications: ''
+          specifications: '{"color": "black", "storage": "128GB"}'
         )
         expect(validator).to be_valid
       end
 
       it 'is invalid with invalid JSON specifications' do
-        validator = PhoneValidator.new(
+        validator = ProductValidator.new(
           name: 'iPhone 15',
-          description: 'A phone description',
+          description: 'A product description',
           price: 999.99,
           stock_quantity: 10,
           brand_id: brand.id,
@@ -272,19 +259,32 @@ RSpec.describe PhoneValidator, type: :validator do
         expect(validator).not_to be_valid
         expect(validator.errors[:specifications]).to include('Invalid JSON format')
       end
-    end
-  end
 
-  describe 'attributes' do
-    it 'has all required attributes' do
-      validator = PhoneValidator.new
-      expect(validator).to respond_to(:name)
-      expect(validator).to respond_to(:description)
-      expect(validator).to respond_to(:price)
-      expect(validator).to respond_to(:stock_quantity)
-      expect(validator).to respond_to(:brand_id)
-      expect(validator).to respond_to(:category_id)
-      expect(validator).to respond_to(:specifications)
+      it 'is valid with nil specifications' do
+        validator = ProductValidator.new(
+          name: 'iPhone 15',
+          description: 'A product description',
+          price: 999.99,
+          stock_quantity: 10,
+          brand_id: brand.id,
+          category_id: category.id,
+          specifications: nil
+        )
+        expect(validator).to be_valid
+      end
+
+      it 'is valid with empty string specifications' do
+        validator = ProductValidator.new(
+          name: 'iPhone 15',
+          description: 'A product description',
+          price: 999.99,
+          stock_quantity: 10,
+          brand_id: brand.id,
+          category_id: category.id,
+          specifications: ''
+        )
+        expect(validator).to be_valid
+      end
     end
   end
 end

@@ -2,7 +2,7 @@ module Brands
   class BrandService
     class << self
       def list_brands(pagination: {})
-        brands = Brand.includes(:phones)
+        brands = Brand.includes(:products)
         brands = paginate(brands, pagination)
 
         {
@@ -12,10 +12,10 @@ module Brands
       end
 
       def find_brand(id)
-        brand = Brand.includes(:phones).find(id)
+        brand = Brand.includes(:products).find(id)
         {
           brand: BrandSerializer.new(brand).as_json,
-          phones_count: brand.phones.count
+          products_count: brand.products.count
         }
       end
 

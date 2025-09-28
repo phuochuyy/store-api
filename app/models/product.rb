@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: phones
+# Table name: products
 #
 #  id             :integer          not null, primary key
 #  name           :string(255)
@@ -14,11 +14,11 @@
 #
 # Indexes
 #
-#  index_phones_on_brand_id     (brand_id)
-#  index_phones_on_category_id  (category_id)
+#  index_products_on_brand_id     (brand_id)
+#  index_products_on_category_id  (category_id)
 #
 
-class Phone < ApplicationRecord
+class Product < ApplicationRecord
   belongs_to :brand
   belongs_to :category
   has_many :order_items, dependent: :destroy
@@ -32,10 +32,10 @@ class Phone < ApplicationRecord
   validates :price, presence: true, numericality: { greater_than: 0, less_than: 100_000 }
   validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 10_000 }
 
-  # Scope for available phones (in stock)
+  # Scope for available products (in stock)
   scope :available, -> { where('stock_quantity > 0') }
 
-  # Scope for expensive phones (price > 1000)
+  # Scope for expensive products (price > 1000)
   scope :expensive, -> { where('price > 1000') }
 
   def in_stock?

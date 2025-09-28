@@ -1,4 +1,4 @@
-class PhoneValidator
+class ProductValidator
   include ActiveModel::Model
   include ActiveModel::Attributes
 
@@ -24,7 +24,7 @@ class PhoneValidator
   private
 
   def brand_exists
-    return if brand_id.blank?
+    return unless brand_id.present?
 
     return if Brand.exists?(brand_id)
 
@@ -32,7 +32,7 @@ class PhoneValidator
   end
 
   def category_exists
-    return if category_id.blank?
+    return unless category_id.present?
 
     return if Category.exists?(category_id)
 
@@ -40,7 +40,7 @@ class PhoneValidator
   end
 
   def valid_specifications
-    return if specifications.blank?
+    return unless specifications.present?
 
     begin
       JSON.parse(specifications) if specifications.is_a?(String)

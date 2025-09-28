@@ -12,7 +12,7 @@ module Api
         stats = {
           total_orders: Order.count,
           total_revenue: Order.sum(:total_amount),
-          total_phones: Phone.count,
+          total_products: Product.count,
           total_customers: User.where(role: 'customer').count
         }
 
@@ -22,11 +22,11 @@ module Api
       # GET /api/v1/statistics/inventory
       def inventory
         inventory_stats = {
-          low_stock_phones: Phone.where(stock_quantity: ...10),
-          out_of_stock_phones: Phone.where(stock_quantity: 0),
-          total_inventory_value: Phone.sum('price * stock_quantity'),
-          phones_by_brand: Phone.joins(:brand).group('brands.name').count,
-          phones_by_category: Phone.joins(:category).group('categories.name').count
+          low_stock_products: Product.where(stock_quantity: ...10),
+          out_of_stock_products: Product.where(stock_quantity: 0),
+          total_inventory_value: Product.sum('price * stock_quantity'),
+          products_by_brand: Product.joins(:brand).group('brands.name').count,
+          products_by_category: Product.joins(:category).group('categories.name').count
         }
 
         render_success(inventory_stats, 'Inventory statistics retrieved successfully')
