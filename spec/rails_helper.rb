@@ -88,4 +88,23 @@ RSpec.configure do |config|
       example.run
     end
   end
+
+  # Redis configuration for tests
+  config.before(:suite) do
+    # Set Redis URL for test environment
+    ENV['REDIS_URL'] = 'redis://localhost:6379/1' unless ENV['REDIS_URL']
+  end
+
+  # Clean up Redis after each test that uses Redis
+  config.after do
+    if defined?(Redis) && defined?(RedisConfig)
+      begin
+        redis = Redis.new(RedisConfig.connection_options)
+        redis.flushdb
+        redis.close
+      rescue Redis::CannotConnectError
+        # Redis not available, skip cleanup
+      end
+    end
+  end
 end

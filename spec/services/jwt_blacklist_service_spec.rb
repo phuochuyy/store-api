@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe JwtBlacklistService, type: :service do
   let(:user) { create(:user) }
   let(:token) { JwtEncodeService.encode(user) }
-  let(:redis) { Redis.new(url: ENV.fetch('REDIS_URL', 'redis://redis:6379/0')) }
+  let(:redis) { Redis.new(RedisConfig.connection_options) }
 
   before do
     # Clear Redis before each test

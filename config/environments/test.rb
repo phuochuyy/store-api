@@ -24,6 +24,10 @@ Rails.application.configure do
   # Use memory store for testing (faster than Redis)
   config.cache_store = :memory_store
 
+  # Redis configuration for test environment
+  # Use localhost Redis for testing
+  config.redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/1')
+
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
 

@@ -97,11 +97,7 @@ class JwtBlacklistService
     # Get Redis connection
     # @return [Redis] Redis connection
     def redis
-      @redis ||= Redis.new(
-        url: ENV.fetch('REDIS_URL', 'redis://redis:6379/0'),
-        timeout: 1,
-        reconnect_attempts: 3
-      )
+      @redis ||= Redis.new(RedisConfig.connection_options)
     end
 
     # Generate Redis key for blacklisted token
