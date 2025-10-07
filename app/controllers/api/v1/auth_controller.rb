@@ -2,7 +2,7 @@ module Api
   module V1
     class AuthController < Api::V1::BaseController
       skip_before_action :authenticate_user!,
-                         only: %i[login register refresh_token verify_email resend_verification logout]
+                         only: %i[login register logout]
 
       # POST /api/v1/auth/login
       def login
@@ -11,7 +11,6 @@ module Api
         if result[:success]
           render_success({
                            token: result[:tokens][:token],
-                           refresh_token: result[:tokens][:refresh_token],
                            user: result[:user]
                          }, result[:message])
         else
@@ -24,15 +23,10 @@ module Api
         result = Auth::AuthService.register(user_params)
 
         if result[:success]
-          # Send email verification (temporarily disabled for testing)
-          # user = User.find(result[:user][:id])
-          # EmailVerificationMailer.verification_email(user).deliver_now
-
           render_success({
                            token: result[:tokens][:token],
-                           refresh_token: result[:tokens][:refresh_token],
                            user: result[:user]
-                         }, 'Registration successful. Please check your email to verify your account.', :created)
+                         }, 'Registration successful.', :created)
         else
           render_error('Registration failed', :unprocessable_entity, result[:errors])
         end

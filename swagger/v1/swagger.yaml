@@ -19,10 +19,20 @@ servers:
 tags:
 - name: Authentication
   description: User authentication and email verification
+- name: Password Reset
+  description: Password reset functionality
 - name: Users
   description: User management
 - name: Products
   description: Product catalog management
+- name: Product Reviews
+  description: Product review management
+- name: Product Wishlists
+  description: Product wishlist management
+- name: Product Comparisons
+  description: Product comparison functionality
+- name: Product Recommendations
+  description: Product recommendation system
 - name: Brands
   description: Brand management
 - name: Categories
@@ -31,6 +41,22 @@ tags:
   description: Shopping cart operations
 - name: Orders
   description: Order management
+- name: Order Notifications
+  description: Order notification management
+- name: Payments
+  description: Payment processing
+- name: Payment Methods
+  description: Payment method management
+- name: Payment Histories
+  description: Payment history tracking
+- name: Stock Alerts
+  description: Stock alert management
+- name: Notifications
+  description: System notifications
+- name: Profile
+  description: User profile management
+- name: Addresses
+  description: User address management
 - name: Health
   description: System health checks
 
@@ -2048,6 +2074,93 @@ paths:
         '404':
           $ref: '#/components/responses/not_found'
 
+  /api/v1/orders/{id}/confirm:
+    post:
+      tags:
+        - Orders
+      summary: Confirm order (Admin only)
+      description: Confirm a pending order (Admin access required)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Order ID
+          example: 1
+      responses:
+        '200':
+          description: Order confirmed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          order:
+                            $ref: '#/components/schemas/order'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/orders/{id}/cancel:
+    post:
+      tags:
+        - Orders
+      summary: Cancel order (Admin only)
+      description: Cancel an order (Admin access required)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Order ID
+          example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for cancellation
+                  example: "Customer requested cancellation"
+      responses:
+        '200':
+          description: Order cancelled successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          order:
+                            $ref: '#/components/schemas/order'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
   /api/v1/orders/{order_id}/order_items:
     get:
       tags:
@@ -2624,15 +2737,89 @@ components:
           example: "+1234567890"
         status:
           type: string
-          enum: [pending, confirmed, shipped, delivered, cancelled]
+          enum: [pending, confirmed, shipped, delivered, cancelled, paid, payment_failed, refunded, partially_refunded]
           example: "pending"
         total_amount:
           type: number
           format: decimal
           example: 299.99
+        confirmed_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2024-01-15T11:30:00Z"
+        cancelled_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2024-01-15T12:30:00Z"
+        cancellation_reason:
+          type: string
+          nullable: true
+          example: "Customer requested cancellation"
         shipping_address:
           type: string
           example: "123 Main St, City, Country"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    stock_movement:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        product:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "iPhone 15"
+        movement_type:
+          type: string
+          enum: [sale, order_created, order_confirmed, damaged, expired, stolen, adjustment_out, purchase, order_cancelled, return, adjustment_in, stock_take, initial_stock, correction]
+          example: "sale"
+        quantity:
+          type: integer
+          example: -10
+        previous_quantity:
+          type: integer
+          example: 100
+        new_quantity:
+          type: integer
+          example: 90
+        quantity_change:
+          type: integer
+          example: -10
+        reason:
+          type: string
+          example: "Customer purchase"
+        reference:
+          type: string
+          nullable: true
+          example: "Order #123"
+        user:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "Admin User"
+        metadata:
+          type: object
+          example: {}
         created_at:
           type: string
           format: date-time
@@ -2695,6 +2882,227 @@ components:
           example:
           - "Email can't be blank"
           - "Password is too short"
+
+    product_review:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        product:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "iPhone 15"
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "John Doe"
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        title:
+          type: string
+          example: "Great product!"
+        content:
+          type: string
+          example: "This product exceeded my expectations..."
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+          example: "approved"
+        helpful_count:
+          type: integer
+          example: 12
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    product_wishlist:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "John Doe"
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              name:
+                type: string
+                example: "iPhone 15"
+              price:
+                type: number
+                format: decimal
+                example: 999.99
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    product_comparison:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "John Doe"
+        name:
+          type: string
+          example: "Smartphone Comparison"
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              name:
+                type: string
+                example: "iPhone 15"
+              price:
+                type: number
+                format: decimal
+                example: 999.99
+        is_public:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    user_address:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "John Doe"
+        address_type:
+          type: string
+          enum: [shipping, billing]
+          example: "shipping"
+        street_address:
+          type: string
+          example: "123 Main St"
+        city:
+          type: string
+          example: "New York"
+        state:
+          type: string
+          example: "NY"
+        postal_code:
+          type: string
+          example: "10001"
+        country:
+          type: string
+          example: "United States"
+        is_default:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: "John Doe"
+        notification_type:
+          type: string
+          enum: [order_update, stock_alert, promotion, system]
+          example: "order_update"
+        title:
+          type: string
+          example: "Order Status Update"
+        message:
+          type: string
+          example: "Your order #123 has been shipped"
+        is_read:
+          type: boolean
+          example: false
+        metadata:
+          type: object
+          example: {"order_id": 123}
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
 
     success_response:
       type: object
@@ -2774,6 +3182,832 @@ components:
               properties:
                 status:
                   example: "internal_server_error"
+
+  /api/v1/stock_movements:
+    get:
+      tags:
+        - Stock Movements
+      summary: Get stock movements (Admin only)
+      description: Get all stock movements with filtering options (Admin access required)
+      parameters:
+        - name: product_id
+          in: query
+          schema:
+            type: integer
+          description: Filter by product ID
+        - name: movement_type
+          in: query
+          schema:
+            type: string
+            enum: [sale, order_created, order_confirmed, damaged, expired, stolen, adjustment_out, purchase, order_cancelled, return, adjustment_in, stock_take, initial_stock, correction]
+          description: Filter by movement type
+        - name: user_id
+          in: query
+          schema:
+            type: integer
+          description: Filter by user ID
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by start date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by end date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Items per page
+      responses:
+        '200':
+          description: Stock movements retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          movements:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/stock_movement'
+                          pagination:
+                            $ref: '#/components/schemas/pagination'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/v1/stock_movements/{id}:
+    get:
+      tags:
+        - Stock Movements
+      summary: Get stock movement details (Admin only)
+      description: Get detailed information about a specific stock movement (Admin access required)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Stock movement ID
+      responses:
+        '200':
+          description: Stock movement retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          movement:
+                            $ref: '#/components/schemas/stock_movement'
+                          product:
+                            $ref: '#/components/schemas/product'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/stock_movements/adjust:
+    post:
+      tags:
+        - Stock Movements
+      summary: Adjust stock manually (Admin only)
+      description: Manually adjust stock quantity for a product (Admin access required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+                - new_quantity
+                - reason
+              properties:
+                product_id:
+                  type: integer
+                  description: Product ID to adjust
+                  example: 1
+                new_quantity:
+                  type: integer
+                  minimum: 0
+                  description: New stock quantity
+                  example: 150
+                reason:
+                  type: string
+                  description: Reason for adjustment
+                  example: "Stock take adjustment"
+      responses:
+        '200':
+          description: Stock adjusted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          movement:
+                            $ref: '#/components/schemas/stock_movement'
+                          product:
+                            $ref: '#/components/schemas/product'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/stock_movements/bulk_adjust:
+    post:
+      tags:
+        - Stock Movements
+      summary: Bulk adjust stock (Admin only)
+      description: Adjust stock for multiple products at once (Admin access required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - adjustments
+              properties:
+                adjustments:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - new_quantity
+                    properties:
+                      product_id:
+                        type: integer
+                        description: Product ID to adjust
+                        example: 1
+                      new_quantity:
+                        type: integer
+                        minimum: 0
+                        description: New stock quantity
+                        example: 150
+                      reason:
+                        type: string
+                        description: Reason for adjustment
+                        example: "Stock take adjustment"
+      responses:
+        '200':
+          description: Bulk adjustment completed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          results:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                product_id:
+                                  type: integer
+                                movement:
+                                  $ref: '#/components/schemas/stock_movement'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '422':
+          $ref: '#/components/responses/validation_error'
+
+  /api/v1/stock_movements/statistics:
+    get:
+      tags:
+        - Stock Movements
+      summary: Get stock movement statistics (Admin only)
+      description: Get statistics about stock movements (Admin access required)
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by start date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by end date
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          statistics:
+                            type: object
+                            properties:
+                              total_movements:
+                                type: integer
+                              inbound_movements:
+                                type: integer
+                              outbound_movements:
+                                type: integer
+                              total_inbound_quantity:
+                                type: integer
+                              total_outbound_quantity:
+                                type: integer
+                              net_quantity_change:
+                                type: integer
+                              movements_by_type:
+                                type: object
+                              movements_by_product:
+                                type: object
+                              recent_movements:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/stock_movement'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/v1/products/{id}/stock_movements:
+    get:
+      tags:
+        - Products
+      summary: Get product stock movements (Admin only)
+      description: Get stock movement history for a specific product (Admin access required)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Product ID
+        - name: movement_type
+          in: query
+          schema:
+            type: string
+            enum: [sale, order_created, order_confirmed, damaged, expired, stolen, adjustment_out, purchase, order_cancelled, return, adjustment_in, stock_take, initial_stock, correction]
+          description: Filter by movement type
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by start date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by end date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Items per page
+      responses:
+        '200':
+          description: Product stock movements retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/success_response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          movements:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/stock_movement'
+                          pagination:
+                            $ref: '#/components/schemas/pagination'
+                          summary:
+                            type: object
+                            properties:
+                              total_inbound:
+                                type: integer
+                              total_outbound:
+                                type: integer
+                              net_change:
+                                type: integer
+                              movement_count:
+                                type: integer
+                              last_movement:
+                                $ref: '#/components/schemas/stock_movement'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  # Password Reset endpoints
+  /api/v1/password_reset/request:
+    post:
+      tags:
+        - Password Reset
+      summary: Request password reset
+      description: Send password reset email to user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User email address
+      responses:
+        '200':
+          description: Password reset email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          description: User not found
+        '422':
+          description: Validation error
+
+  /api/v1/password_reset/reset:
+    post:
+      tags:
+        - Password Reset
+      summary: Reset password
+      description: Reset user password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - password
+                - password_confirmation
+              properties:
+                token:
+                  type: string
+                  description: Password reset token
+                password:
+                  type: string
+                  minLength: 6
+                  description: New password
+                password_confirmation:
+                  type: string
+                  description: Password confirmation
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Invalid or expired token
+        '422':
+          description: Validation error
+
+  /api/v1/password_reset/validate:
+    get:
+      tags:
+        - Password Reset
+      summary: Validate reset token
+      description: Check if password reset token is valid
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Password reset token
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Invalid or expired token
+
+  /api/v1/password_reset/statistics:
+    get:
+      tags:
+        - Password Reset
+      summary: Get password reset statistics (Admin only)
+      description: Get password reset statistics and analytics
+      security:
+        - bearer_auth: []
+      responses:
+        '200':
+          description: Password reset statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_requests:
+                    type: integer
+                  successful_resets:
+                    type: integer
+                  failed_attempts:
+                    type: integer
+                  recent_activity:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/v1/password_reset/cleanup:
+    delete:
+      tags:
+        - Password Reset
+      summary: Cleanup expired tokens (Admin only)
+      description: Remove expired password reset tokens
+      security:
+        - bearer_auth: []
+      responses:
+        '200':
+          description: Cleanup completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  cleaned_count:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+
+  # Auth revoke_all_tokens endpoint
+  /api/v1/auth/revoke_all_tokens:
+    post:
+      tags:
+        - Authentication
+      summary: Revoke all user tokens (Admin only)
+      description: Revoke all JWT tokens for a user (Admin access required)
+      security:
+        - bearer_auth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: integer
+                  description: User ID to revoke tokens for
+      responses:
+        '200':
+          description: All tokens revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  revoked_count:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  # Product Reviews endpoints
+  /api/v1/product_reviews/{id}:
+    get:
+      tags:
+        - Product Reviews
+      summary: Get product review
+      description: Get a specific product review by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Review ID
+      responses:
+        '200':
+          description: Product review details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/product_review'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+    patch:
+      tags:
+        - Product Reviews
+      summary: Update product review
+      description: Update a product review (owner or admin only)
+      security:
+        - bearer_auth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Review ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  description: Product rating (1-5 stars)
+                title:
+                  type: string
+                  maxLength: 255
+                  description: Review title
+                content:
+                  type: string
+                  description: Review content
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/product_review'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Not review owner or admin
+        '404':
+          $ref: '#/components/responses/not_found'
+        '422':
+          description: Validation error
+
+    delete:
+      tags:
+        - Product Reviews
+      summary: Delete product review
+      description: Delete a product review (owner or admin only)
+      security:
+        - bearer_auth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Review ID
+      responses:
+        '200':
+          description: Review deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Not review owner or admin
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/product_reviews/{id}/approve:
+    post:
+      tags:
+        - Product Reviews
+      summary: Approve product review (Admin only)
+      description: Approve a pending product review
+      security:
+        - bearer_auth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Review ID
+      responses:
+        '200':
+          description: Review approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/product_review'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/product_reviews/{id}/reject:
+    post:
+      tags:
+        - Product Reviews
+      summary: Reject product review (Admin only)
+      description: Reject a pending product review
+      security:
+        - bearer_auth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Review ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for rejection
+      responses:
+        '200':
+          description: Review rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/product_review'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/product_reviews/{id}/mark_helpful:
+    post:
+      tags:
+        - Product Reviews
+      summary: Mark review as helpful
+      description: Mark a product review as helpful
+      security:
+        - bearer_auth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Review ID
+      responses:
+        '200':
+          description: Review marked as helpful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  helpful_count:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '404':
+          $ref: '#/components/responses/not_found'
+
+  /api/v1/product_reviews/pending_reviews:
+    get:
+      tags:
+        - Product Reviews
+      summary: Get pending reviews (Admin only)
+      description: Get all pending product reviews awaiting approval
+      security:
+        - bearer_auth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Items per page
+      responses:
+        '200':
+          description: List of pending reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reviews:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/product_review'
+                  pagination:
+                    $ref: '#/components/schemas/pagination'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          description: Forbidden - Admin access required
 
 security:
 - bearer_auth: []

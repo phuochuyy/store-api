@@ -1,12 +1,12 @@
 module Api
   module V1
     class OrdersController < Api::V1::BaseController
-      before_action :set_order, only: %i[show update destroy]
-      before_action :admin_only!, only: %i[index update destroy]
+      before_action :set_order, only: %i[show update destroy confirm cancel ship deliver]
+      before_action :admin_only!, only: %i[index update destroy confirm cancel ship deliver]
 
       # GET /api/v1/orders (Admin only)
       def index
-        @orders = Order.includes(:order_items, :phones).recent
+        @orders = Order.includes(:order_items, :products).recent
         @orders = @orders.page(params[:page]).per(params[:per_page] || 10)
 
         render json: {
@@ -36,13 +36,13 @@ module Api
           # Add order items from params
           if params[:order_items].present?
             params[:order_items].each do |item_params|
-              phone = Phone.find(item_params[:phone_id])
+              product = Product.find(item_params[:product_id])
               @order.order_items.create!(
-                phone: phone,
+                product: product,
                 quantity: item_params[:quantity].to_i,
-                unit_price: phone.price
+                unit_price: product.price
               )
-              phone.reduce_stock(item_params[:quantity].to_i)
+              product.reduce_stock(item_params[:quantity].to_i)
             end
             @order.update_total_amount
           end
@@ -78,6 +78,100 @@ module Api
         render json: { message: 'Order deleted successfully' }
       end
 
+      # POST /api/v1/orders/:id/confirm (Admin only)
+      def confirm
+        result = Orders::OrderConfirmationService.confirm_order(@order, current_user)
+
+        if result[:success]
+          render json: {
+            success: true,
+            message: 'Order confirmed successfully',
+            data: {
+              order: order_serializer(@order.reload)
+            }
+          }
+        else
+          render json: {
+            success: false,
+            error: result[:error],
+            details: result[:details]
+          }, status: :unprocessable_entity
+        end
+      end
+
+      # POST /api/v1/orders/:id/cancel (Admin only)
+      def cancel
+        result = Orders::OrderCancellationService.cancel_order(@order, current_user, params[:reason])
+
+        if result[:success]
+          render json: {
+            success: true,
+            message: 'Order cancelled successfully',
+            data: {
+              order: order_serializer(@order.reload)
+            }
+          }
+        else
+          render json: {
+            success: false,
+            error: result[:error],
+            details: result[:details]
+          }, status: :unprocessable_entity
+        end
+      end
+
+      # POST /api/v1/orders/:id/ship (Admin only)
+      def ship
+        result = Orders::ShippingService.ship_order(
+          @order,
+          current_user,
+          tracking_number: params[:tracking_number],
+          carrier: params[:carrier]
+        )
+
+        if result[:success]
+          render json: {
+            success: true,
+            message: 'Order shipped successfully',
+            data: {
+              order: order_serializer(@order.reload)
+            }
+          }
+        else
+          render json: {
+            success: false,
+            error: result[:error],
+            details: result[:details]
+          }, status: :unprocessable_entity
+        end
+      end
+
+      # POST /api/v1/orders/:id/deliver (Admin only)
+      def deliver
+        result = Orders::DeliveryService.deliver_order(
+          @order,
+          current_user,
+          delivery_notes: params[:delivery_notes],
+          delivery_signature: params[:delivery_signature]
+        )
+
+        if result[:success]
+          render json: {
+            success: true,
+            message: 'Order delivered successfully',
+            data: {
+              order: order_serializer(@order.reload)
+            }
+          }
+        else
+          render json: {
+            success: false,
+            error: result[:error],
+            details: result[:details]
+          }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def set_order
@@ -96,6 +190,14 @@ module Api
           customer_phone: order.customer_phone,
           total_amount: order.total_amount,
           status: order.status,
+          tracking_number: order.tracking_number,
+          carrier: order.carrier,
+          shipped_at: order.shipped_at,
+          delivered_at: order.delivered_at,
+          delivery_notes: order.delivery_notes,
+          delivery_signature: order.delivery_signature,
+          shipping_status: order.shipping_status,
+          estimated_delivery_date: order.estimated_delivery_date,
           created_at: order.created_at,
           updated_at: order.updated_at
         }
@@ -104,10 +206,10 @@ module Api
       def order_item_serializer(item)
         {
           id: item.id,
-          phone: {
-            id: item.phone.id,
-            name: item.phone.name,
-            price: item.phone.price
+          product: {
+            id: item.product.id,
+            name: item.product.name,
+            price: item.product.price
           },
           quantity: item.quantity,
           unit_price: item.unit_price,

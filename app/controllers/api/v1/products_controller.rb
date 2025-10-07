@@ -116,6 +116,30 @@ module Api
           per_page: params[:per_page] || 10
         }
       end
+
+      # GET /api/v1/products/:id/stock_movements
+      def stock_movements
+        filters = {
+          movement_type: params[:movement_type],
+          user_id: params[:user_id],
+          start_date: params[:start_date],
+          end_date: params[:end_date]
+        }
+
+        result = StockTracking::StockTrackingService.get_stock_history(
+          @product,
+          filters.merge(
+            page: params[:page] || 1,
+            per_page: params[:per_page] || 20
+          )
+        )
+
+        if result[:success]
+          render_success(result, 'Product stock movements retrieved successfully')
+        else
+          render_error(result[:error], :unprocessable_entity, result[:details])
+        end
+      end
     end
   end
 end

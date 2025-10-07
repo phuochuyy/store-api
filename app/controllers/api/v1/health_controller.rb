@@ -1,7 +1,11 @@
 module Api
   module V1
-    class HealthController < Api::V1::BaseController
-      skip_before_action :authenticate_user!, only: [:index]
+    class HealthController < ApplicationController
+      include Api::ErrorHandling
+      include Common::Pagination
+      include Common::Filtering
+
+      before_action :set_default_response_format
 
       # GET /api/v1/health
       def index
@@ -16,10 +20,18 @@ module Api
 
       private
 
+      def set_default_response_format
+        request.format = :json
+        response.headers['Content-Type'] = 'application/json'
+      end
+
       def database_status
-        ActiveRecord::Base.connection.active? ? 'connected' : 'disconnected'
+        # Try to execute a simple query to check database connectivity
+        ActiveRecord::Base.connection.execute('SELECT 1')
+        'connected'
       rescue StandardError => e
-        "error: #{e.message}"
+        Rails.logger.error "Database connection error: #{e.message}"
+        'disconnected'
       end
     end
   end

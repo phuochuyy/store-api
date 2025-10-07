@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_28_231819) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_30_030417) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -119,7 +119,32 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_231819) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.datetime "confirmed_at"
+    t.datetime "cancelled_at"
+    t.text "cancellation_reason"
+    t.string "tracking_number"
+    t.string "carrier"
+    t.datetime "shipped_at"
+    t.datetime "delivered_at"
+    t.text "delivery_notes"
+    t.string "delivery_signature"
     t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "password_reset_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token", null: false
+    t.datetime "expires_at", null: false
+    t.boolean "used", default: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_password_reset_tokens_on_expires_at"
+    t.index ["token"], name: "index_password_reset_tokens_on_token", unique: true
+    t.index ["user_id", "used"], name: "index_password_reset_tokens_on_user_id_and_used"
+    t.index ["user_id"], name: "index_password_reset_tokens_on_user_id"
   end
 
   create_table "payment_histories", force: :cascade do |t|
@@ -182,6 +207,54 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_231819) do
     t.index ["transaction_id"], name: "index_payments_on_transaction_id", unique: true
   end
 
+  create_table "product_comparisons", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "product_ids", null: false
+    t.string "name", limit: 255
+    t.json "comparison_data"
+    t.boolean "is_public", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_public"], name: "index_product_comparisons_on_is_public"
+    t.index ["user_id", "created_at"], name: "index_product_comparisons_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_product_comparisons_on_user_id"
+  end
+
+  create_table "product_reviews", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "product_id", null: false
+    t.integer "rating", null: false
+    t.string "title", limit: 255
+    t.text "content"
+    t.integer "helpful_count", default: 0
+    t.boolean "verified_purchase", default: false
+    t.string "status", default: "pending"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_product_reviews_on_created_at"
+    t.index ["product_id", "rating"], name: "index_product_reviews_on_product_id_and_rating"
+    t.index ["product_id", "status"], name: "index_product_reviews_on_product_id_and_status"
+    t.index ["product_id"], name: "index_product_reviews_on_product_id"
+    t.index ["user_id", "product_id"], name: "index_product_reviews_on_user_id_and_product_id", unique: true
+    t.index ["user_id"], name: "index_product_reviews_on_user_id"
+  end
+
+  create_table "product_wishlists", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "product_id", null: false
+    t.text "notes"
+    t.integer "priority", default: 0
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["priority"], name: "index_product_wishlists_on_priority"
+    t.index ["product_id"], name: "index_product_wishlists_on_product_id"
+    t.index ["user_id", "created_at"], name: "index_product_wishlists_on_user_id_and_created_at"
+    t.index ["user_id", "product_id"], name: "index_product_wishlists_on_user_id_and_product_id", unique: true
+    t.index ["user_id"], name: "index_product_wishlists_on_user_id"
+  end
+
   create_table "products", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -219,6 +292,48 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_231819) do
     t.index ["triggered_at"], name: "index_stock_alerts_on_triggered_at"
   end
 
+  create_table "stock_movements", force: :cascade do |t|
+    t.bigint "product_id", null: false
+    t.string "movement_type", null: false
+    t.integer "quantity", null: false
+    t.integer "previous_quantity", null: false
+    t.integer "new_quantity", null: false
+    t.string "reason"
+    t.string "reference_type"
+    t.integer "reference_id"
+    t.json "metadata"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_stock_movements_on_created_at"
+    t.index ["movement_type", "created_at"], name: "index_stock_movements_on_movement_type_and_created_at"
+    t.index ["product_id", "created_at"], name: "index_stock_movements_on_product_id_and_created_at"
+    t.index ["product_id"], name: "index_stock_movements_on_product_id"
+    t.index ["reference_type", "reference_id"], name: "index_stock_movements_on_reference_type_and_reference_id"
+    t.index ["user_id"], name: "index_stock_movements_on_user_id"
+  end
+
+  create_table "user_addresses", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "address_type", default: "shipping"
+    t.string "full_name", null: false
+    t.string "phone"
+    t.string "address_line1", null: false
+    t.string "address_line2"
+    t.string "city", null: false
+    t.string "state"
+    t.string "postal_code", null: false
+    t.string "country", default: "VN", null: false
+    t.boolean "is_default", default: false
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_user_addresses_on_created_at"
+    t.index ["user_id", "address_type"], name: "index_user_addresses_on_user_id_and_address_type"
+    t.index ["user_id", "is_default"], name: "index_user_addresses_on_user_id_and_is_default"
+    t.index ["user_id"], name: "index_user_addresses_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
@@ -228,7 +343,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_231819) do
     t.datetime "updated_at", null: false
     t.datetime "email_verified_at"
     t.string "email_verification_token"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "phone"
+    t.date "date_of_birth"
+    t.string "gender"
+    t.string "avatar"
+    t.text "bio"
+    t.json "preferences", default: {}
+    t.index ["date_of_birth"], name: "index_users_on_date_of_birth"
     t.index ["email_verification_token"], name: "index_users_on_email_verification_token", unique: true
+    t.index ["phone"], name: "index_users_on_phone"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -240,10 +365,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_28_231819) do
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "users"
+  add_foreign_key "password_reset_tokens", "users"
   add_foreign_key "payment_histories", "payments"
   add_foreign_key "payments", "orders"
   add_foreign_key "payments", "payment_methods"
+  add_foreign_key "product_comparisons", "users"
+  add_foreign_key "product_reviews", "products"
+  add_foreign_key "product_reviews", "users"
+  add_foreign_key "product_wishlists", "products"
+  add_foreign_key "product_wishlists", "users"
   add_foreign_key "products", "brands"
   add_foreign_key "products", "categories"
   add_foreign_key "stock_alerts", "products"
+  add_foreign_key "stock_movements", "products"
+  add_foreign_key "stock_movements", "users"
+  add_foreign_key "user_addresses", "users"
 end

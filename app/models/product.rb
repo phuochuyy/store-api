@@ -57,14 +57,31 @@ class Product < ApplicationRecord
     stock_quantity.positive?
   end
 
-  def reduce_stock(quantity)
-    self.stock_quantity -= quantity
-    save!
+  def reduce_stock(quantity, reason: nil, user: nil, reference: nil)
+    return false if quantity <= 0
+    return false if stock_quantity < quantity
+
+    StockTracking::StockTrackingService.track_stock_movement(
+      product: self,
+      movement_type: 'order_created',
+      quantity: -quantity,
+      reason: reason,
+      user: user,
+      reference: reference
+    )
   end
 
-  def add_stock(quantity)
-    self.stock_quantity += quantity
-    save!
+  def add_stock(quantity, reason: nil, user: nil, reference: nil)
+    return false if quantity <= 0
+
+    StockTracking::StockTrackingService.track_stock_movement(
+      product: self,
+      movement_type: 'order_cancelled',
+      quantity: quantity,
+      reason: reason,
+      user: user,
+      reference: reference
+    )
   end
 
   # Stock alert methods
@@ -131,5 +148,111 @@ class Product < ApplicationRecord
 
   def trigger_stock_alert(alert_type, threshold = nil)
     StockAlert.create_alert_for_product(self, alert_type, threshold)
+  end
+
+  # Stock tracking methods
+  def stock_movement_history(options = {})
+    StockMovement.get_movements_for_product(self, options)
+  end
+
+  def stock_movement_summary(start_date = nil, end_date = nil)
+    StockMovement.get_movement_summary(self, start_date, end_date)
+  end
+
+  def recent_stock_movements(limit = 10)
+    stock_movements.recent.limit(limit)
+  end
+
+  def stock_movements_by_type(movement_type)
+    stock_movements.by_movement_type(movement_type)
+  end
+
+  # Review and rating methods
+  def approved_reviews
+    product_reviews.approved
+  end
+
+  def average_rating
+    @average_rating ||= approved_reviews.average(:rating)&.round(1) || 0
+  end
+
+  def total_reviews
+    @total_reviews ||= approved_reviews.count
+  end
+
+  def rating_distribution
+    @rating_distribution ||= approved_reviews.group(:rating).count.transform_keys(&:to_i)
+  end
+
+  def verified_reviews
+    approved_reviews.verified_purchases
+  end
+
+  def recent_reviews(limit = 5)
+    approved_reviews.recent.limit(limit)
+  end
+
+  def most_helpful_reviews(limit = 5)
+    approved_reviews.most_helpful.limit(limit)
+  end
+
+  def update_rating_stats
+    # This method can be called to refresh cached rating statistics
+    @average_rating = nil
+    @total_reviews = nil
+    @rating_distribution = nil
+  end
+
+  # Wishlist methods
+  def wishlist_count
+    product_wishlists.count
+  end
+
+  def in_user_wishlist?(user)
+    return false unless user
+
+    product_wishlists.exists?(user: user)
+  end
+
+  def add_to_wishlist(user, notes: nil, priority: 0)
+    return false unless user
+    return false if in_user_wishlist?(user)
+
+    product_wishlists.create!(user: user, notes: notes, priority: priority)
+  end
+
+  def remove_from_wishlist(user)
+    return false unless user
+
+    wishlist_item = product_wishlists.find_by(user: user)
+    wishlist_item&.destroy
+  end
+
+  # Recommendation methods
+  def similar_products(limit = 5)
+    Product.joins(:category, :brand)
+           .where(category: category)
+           .where.not(id: id)
+           .where.not(brand: brand)
+           .limit(limit)
+  end
+
+  def products_from_same_brand(limit = 5)
+    Product.joins(:brand)
+           .where(brand: brand)
+           .where.not(id: id)
+           .limit(limit)
+  end
+
+  def products_from_same_category(limit = 5)
+    Product.joins(:category)
+           .where(category: category)
+           .where.not(id: id)
+           .limit(limit)
+  end
+
+  def recommended_products(limit = 5)
+    # Simple recommendation based on category and brand
+    similar_products(limit)
   end
 end

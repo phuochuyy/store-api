@@ -9,7 +9,7 @@ OrderItem.destroy_all
 Rails.logger.debug 'Creating demo data...'
 
 # Create Users
-User.create!(
+admin_user = User.create!(
   name: 'Admin User',
   email: 'admin@example.com',
   password: 'password',
@@ -17,13 +17,17 @@ User.create!(
   role: 'admin'
 )
 
-User.create!(
+customer_user = User.create!(
   name: 'John Customer',
   email: 'customer@example.com',
   password: 'password',
   password_confirmation: 'password',
   role: 'customer'
 )
+
+# Generate verification tokens for demo users
+admin_user.generate_email_verification_token!
+customer_user.generate_email_verification_token!
 
 Rails.logger.debug { "Created #{User.count} users" }
 

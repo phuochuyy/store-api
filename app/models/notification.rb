@@ -38,9 +38,25 @@ class Notification < ApplicationRecord
   enum :notification_type, {
     stock_alert: 'stock_alert',
     order_update: 'order_update',
+    order_confirmed: 'order_confirmed',
+    order_cancelled: 'order_cancelled',
+    order_shipped: 'order_shipped',
+    order_delivered: 'order_delivered',
+    order_confirmed_admin: 'order_confirmed_admin',
+    order_cancelled_admin: 'order_cancelled_admin',
+    order_shipped_admin: 'order_shipped_admin',
+    order_delivered_admin: 'order_delivered_admin',
     payment_update: 'payment_update',
     system_alert: 'system_alert',
-    promotion: 'promotion'
+    promotion: 'promotion',
+    review_approved: 'review_approved',
+    review_rejected: 'review_rejected',
+    wishlist_reminder: 'wishlist_reminder',
+    price_drop: 'price_drop',
+    product_available: 'product_available',
+    password_reset_success: 'password_reset_success',
+    account_deactivated: 'account_deactivated',
+    order_reminder: 'order_reminder'
   }
 
   # Scopes

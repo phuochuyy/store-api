@@ -87,4 +87,73 @@ class Order < ApplicationRecord
   def payment_methods_used
     payments.joins(:payment_method).pluck('payment_methods.name').uniq
   end
+
+  # Order status validation methods
+  def can_be_confirmed?
+    pending?
+  end
+
+  def can_be_cancelled?
+    %w[pending confirmed shipped].include?(status)
+  end
+
+  def can_be_shipped?
+    confirmed?
+  end
+
+  def can_be_delivered?
+    shipped?
+  end
+
+  # Order confirmation methods
+  def confirmed?
+    status == 'confirmed'
+  end
+
+  def cancelled?
+    status == 'cancelled'
+  end
+
+  def shipped?
+    status == 'shipped'
+  end
+
+  def delivered?
+    status == 'delivered'
+  end
+
+  # Shipping and delivery methods
+  def has_tracking_info?
+    tracking_number.present? || carrier.present?
+  end
+
+  def tracking_info
+    {
+      tracking_number: tracking_number,
+      carrier: carrier,
+      shipped_at: shipped_at
+    }
+  end
+
+  def delivery_info
+    {
+      delivered_at: delivered_at,
+      delivery_notes: delivery_notes,
+      delivery_signature: delivery_signature
+    }
+  end
+
+  def shipping_status
+    return 'not_shipped' unless shipped?
+    return 'delivered' if delivered?
+
+    'in_transit'
+  end
+
+  def estimated_delivery_date
+    return nil unless shipped_at
+
+    # Simple estimation: 3-5 business days after shipping
+    shipped_at + 4.days
+  end
 end
