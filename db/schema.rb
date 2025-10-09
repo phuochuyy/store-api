@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_30_030417) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_09_042235) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -79,6 +79,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_30_030417) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "jwt_blacklist_tokens", force: :cascade do |t|
+    t.string "token", null: false
+    t.datetime "expires_at", null: false
+    t.string "user_id"
+    t.string "token_type", default: "access"
+    t.text "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_jwt_blacklist_tokens_on_expires_at"
+    t.index ["token"], name: "index_jwt_blacklist_tokens_on_token", unique: true
+    t.index ["token_type"], name: "index_jwt_blacklist_tokens_on_token_type"
+    t.index ["user_id"], name: "index_jwt_blacklist_tokens_on_user_id"
   end
 
   create_table "notifications", force: :cascade do |t|

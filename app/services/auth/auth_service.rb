@@ -56,9 +56,16 @@ module Auth
         }
       end
 
-      def logout(token = nil)
+      def logout(token = nil, user_id: nil)
         # Blacklist the current token if provided
-        JwtBlacklistService.blacklist_token(token) if token.present?
+        if token.present?
+          JwtBlacklistService.blacklist_token(
+            token,
+            user_id: user_id,
+            token_type: 'access',
+            reason: 'User logout'
+          )
+        end
 
         { success: true, message: 'Logged out successfully' }
       end

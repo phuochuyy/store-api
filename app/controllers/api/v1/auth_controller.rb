@@ -47,7 +47,8 @@ module Api
       # POST /api/v1/auth/logout
       def logout
         token = extract_token
-        result = Auth::AuthService.logout(token)
+        user_id = current_user&.id
+        result = Auth::AuthService.logout(token, user_id: user_id)
         render_success(nil, result[:message])
       end
 

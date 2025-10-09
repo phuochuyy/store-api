@@ -11,7 +11,6 @@ gem 'tzinfo-data', platforms: %i[windows jruby]
 # Authentication
 gem 'bcrypt', '~> 3.1.7'
 gem 'jwt'
-gem 'redis', '~> 5.0'
 
 # API
 gem 'active_model_serializers'

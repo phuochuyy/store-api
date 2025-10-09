@@ -19,6 +19,9 @@ This project demonstrates:
 - PostgreSQL 15
 - Docker & Docker Compose
 
+### 🆕 **What's New - No Redis Required!**
+This project has been updated to work without Redis, using PostgreSQL for JWT token blacklisting instead. This makes it simpler to deploy and maintain.
+
 ### Installation
 
 1. **Clone the repository**
@@ -44,7 +47,7 @@ This project demonstrates:
 
 ## 🔐 **Authentication**
 
-Simple JWT authentication:
+Simple JWT authentication with database-backed token blacklisting:
 
 ```bash
 # Login
@@ -56,6 +59,34 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 curl -H "Authorization: Bearer YOUR_TOKEN" \
   http://localhost:3000/api/v1/products
 ```
+
+## 🛠️ **JWT Token Management**
+
+The project uses PostgreSQL for JWT token blacklisting instead of Redis. This provides better persistence and simpler deployment.
+
+### Available Rake Tasks
+
+```bash
+# Clean up expired tokens
+docker compose exec web bundle exec rails jwt:cleanup
+
+# Show blacklist statistics
+docker compose exec web bundle exec rails jwt:stats
+
+# Test blacklist functionality
+docker compose exec web bundle exec rails jwt:test
+
+# Clear all tokens (use with caution)
+docker compose exec web bundle exec rails jwt:clear_all
+```
+
+### Token Blacklisting Features
+
+- **Automatic Cleanup**: Expired tokens are automatically excluded from blacklist checks
+- **User Tracking**: Tokens are associated with user IDs for better management
+- **Token Types**: Support for different token types (access, refresh, password_reset, email_verification)
+- **Reason Tracking**: Log reasons for token blacklisting
+- **Statistics**: Get detailed statistics about blacklisted tokens
 
 ## 📋 **Core Features**
 
