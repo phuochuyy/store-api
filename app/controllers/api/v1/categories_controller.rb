@@ -5,7 +5,7 @@ module Api
 
       # GET /api/v1/categories
       def index
-        @categories = Category.includes(:phones)
+        @categories = Category.includes(:products)
         @categories = @categories.page(params[:page]).per(params[:per_page] || 10)
 
         data = {
@@ -25,7 +25,7 @@ module Api
       def show
         data = {
           category: category_serializer(@category),
-          phones: @category.phones.limit(10).map { |phone| phone_serializer(phone) }
+          products: @category.products.limit(10).map { |product| product_serializer(product) }
         }
 
         render_success(data, 'Category retrieved successfully')
@@ -88,18 +88,18 @@ module Api
           id: category.id,
           name: category.name,
           description: category.description,
-          phones_count: category.phones.count,
+          products_count: category.products.count,
           created_at: category.created_at,
           updated_at: category.updated_at
         }
       end
 
-      def phone_serializer(phone)
+      def product_serializer(product)
         {
-          id: phone.id,
-          name: phone.name,
-          price: phone.price,
-          stock_quantity: phone.stock_quantity
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          stock_quantity: product.stock_quantity
         }
       end
     end
