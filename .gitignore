@@ -76,5 +76,14 @@ package-lock.json
 *.sql
 backup_*.sql
 
-# Ignore Makefile (optional - can be kept for convenience)
+# Ruby LSP files
+.ruby-lsp/
+.ruby-lsp.yml
+
+# Local development overrides
+docker-compose.override.yml
+
+# Keep Makefile for development convenience
 # Makefile
+
+DEVELOPMENT_COMMANDS.md
