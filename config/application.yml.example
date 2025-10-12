@@ -1,0 +1,53 @@
+# Application Configuration Example
+# Copy this file to application.yml and update the values
+
+default: &default
+  # Database
+  database_url: postgresql://postgres:password@localhost:5432/store_api_development
+  
+  # JWT Configuration
+  jwt_secret_key: your_jwt_secret_key_here
+  jwt_expiration_time: 24.hours
+  jwt_refresh_expiration_time: 7.days
+  
+  # API Configuration
+  api_version: v1
+  api_host: localhost
+  api_port: 3000
+  
+  # Pagination
+  default_per_page: 10
+  max_per_page: 100
+  
+  # File Upload
+  max_file_size: 10.megabytes
+  allowed_file_types: ['image/jpeg', 'image/png', 'image/gif']
+  
+  # Email Configuration
+  smtp_host: smtp.gmail.com
+  smtp_port: 587
+  smtp_username: your_email@gmail.com
+  smtp_password: your_app_password
+  
+  # CORS
+  allowed_origins: http://localhost:3000,http://localhost:3001
+  
+  # Rate Limiting
+  rate_limit_requests: 100
+  rate_limit_period: 1.hour
+
+development:
+  <<: *default
+  log_level: debug
+  show_detailed_errors: true
+
+test:
+  <<: *default
+  database_url: postgresql://postgres:password@localhost:5432/store_api_test
+  log_level: warn
+
+production:
+  <<: *default
+  log_level: info
+  show_detailed_errors: false
+  force_ssl: true

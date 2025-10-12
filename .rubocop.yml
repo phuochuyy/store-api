@@ -1,6 +1,5 @@
-require:
+plugins:
   - rubocop-rails
-  - rubocop-rspec
 
 AllCops:
   NewCops: enable
@@ -27,13 +26,13 @@ Style/FrozenStringLiteralComment:
 Layout/LineLength:
   Max: 120
 
-Layout/MethodLength:
+Metrics/MethodLength:
   Max: 20
 
-Layout/AbcSize:
+Metrics/AbcSize:
   Max: 20
 
-Layout/ClassLength:
+Metrics/ClassLength:
   Max: 150
 
 Layout/EmptyLinesAroundBlockBody:

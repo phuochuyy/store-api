@@ -72,15 +72,9 @@ yarn-debug.log*
 # Ignore package-lock.json
 package-lock.json
 
-# Ignore documentation files (keep only README.md)
-CHANGELOG.md
-CONTRIBUTING.md
-API_DOCUMENTATION.md
-DEVELOPMENT_GUIDE.md
-SWAGGER_GUIDE.md
-USER_FEATURES_GUIDE.md
-PRODUCT_FEATURES_GUIDE.md
-SHIPPING_DELIVERY_GUIDE.md
-STOCK_TRACKING_GUIDE.md
-ORDER_CANCELLATION_GUIDE.md
-COMPREHENSIVE_DOCUMENTATION.md
+# Ignore backup files
+*.sql
+backup_*.sql
+
+# Ignore Makefile (optional - can be kept for convenience)
+# Makefile

@@ -1,45 +1,52 @@
-# See https://docs.docker.com/engine/reference/builder/#dockerignore-file for more about ignoring files.
+# Docker ignore file
+# Files and directories to exclude from Docker build context
 
-# Ignore git directory.
-/.git/
-/.gitignore
+# Git
+.git
+.gitignore
 
-# Ignore bundler config.
-/.bundle
+# Documentation
+README.md
+DISCOUNT_SYSTEM.md
+*.md
 
-# Ignore all environment files.
-/.env*
+# Development files
+.env
+.env.*
+config/application.yml
+config/application.yml.example
 
-# Ignore all default key files.
-/config/master.key
-/config/credentials/*.key
+# Logs
+log/*
+!log/.keep
 
-# Ignore all logfiles and tempfiles.
-/log/*
-/tmp/*
-!/log/.keep
-!/tmp/.keep
+# Temporary files
+tmp/*
+!tmp/.keep
 
-# Ignore pidfiles, but keep the directory.
-/tmp/pids/*
-!/tmp/pids/.keep
+# Test files
+test/
+spec/
+coverage/
 
-# Ignore storage (uploaded files in development and any SQLite databases).
-/storage/*
-!/storage/.keep
-/tmp/storage/*
-!/tmp/storage/.keep
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Ignore CI service files.
-/.github
+# OS files
+.DS_Store
+Thumbs.db
 
-# Ignore Kamal files.
-/config/deploy*.yml
-/.kamal
+# Node modules (if any)
+node_modules/
+yarn-error.log
+package-lock.json
 
-# Ignore development files
-/.devcontainer
+# Build artifacts
+vendor/bundle
+.bundle
 
-# Ignore Docker-related files
-/.dockerignore
-/Dockerfile*
+# Local development
+docker-compose.override.yml

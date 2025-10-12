@@ -21,7 +21,7 @@ gem 'rswag-ui'
 # Pagination
 gem 'kaminari'
 
-group :development, :test do
+group :development do
   # Debugging
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
   # API Documentation
@@ -30,25 +30,8 @@ group :development, :test do
   gem 'brakeman', require: false
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
-  gem 'rubocop-rspec', require: false
-end
-
-group :development do
   # Development Tools
   gem 'better_errors'               # Better error pages
   gem 'binding_of_caller'           # Better debugging
 end
 
-group :test do
-  # Testing Framework
-  gem 'factory_bot_rails'
-  gem 'faker'
-  gem 'rspec-rails'
-  # Test Coverage
-  gem 'simplecov', require: false
-  gem 'simplecov-lcov', require: false
-  # API Testing
-  gem 'rspec_junit_formatter'
-  # Database Cleaner
-  gem 'database_cleaner-active_record'
-end
