@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_09_042235) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_09_050006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -81,6 +81,49 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_09_042235) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "coupons", force: :cascade do |t|
+    t.string "code", null: false
+    t.bigint "discount_id", null: false
+    t.bigint "user_id"
+    t.bigint "order_id"
+    t.datetime "used_at"
+    t.decimal "discount_amount", precision: 10, scale: 2
+    t.string "status", default: "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_coupons_on_code", unique: true
+    t.index ["discount_id", "user_id"], name: "index_coupons_on_discount_id_and_user_id"
+    t.index ["discount_id"], name: "index_coupons_on_discount_id"
+    t.index ["order_id"], name: "index_coupons_on_order_id"
+    t.index ["status"], name: "index_coupons_on_status"
+    t.index ["used_at"], name: "index_coupons_on_used_at"
+    t.index ["user_id"], name: "index_coupons_on_user_id"
+  end
+
+  create_table "discounts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.string "discount_type", null: false
+    t.decimal "value", precision: 10, scale: 2, null: false
+    t.decimal "minimum_amount", precision: 10, scale: 2, default: "0.0"
+    t.decimal "maximum_discount", precision: 10, scale: 2
+    t.integer "usage_limit"
+    t.integer "used_count", default: 0
+    t.datetime "start_date"
+    t.datetime "end_date"
+    t.boolean "is_active", default: true
+    t.string "code", null: false
+    t.json "conditions"
+    t.string "applies_to", default: "all"
+    t.text "applies_to_ids"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_discounts_on_code", unique: true
+    t.index ["discount_type"], name: "index_discounts_on_discount_type"
+    t.index ["is_active"], name: "index_discounts_on_is_active"
+    t.index ["start_date", "end_date"], name: "index_discounts_on_start_date_and_end_date"
+  end
+
   create_table "jwt_blacklist_tokens", force: :cascade do |t|
     t.string "token", null: false
     t.datetime "expires_at", null: false
@@ -142,6 +185,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_09_042235) do
     t.datetime "delivered_at"
     t.text "delivery_notes"
     t.string "delivery_signature"
+    t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0"
+    t.string "discount_code"
+    t.bigint "discount_id"
+    t.index ["discount_code"], name: "index_orders_on_discount_code"
+    t.index ["discount_id"], name: "index_orders_on_discount_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
@@ -284,6 +332,27 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_09_042235) do
     t.index ["category_id"], name: "index_products_on_category_id"
   end
 
+  create_table "promotions", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.string "promotion_type", null: false
+    t.json "conditions"
+    t.json "benefits"
+    t.datetime "start_date"
+    t.datetime "end_date"
+    t.boolean "is_active", default: true
+    t.integer "usage_limit"
+    t.integer "used_count", default: 0
+    t.string "priority", default: "normal"
+    t.boolean "stackable", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_promotions_on_is_active"
+    t.index ["priority"], name: "index_promotions_on_priority"
+    t.index ["promotion_type"], name: "index_promotions_on_promotion_type"
+    t.index ["start_date", "end_date"], name: "index_promotions_on_start_date_and_end_date"
+  end
+
   create_table "stock_alerts", force: :cascade do |t|
     t.bigint "product_id", null: false
     t.string "alert_type", null: false
@@ -375,9 +444,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_09_042235) do
   add_foreign_key "cart_items", "carts"
   add_foreign_key "cart_items", "products"
   add_foreign_key "carts", "users"
+  add_foreign_key "coupons", "discounts"
+  add_foreign_key "coupons", "orders"
+  add_foreign_key "coupons", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
+  add_foreign_key "orders", "discounts"
   add_foreign_key "orders", "users"
   add_foreign_key "password_reset_tokens", "users"
   add_foreign_key "payment_histories", "payments"

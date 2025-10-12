@@ -5,6 +5,9 @@ Category.destroy_all
 Product.destroy_all
 Order.destroy_all
 OrderItem.destroy_all
+Discount.destroy_all
+Coupon.destroy_all
+Promotion.destroy_all
 
 Rails.logger.debug 'Creating demo data...'
 
@@ -244,3 +247,6 @@ Rails.logger.debug { "- Categories: #{Category.count}" }
 Rails.logger.debug { "- Products: #{Product.count}" }
 Rails.logger.debug { "- Orders: #{Order.count}" }
 Rails.logger.debug { "- Order Items: #{OrderItem.count}" }
+
+# Load discount and promotion seeds
+load Rails.root.join('db', 'seeds', 'discounts.rb')
