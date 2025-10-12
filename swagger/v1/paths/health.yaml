@@ -18,12 +18,13 @@ health:
                 message:
                   type: string
                   example: "Phone Store API is running"
-                version:
-                  type: string
-                  example: "1.0.0"
                 timestamp:
                   type: string
                   format: date-time
-                database:
+                  example: "2024-01-15T10:30:00Z"
+                version:
                   type: string
-                  example: "connected"
+                  example: "v1"
+                environment:
+                  type: string
+                  example: "development"

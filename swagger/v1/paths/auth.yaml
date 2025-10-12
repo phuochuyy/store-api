@@ -36,6 +36,10 @@ login:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/ErrorResponse'
+            example:
+              success: false
+              error: "Invalid email or password"
+              status: "unauthorized"
 
 register:
   post:
@@ -51,13 +55,12 @@ register:
           schema:
             type: object
             required:
-              - name
               - email
               - password
+              - password_confirmation
+              - first_name
+              - last_name
             properties:
-              name:
-                type: string
-                example: "John Doe"
               email:
                 type: string
                 format: email
@@ -65,16 +68,30 @@ register:
               password:
                 type: string
                 format: password
+                minLength: 6
                 example: "password123"
+              password_confirmation:
+                type: string
+                format: password
+                example: "password123"
+              first_name:
+                type: string
+                example: "John"
+              last_name:
+                type: string
+                example: "Doe"
+              phone:
+                type: string
+                example: "+1234567890"
     responses:
       '201':
-        description: Registration successful
+        description: User registered successfully
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/AuthResponse'
       '422':
-        description: Validation error
+        description: Validation errors
         content:
           application/json:
             schema:
@@ -100,13 +117,7 @@ me:
                   type: boolean
                   example: true
                 data:
-                  type: object
-                  properties:
-                    user:
-                      $ref: '../components/schemas.yaml#/User'
-                message:
-                  type: string
-                  example: "User information retrieved successfully"
+                  $ref: '../components/schemas.yaml#/User'
       '401':
         description: Unauthorized
         content:
@@ -119,7 +130,7 @@ logout:
     tags:
       - Authentication
     summary: User logout
-    description: Logout current user and invalidate token
+    description: Logout the current user and invalidate the JWT token
     security:
       - bearerAuth: []
     responses:
@@ -135,7 +146,7 @@ logout:
                   example: true
                 message:
                   type: string
-                  example: "Logout successful"
+                  example: "Logged out successfully"
       '401':
         description: Unauthorized
         content:

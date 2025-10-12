@@ -108,6 +108,7 @@ Rails.application.routes.draw do
 
   # API Documentation
   get '/api-docs', to: 'api_docs#index'
+  get '/api-docs/swagger.json', to: 'api_docs#swagger_json'
   get '/swagger/v1/swagger.yaml', to: 'api_docs#swagger_yaml'
   get '/swagger/v1/swagger.json', to: 'api_docs#swagger_json'
 
