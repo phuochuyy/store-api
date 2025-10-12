@@ -2013,6 +2013,819 @@ paths:
                     type: string
                     example: "Sales statistics retrieved successfully"
 
+  # Stock Alerts endpoints
+  /api/v1/stock_alerts:
+    get:
+      tags:
+        - Stock Alerts
+      summary: List stock alerts
+      description: Get a paginated list of stock alerts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Stock alerts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      stock_alerts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StockAlert'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message:
+                    type: string
+                    example: "Stock alerts retrieved successfully"
+
+  /api/v1/stock_alerts/{id}:
+    get:
+      tags:
+        - Stock Alerts
+      summary: Get stock alert by ID
+      description: Get detailed information about a specific stock alert
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Stock Alert ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Stock alert retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      stock_alert:
+                        $ref: '#/components/schemas/StockAlert'
+                  message:
+                    type: string
+                    example: "Stock alert retrieved successfully"
+
+    patch:
+      tags:
+        - Stock Alerts
+      summary: Update stock alert
+      description: Update stock alert information
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Stock Alert ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                threshold:
+                  type: integer
+                  example: 10
+                enabled:
+                  type: boolean
+                  example: true
+                notification_enabled:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Stock alert updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      stock_alert:
+                        $ref: '#/components/schemas/StockAlert'
+                  message:
+                    type: string
+                    example: "Stock alert updated successfully"
+
+    delete:
+      tags:
+        - Stock Alerts
+      summary: Delete stock alert
+      description: Delete a stock alert
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Stock Alert ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Stock alert deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Stock alert deleted successfully"
+
+  # Payment Methods endpoints
+  /api/v1/payment_methods:
+    get:
+      tags:
+        - Payment Methods
+      summary: List payment methods
+      description: Get a paginated list of payment methods
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Payment methods retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payment_methods:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PaymentMethod'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message:
+                    type: string
+                    example: "Payment methods retrieved successfully"
+
+    post:
+      tags:
+        - Payment Methods
+      summary: Create payment method
+      description: Create a new payment method (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - payment_type
+              properties:
+                name:
+                  type: string
+                  example: "Credit Card"
+                description:
+                  type: string
+                  example: "Visa, MasterCard, American Express"
+                payment_type:
+                  type: string
+                  enum: [credit_card, debit_card, bank_transfer, digital_wallet, cash_on_delivery]
+                  example: "credit_card"
+                processing_fee_percentage:
+                  type: number
+                  example: 2.5
+                processing_fee_fixed:
+                  type: number
+                  example: 0.30
+                enabled:
+                  type: boolean
+                  example: true
+      responses:
+        '201':
+          description: Payment method created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payment_method:
+                        $ref: '#/components/schemas/PaymentMethod'
+                  message:
+                    type: string
+                    example: "Payment method created successfully"
+
+  /api/v1/payment_methods/{id}:
+    get:
+      tags:
+        - Payment Methods
+      summary: Get payment method by ID
+      description: Get detailed information about a specific payment method
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment Method ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Payment method retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payment_method:
+                        $ref: '#/components/schemas/PaymentMethod'
+                  message:
+                    type: string
+                    example: "Payment method retrieved successfully"
+
+    patch:
+      tags:
+        - Payment Methods
+      summary: Update payment method
+      description: Update payment method information (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment Method ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Credit Card (Updated)"
+                description:
+                  type: string
+                  example: "Updated description"
+                processing_fee_percentage:
+                  type: number
+                  example: 3.0
+                enabled:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Payment method updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payment_method:
+                        $ref: '#/components/schemas/PaymentMethod'
+                  message:
+                    type: string
+                    example: "Payment method updated successfully"
+
+    delete:
+      tags:
+        - Payment Methods
+      summary: Delete payment method
+      description: Delete a payment method (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment Method ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Payment method deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Payment method deleted successfully"
+
+  /api/v1/payment_methods/{id}/stats:
+    get:
+      tags:
+        - Payment Methods
+      summary: Get payment method statistics
+      description: Get statistics for a specific payment method (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment Method ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Payment method statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      total_transactions:
+                        type: integer
+                        example: 150
+                      total_amount:
+                        type: number
+                        example: 25000.00
+                      average_transaction:
+                        type: number
+                        example: 166.67
+                      success_rate:
+                        type: number
+                        example: 98.5
+                  message:
+                    type: string
+                    example: "Payment method statistics retrieved successfully"
+
+  /api/v1/payment_methods/{id}/validate_config:
+    post:
+      tags:
+        - Payment Methods
+      summary: Validate payment method configuration
+      description: Validate payment method configuration (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment Method ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config:
+                  type: object
+                  example: {"api_key": "test_key", "merchant_id": "12345"}
+      responses:
+        '200':
+          description: Configuration validated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                        example: true
+                      message:
+                        type: string
+                        example: "Configuration is valid"
+                  message:
+                    type: string
+                    example: "Configuration validated successfully"
+
+  /api/v1/payment_methods/calculate_fees:
+    post:
+      tags:
+        - Payment Methods
+      summary: Calculate payment fees
+      description: Calculate fees for a payment method
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - payment_method_id
+                - amount
+              properties:
+                payment_method_id:
+                  type: integer
+                  example: 1
+                amount:
+                  type: number
+                  example: 100.00
+      responses:
+        '200':
+          description: Fees calculated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      base_amount:
+                        type: number
+                        example: 100.00
+                      processing_fee:
+                        type: number
+                        example: 2.80
+                      total_amount:
+                        type: number
+                        example: 102.80
+                  message:
+                    type: string
+                    example: "Fees calculated successfully"
+
+  # Payments endpoints
+  /api/v1/payments:
+    get:
+      tags:
+        - Payments
+      summary: List payments
+      description: Get a paginated list of payments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Payments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payments:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Payment'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+                  message:
+                    type: string
+                    example: "Payments retrieved successfully"
+
+    post:
+      tags:
+        - Payments
+      summary: Create payment
+      description: Create a new payment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_id
+                - payment_method_id
+                - amount
+              properties:
+                order_id:
+                  type: integer
+                  example: 1
+                payment_method_id:
+                  type: integer
+                  example: 1
+                amount:
+                  type: number
+                  example: 199.99
+                payment_reference:
+                  type: string
+                  example: "PAY_123456789"
+      responses:
+        '201':
+          description: Payment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+                    example: "Payment created successfully"
+
+  /api/v1/payments/{id}:
+    get:
+      tags:
+        - Payments
+      summary: Get payment by ID
+      description: Get detailed information about a specific payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Payment retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+                    example: "Payment retrieved successfully"
+
+    patch:
+      tags:
+        - Payments
+      summary: Update payment
+      description: Update payment information
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, processing, completed, failed, refunded]
+                  example: "completed"
+                payment_reference:
+                  type: string
+                  example: "PAY_123456789_UPDATED"
+      responses:
+        '200':
+          description: Payment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+                    example: "Payment updated successfully"
+
+    delete:
+      tags:
+        - Payments
+      summary: Delete payment
+      description: Delete a payment (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Payment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Payment deleted successfully"
+
+  /api/v1/payments/{id}/refund:
+    post:
+      tags:
+        - Payments
+      summary: Process refund
+      description: Process a refund for a payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refund_amount:
+                  type: number
+                  example: 50.00
+                reason:
+                  type: string
+                  example: "Customer requested refund"
+      responses:
+        '200':
+          description: Refund processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      refund:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          payment_id:
+                            type: integer
+                            example: 1
+                          refund_amount:
+                            type: number
+                            example: 50.00
+                          reason:
+                            type: string
+                            example: "Customer requested refund"
+                          status:
+                            type: string
+                            example: "processed"
+                  message:
+                    type: string
+                    example: "Refund processed successfully"
 components:
   securitySchemes:
     bearerAuth:
@@ -2394,6 +3207,114 @@ components:
           type: string
           example: "Login successful"
 
+    StockAlert:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 1
+        threshold:
+          type: integer
+          example: 10
+        current_stock:
+          type: integer
+          example: 5
+        enabled:
+          type: boolean
+          example: true
+        notification_enabled:
+          type: boolean
+          example: true
+        last_triggered_at:
+          type: string
+          format: date-time
+          nullable: true
+        product:
+          $ref: '#/components/schemas/Product'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Credit Card"
+        description:
+          type: string
+          example: "Visa, MasterCard, American Express"
+        payment_type:
+          type: string
+          enum: [credit_card, debit_card, bank_transfer, digital_wallet, cash_on_delivery]
+          example: "credit_card"
+        processing_fee_percentage:
+          type: number
+          example: 2.5
+        processing_fee_fixed:
+          type: number
+          example: 0.30
+        enabled:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        order_id:
+          type: integer
+          example: 1
+        payment_method_id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          example: 199.99
+        processing_fee:
+          type: number
+          example: 5.30
+        total_amount:
+          type: number
+          example: 205.29
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, refunded]
+          example: "completed"
+        payment_reference:
+          type: string
+          example: "PAY_123456789"
+        transaction_id:
+          type: string
+          nullable: true
+          example: "TXN_987654321"
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod'
+        order:
+          $ref: '#/components/schemas/Order'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
     ErrorResponse:
       type: object
       properties:

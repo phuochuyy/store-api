@@ -8,7 +8,9 @@ class ApiDocsController < ApplicationController
   end
 
   def swagger_json
-    send_file Rails.root.join('swagger/v1/swagger.json'), type: 'application/json', disposition: 'inline'
+    yaml_content = File.read(Rails.root.join('swagger/v1/swagger.yaml'))
+    json_content = YAML.load(yaml_content).to_json
+    render json: json_content
   end
 
   private
