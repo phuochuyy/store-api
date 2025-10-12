@@ -3,327 +3,158 @@ carts:
     tags:
       - Shopping Cart
     summary: Get user's cart
-    description: Retrieve current user's shopping cart
+    description: Get the current user's shopping cart
+    security:
+      - bearerAuth: []
     responses:
       '200':
         description: Cart retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-                        total_items:
-                          type: integer
-                          example: 5
-                        total_amount:
-                          type: number
-                          format: decimal
-                          example: 299.99
+                    cart:
+                      $ref: '../components/schemas.yaml#/Cart'
+                message:
+                  type: string
+                  example: "Cart retrieved successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
       - Shopping Cart
     summary: Create new cart
-    description: Create a new shopping cart for the user
+    description: Create a new shopping cart for the current user
+    security:
+      - bearerAuth: []
     responses:
       '201':
         description: Cart created successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
+                    cart:
+                      $ref: '../components/schemas.yaml#/Cart'
+                message:
+                  type: string
+                  example: "Cart created successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 cart_by_id:
-  get:
-    tags:
-      - Shopping Cart
-    summary: Get cart details
-    description: Get detailed information about a specific cart
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Cart ID
-        example: 1
-    responses:
-      '200':
-        description: Cart details retrieved successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-                        total_items:
-                          type: integer
-                        total_amount:
-                          type: number
-                          format: decimal
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-  put:
-    tags:
-      - Shopping Cart
-    summary: Update cart
-    description: Update cart information (e.g., status)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Cart ID
-        example: 1
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              cart:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    enum: [active, abandoned, completed]
-                    example: "abandoned"
-    responses:
-      '200':
-        description: Cart updated successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
   delete:
     tags:
       - Shopping Cart
     summary: Delete cart
     description: Delete a shopping cart
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Cart ID
         schema:
           type: integer
-        description: Cart ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Cart deleted successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      nullable: true
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Cart deleted successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
+        description: Cart not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 clear_cart:
   delete:
     tags:
       - Shopping Cart
     summary: Clear cart
-    description: Remove all items from the cart
+    description: Remove all items from a shopping cart
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Cart ID
         schema:
           type: integer
-        description: Cart ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Cart cleared successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Cart cleared successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-merge_carts:
-  post:
-    tags:
-      - Shopping Cart
-    summary: Merge carts
-    description: Merge guest cart with user cart after login
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - guest_session_id
-            properties:
-              guest_session_id:
-                type: string
-                description: Session ID of the guest cart
-                example: "abc123def456"
-    responses:
-      '200':
-        description: Carts merged successfully
+        description: Cart not found
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-      '400':
-        $ref: '../components/responses.yaml#/bad_request'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 cart_items:
-  get:
-    tags:
-      - Shopping Cart
-    summary: Get cart items
-    description: Get all items in a specific cart
-    parameters:
-      - name: cart_id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Cart ID
-        example: 1
-    responses:
-      '200':
-        description: Cart items retrieved successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-                        total_items:
-                          type: integer
-                        total_amount:
-                          type: number
-                          format: decimal
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-
   post:
     tags:
       - Shopping Cart
     summary: Add item to cart
     description: Add a product to the shopping cart
+    security:
+      - bearerAuth: []
     parameters:
       - name: cart_id
         in: path
         required: true
+        description: Cart ID
         schema:
           type: integer
-        description: Cart ID
-        example: 1
+          example: 1
     requestBody:
       required: true
       content:
@@ -331,197 +162,125 @@ cart_items:
           schema:
             type: object
             required:
-              - cart_item
+              - product_id
+              - quantity
             properties:
-              cart_item:
-                type: object
-                required:
-                  - product_id
-                properties:
-                  product_id:
-                    type: integer
-                    description: Product ID to add to cart
-                    example: 1
-                  quantity:
-                    type: integer
-                    minimum: 1
-                    default: 1
-                    description: Quantity of the product
-                    example: 2
+              product_id:
+                type: integer
+                example: 1
+              quantity:
+                type: integer
+                example: 2
     responses:
       '201':
         description: Item added to cart successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
+                    cart_item:
+                      $ref: '../components/schemas.yaml#/CartItem'
+                message:
+                  type: string
+                  example: "Item added to cart successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-cart_item_by_id:
-  get:
-    tags:
-      - Shopping Cart
-    summary: Get cart item
-    description: Get details of a specific cart item
-    parameters:
-      - name: cart_id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Cart ID
-        example: 1
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Cart item ID
-        example: 1
-    responses:
-      '200':
-        description: Cart item retrieved successfully
+        description: Unauthorized
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        cart_item:
-                          $ref: '../components/schemas.yaml#/cart_item'
-                        product:
-                          $ref: '../components/schemas.yaml#/product'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
-  put:
+cart_item_by_id:
+  patch:
     tags:
       - Shopping Cart
     summary: Update cart item
     description: Update quantity of a cart item
+    security:
+      - bearerAuth: []
     parameters:
-      - name: cart_id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Cart ID
-        example: 1
       - name: id
         in: path
         required: true
+        description: Cart Item ID
         schema:
           type: integer
-        description: Cart item ID
-        example: 1
+          example: 1
     requestBody:
       required: true
       content:
         application/json:
           schema:
             type: object
-            required:
-              - cart_item
             properties:
-              cart_item:
-                type: object
-                required:
-                  - quantity
-                properties:
-                  quantity:
-                    type: integer
-                    minimum: 0
-                    description: New quantity (0 to remove item)
-                    example: 3
+              quantity:
+                type: integer
+                example: 3
     responses:
       '200':
         description: Cart item updated successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+                    cart_item:
+                      $ref: '../components/schemas.yaml#/CartItem'
+                message:
+                  type: string
+                  example: "Cart item updated successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Cart item not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
       - Shopping Cart
     summary: Remove cart item
-    description: Remove a specific item from the cart
+    description: Remove an item from the shopping cart
+    security:
+      - bearerAuth: []
     parameters:
-      - name: cart_id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Cart ID
-        example: 1
       - name: id
         in: path
         required: true
+        description: Cart Item ID
         schema:
           type: integer
-        description: Cart item ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Cart item removed successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        cart:
-                          $ref: '../components/schemas.yaml#/cart'
-                        cart_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/cart_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Cart item removed successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
+        description: Cart item not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'

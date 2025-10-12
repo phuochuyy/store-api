@@ -2,53 +2,62 @@ discounts:
   get:
     tags:
       - Discounts
-    summary: Get all discounts
-    description: Retrieve all discounts with pagination
+    summary: List discounts
+    description: Get a paginated list of discounts
+    security:
+      - bearerAuth: []
     parameters:
       - name: page
         in: query
+        description: Page number
+        required: false
         schema:
           type: integer
           default: 1
-        description: Page number for pagination
       - name: per_page
         in: query
+        description: Number of items per page
+        required: false
         schema:
           type: integer
           default: 10
-        description: Number of items per page
-      - name: is_active
-        in: query
-        schema:
-          type: boolean
-        description: Filter by active status
     responses:
       '200':
         description: Discounts retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        discounts:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/discount'
-                        pagination:
-                          $ref: '../components/schemas.yaml#/pagination'
+                    discounts:
+                      type: array
+                      items:
+                        $ref: '../components/schemas.yaml#/Discount'
+                    pagination:
+                      $ref: '../components/schemas.yaml#/Pagination'
+                message:
+                  type: string
+                  example: "Discounts retrieved successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
       - Discounts
-    summary: Create new discount
-    description: Create a new discount (Admin access required)
+    summary: Create discount
+    description: Create a new discount (Admin only)
+    security:
+      - bearerAuth: []
     requestBody:
       required: true
       content:
@@ -56,383 +65,201 @@ discounts:
           schema:
             type: object
             required:
-              - discount
+              - name
+              - discount_type
+              - discount_value
             properties:
-              discount:
-                type: object
-                required:
-                  - name
-                  - discount_type
-                  - discount_value
-                properties:
-                  name:
-                    type: string
-                    example: "Summer Sale"
-                  description:
-                    type: string
-                    example: "20% off all items"
-                  discount_type:
-                    type: string
-                    enum: [percentage, fixed_amount]
-                    example: "percentage"
-                  discount_value:
-                    type: number
-                    format: decimal
-                    example: 20.0
-                  minimum_amount:
-                    type: number
-                    format: decimal
-                    example: 100.0
-                  maximum_discount:
-                    type: number
-                    format: decimal
-                    example: 50.0
-                  usage_limit:
-                    type: integer
-                    example: 100
-                  is_active:
-                    type: boolean
-                    example: true
-                  starts_at:
-                    type: string
-                    format: date-time
-                    example: "2024-06-01T00:00:00Z"
-                  expires_at:
-                    type: string
-                    format: date-time
-                    example: "2024-08-31T23:59:59Z"
+              name:
+                type: string
+                example: "Summer Sale"
+              description:
+                type: string
+                example: "20% off all products"
+              discount_type:
+                type: string
+                enum: [percentage, fixed_amount]
+                example: "percentage"
+              discount_value:
+                type: number
+                example: 20.0
+              minimum_amount:
+                type: number
+                example: 100.0
+              maximum_discount:
+                type: number
+                example: 50.0
+              start_date:
+                type: string
+                format: date-time
+              end_date:
+                type: string
+                format: date-time
     responses:
       '201':
         description: Discount created successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        discount:
-                          $ref: '../components/schemas.yaml#/discount'
+                    discount:
+                      $ref: '../components/schemas.yaml#/Discount'
+                message:
+                  type: string
+                  example: "Discount created successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
       '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Admin access required
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 discount_by_id:
   get:
     tags:
       - Discounts
-    summary: Get discount details
+    summary: Get discount by ID
     description: Get detailed information about a specific discount
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Discount ID
         schema:
           type: integer
-        description: Discount ID
-        example: 1
+          example: 1
     responses:
       '200':
-        description: Discount details retrieved successfully
+        description: Discount retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        discount:
-                          $ref: '../components/schemas.yaml#/discount'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+                    discount:
+                      $ref: '../components/schemas.yaml#/Discount'
+                message:
+                  type: string
+                  example: "Discount retrieved successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
+        description: Discount not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
-  put:
+  patch:
     tags:
       - Discounts
     summary: Update discount
-    description: Update discount information (Admin access required)
+    description: Update discount information (Admin only)
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Discount ID
         schema:
           type: integer
-        description: Discount ID
-        example: 1
+          example: 1
     requestBody:
       required: true
       content:
         application/json:
           schema:
             type: object
-            required:
-              - discount
             properties:
-              discount:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    example: "Summer Sale"
-                  description:
-                    type: string
-                    example: "20% off all items"
-                  discount_type:
-                    type: string
-                    enum: [percentage, fixed_amount]
-                    example: "percentage"
-                  discount_value:
-                    type: number
-                    format: decimal
-                    example: 20.0
-                  minimum_amount:
-                    type: number
-                    format: decimal
-                    example: 100.0
-                  maximum_discount:
-                    type: number
-                    format: decimal
-                    example: 50.0
-                  usage_limit:
-                    type: integer
-                    example: 100
-                  is_active:
-                    type: boolean
-                    example: true
-                  starts_at:
-                    type: string
-                    format: date-time
-                    example: "2024-06-01T00:00:00Z"
-                  expires_at:
-                    type: string
-                    format: date-time
-                    example: "2024-08-31T23:59:59Z"
+              name:
+                type: string
+                example: "Updated Summer Sale"
+              description:
+                type: string
+                example: "Updated description"
+              discount_value:
+                type: number
+                example: 25.0
+              active:
+                type: boolean
+                example: true
     responses:
       '200':
         description: Discount updated successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        discount:
-                          $ref: '../components/schemas.yaml#/discount'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+                    discount:
+                      $ref: '../components/schemas.yaml#/Discount'
+                message:
+                  type: string
+                  example: "Discount updated successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Discount not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
       - Discounts
     summary: Delete discount
-    description: Delete a specific discount (Admin access required)
+    description: Delete a discount (Admin only)
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Discount ID
         schema:
           type: integer
-        description: Discount ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Discount deleted successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      nullable: true
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Discount deleted successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-discount_stats:
-  get:
-    tags:
-      - Discounts
-    summary: Get discount statistics
-    description: Get usage statistics for a specific discount (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Discount ID
-        example: 1
-      - name: period
-        in: query
-        schema:
-          type: string
-          enum: [day, week, month, year]
-          default: month
-        description: Statistics period
-    responses:
-      '200':
-        description: Discount statistics retrieved successfully
+        description: Discount not found
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        discount:
-                          $ref: '../components/schemas.yaml#/discount'
-                        stats:
-                          type: object
-                          properties:
-                            total_usage:
-                              type: integer
-                            total_discount_amount:
-                              type: number
-                              format: decimal
-                            usage_by_period:
-                              type: object
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-generate_codes:
-  post:
-    tags:
-      - Discounts
-    summary: Generate discount codes
-    description: Generate multiple discount codes for a discount (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Discount ID
-        example: 1
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - count
-            properties:
-              count:
-                type: integer
-                minimum: 1
-                maximum: 100
-                example: 10
-              prefix:
-                type: string
-                example: "SUMMER"
-    responses:
-      '200':
-        description: Discount codes generated successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        codes:
-                          type: array
-                          items:
-                            type: string
-                        count:
-                          type: integer
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-validate_discount:
-  post:
-    tags:
-      - Discounts
-    summary: Validate discount code
-    description: Validate a discount code and get discount details
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - code
-            properties:
-              code:
-                type: string
-                example: "SUMMER20"
-              order_amount:
-                type: number
-                format: decimal
-                example: 150.00
-    responses:
-      '200':
-        description: Discount code validated successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        valid:
-                          type: boolean
-                        discount:
-                          $ref: '../components/schemas.yaml#/discount'
-                        discount_amount:
-                          type: number
-                          format: decimal
-                        final_amount:
-                          type: number
-                          format: decimal
-      '400':
-        $ref: '../components/responses.yaml#/bad_request'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
+              $ref: '../components/schemas.yaml#/ErrorResponse'

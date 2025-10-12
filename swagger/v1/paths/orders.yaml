@@ -2,50 +2,62 @@ orders:
   get:
     tags:
       - Orders
-    summary: Get all orders (Admin only)
-    description: Retrieve all orders with pagination (Admin access required)
+    summary: List orders
+    description: Get a paginated list of user's orders
+    security:
+      - bearerAuth: []
     parameters:
       - name: page
         in: query
+        description: Page number
+        required: false
         schema:
           type: integer
           default: 1
-        description: Page number for pagination
       - name: per_page
         in: query
+        description: Number of items per page
+        required: false
         schema:
           type: integer
           default: 10
-        description: Number of items per page
     responses:
       '200':
         description: Orders retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        orders:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/order'
-                        pagination:
-                          $ref: '../components/schemas.yaml#/pagination'
+                    orders:
+                      type: array
+                      items:
+                        $ref: '../components/schemas.yaml#/Order'
+                    pagination:
+                      $ref: '../components/schemas.yaml#/Pagination'
+                message:
+                  type: string
+                  example: "Orders retrieved successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
       - Orders
-    summary: Create new order
-    description: Create a new order with order items
+    summary: Create order
+    description: Create a new order from the current cart
+    security:
+      - bearerAuth: []
     requestBody:
       required: true
       content:
@@ -53,655 +65,292 @@ orders:
           schema:
             type: object
             required:
-              - order
-              - order_items
+              - customer_name
+              - customer_email
             properties:
-              order:
-                type: object
-                required:
-                  - customer_name
-                  - customer_email
-                  - customer_phone
-                properties:
-                  customer_name:
-                    type: string
-                    example: "John Doe"
-                  customer_email:
-                    type: string
-                    format: email
-                    example: "john@example.com"
-                  customer_phone:
-                    type: string
-                    example: "+1234567890"
-                  status:
-                    type: string
-                    enum: [pending, confirmed, shipped, delivered, cancelled]
-                    default: pending
-                    example: "pending"
-              order_items:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - product_id
-                    - quantity
-                  properties:
-                    product_id:
-                      type: integer
-                      example: 1
-                    quantity:
-                      type: integer
-                      minimum: 1
-                      example: 2
+              customer_name:
+                type: string
+                example: "John Doe"
+              customer_email:
+                type: string
+                format: email
+                example: "john@example.com"
+              customer_phone:
+                type: string
+                example: "1234567890"
     responses:
       '201':
         description: Order created successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
+                    order:
+                      $ref: '../components/schemas.yaml#/Order'
+                message:
+                  type: string
+                  example: "Order created successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 order_by_id:
   get:
     tags:
       - Orders
-    summary: Get order details
+    summary: Get order by ID
     description: Get detailed information about a specific order
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Order ID
         schema:
           type: integer
-        description: Order ID
-        example: 1
+          example: 1
     responses:
       '200':
-        description: Order details retrieved successfully
+        description: Order retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-                        order_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/order_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+                    order:
+                      $ref: '../components/schemas.yaml#/Order'
+                message:
+                  type: string
+                  example: "Order retrieved successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-  put:
-    tags:
-      - Orders
-    summary: Update order (Admin only)
-    description: Update order information (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - order
-            properties:
-              order:
-                type: object
-                properties:
-                  customer_name:
-                    type: string
-                    example: "John Doe"
-                  customer_email:
-                    type: string
-                    format: email
-                    example: "john@example.com"
-                  customer_phone:
-                    type: string
-                    example: "+1234567890"
-                  status:
-                    type: string
-                    enum: [pending, confirmed, shipped, delivered, cancelled]
-                    example: "confirmed"
-    responses:
-      '200':
-        description: Order updated successfully
+        description: Order not found
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-  delete:
-    tags:
-      - Orders
-    summary: Delete order (Admin only)
-    description: Delete a specific order (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    responses:
-      '200':
-        description: Order deleted successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      nullable: true
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 confirm_order:
   post:
     tags:
       - Orders
-    summary: Confirm order (Admin only)
-    description: Confirm a pending order (Admin access required)
+    summary: Confirm order
+    description: Confirm an order (Admin only)
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Order ID
         schema:
           type: integer
-        description: Order ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Order confirmed successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Order confirmed successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Order not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Admin access required
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 cancel_order:
   post:
     tags:
       - Orders
-    summary: Cancel order (Admin only)
-    description: Cancel an order (Admin access required)
+    summary: Cancel order
+    description: Cancel an order
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Order ID
         schema:
           type: integer
-        description: Order ID
-        example: 1
-    requestBody:
-      required: false
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              reason:
-                type: string
-                description: Reason for cancellation
-                example: "Customer requested cancellation"
+          example: 1
     responses:
       '200':
         description: Order cancelled successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Order cancelled successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-apply_discount:
-  post:
-    tags:
-      - Orders
-    summary: Apply discount to order
-    description: Apply a discount code to an order
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - discount_code
-            properties:
-              discount_code:
-                type: string
-                example: "SUMMER20"
-    responses:
-      '200':
-        description: Discount applied successfully
+        description: Order not found
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-remove_discount:
-  delete:
-    tags:
-      - Orders
-    summary: Remove discount from order
-    description: Remove applied discount from an order
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    responses:
-      '200':
-        description: Discount removed successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-order_items:
-  get:
-    tags:
-      - Orders
-    summary: Get order items
-    description: Get all items for a specific order
-    parameters:
-      - name: order_id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    responses:
-      '200':
-        description: Order items retrieved successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order_items:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/order_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-  post:
-    tags:
-      - Orders
-    summary: Add item to order
-    description: Add a new item to an existing order
-    parameters:
-      - name: order_id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - order_item
-            properties:
-              order_item:
-                type: object
-                required:
-                  - product_id
-                  - quantity
-                properties:
-                  product_id:
-                    type: integer
-                    example: 1
-                  quantity:
-                    type: integer
-                    minimum: 1
-                    example: 2
-    responses:
-      '201':
-        description: Order item added successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order_item:
-                          $ref: '../components/schemas.yaml#/order_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 order_item_by_id:
   get:
     tags:
       - Orders
-    summary: Get order item
-    description: Get details of a specific order item
+    summary: Get order item by ID
+    description: Get detailed information about a specific order item
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Order Item ID
         schema:
           type: integer
-        description: Order item ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Order item retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        order_item:
-                          $ref: '../components/schemas.yaml#/order_item'
-                        product:
-                          $ref: '../components/schemas.yaml#/product'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+                    order_item:
+                      $ref: '../components/schemas.yaml#/OrderItem'
+                message:
+                  type: string
+                  example: "Order item retrieved successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
+        description: Order item not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
-  put:
+  patch:
     tags:
       - Orders
     summary: Update order item
-    description: Update quantity or other details of an order item
+    description: Update order item information
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Order Item ID
         schema:
           type: integer
-        description: Order item ID
-        example: 1
+          example: 1
     requestBody:
       required: true
       content:
         application/json:
           schema:
             type: object
-            required:
-              - order_item
             properties:
-              order_item:
-                type: object
-                properties:
-                  quantity:
-                    type: integer
-                    minimum: 1
-                    example: 3
+              quantity:
+                type: integer
+                example: 3
     responses:
       '200':
         description: Order item updated successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        order_item:
-                          $ref: '../components/schemas.yaml#/order_item'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+                    order_item:
+                      $ref: '../components/schemas.yaml#/OrderItem'
+                message:
+                  type: string
+                  example: "Order item updated successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Order item not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
       - Orders
     summary: Delete order item
-    description: Remove an item from an order
+    description: Delete an order item
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Order Item ID
         schema:
           type: integer
-        description: Order item ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Order item deleted successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      nullable: true
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Order item deleted successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-
-ship_order:
-  post:
-    tags:
-      - Orders
-    summary: Ship order (Admin only)
-    description: Mark an order as shipped (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    responses:
-      '200':
-        description: Order shipped successfully
+        description: Order item not found
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-deliver_order:
-  post:
-    tags:
-      - Orders
-    summary: Deliver order (Admin only)
-    description: Mark an order as delivered (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Order ID
-        example: 1
-    responses:
-      '200':
-        description: Order delivered successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+              $ref: '../components/schemas.yaml#/ErrorResponse'

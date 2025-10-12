@@ -2,119 +2,62 @@ stock_alerts:
   get:
     tags:
       - Stock Alerts
-    summary: Get all stock alerts
-    description: Retrieve all stock alerts with pagination
+    summary: List stock alerts
+    description: Get a paginated list of stock alerts
+    security:
+      - bearerAuth: []
     parameters:
       - name: page
         in: query
+        description: Page number
+        required: false
         schema:
           type: integer
           default: 1
-        description: Page number for pagination
       - name: per_page
         in: query
-        schema:
-          type: integer
-          default: 20
         description: Number of items per page
-      - name: alert_type
-        in: query
-        schema:
-          type: string
-          enum: [low_stock, out_of_stock]
-        description: Filter by alert type
-      - name: is_active
-        in: query
-        schema:
-          type: boolean
-        description: Filter by active status
-      - name: product_id
-        in: query
+        required: false
         schema:
           type: integer
-        description: Filter by product ID
+          default: 10
     responses:
       '200':
         description: Stock alerts retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        stock_alerts:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/stock_alert'
-                        pagination:
-                          $ref: '../components/schemas.yaml#/pagination'
-                        summary:
-                          type: object
-                          properties:
-                            total_alerts:
-                              type: integer
-                            low_stock_count:
-                              type: integer
-                            out_of_stock_count:
-                              type: integer
-                            active_alerts:
-                              type: integer
+                    stock_alerts:
+                      type: array
+                      items:
+                        $ref: '../components/schemas.yaml#/StockAlert'
+                    pagination:
+                      $ref: '../components/schemas.yaml#/Pagination'
+                message:
+                  type: string
+                  example: "Stock alerts retrieved successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-
-stock_alert_by_id:
-  get:
-    tags:
-      - Stock Alerts
-    summary: Get stock alert details
-    description: Get detailed information about a specific stock alert
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Stock alert ID
-        example: 1
-    responses:
-      '200':
-        description: Stock alert details retrieved successfully
+        description: Unauthorized
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        stock_alert:
-                          $ref: '../components/schemas.yaml#/stock_alert'
-                        product:
-                          $ref: '../components/schemas.yaml#/product'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
-  put:
+  post:
     tags:
       - Stock Alerts
-    summary: Update stock alert
-    description: Update stock alert information (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Stock alert ID
-        example: 1
+    summary: Create stock alert
+    description: Create a new stock alert (Admin only)
+    security:
+      - bearerAuth: []
     requestBody:
       required: true
       content:
@@ -122,293 +65,184 @@ stock_alert_by_id:
           schema:
             type: object
             required:
-              - stock_alert
+              - product_id
+              - threshold
             properties:
-              stock_alert:
-                type: object
-                properties:
-                  threshold_quantity:
-                    type: integer
-                    minimum: 0
-                    description: New threshold quantity
-                    example: 15
-                  is_active:
-                    type: boolean
-                    description: Whether the alert is active
-                    example: true
+              product_id:
+                type: integer
+                example: 1
+              threshold:
+                type: integer
+                example: 10
+              enabled:
+                type: boolean
+                example: true
+              notification_enabled:
+                type: boolean
+                example: true
+    responses:
+      '201':
+        description: Stock alert created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    stock_alert:
+                      $ref: '../components/schemas.yaml#/StockAlert'
+                message:
+                  type: string
+                  example: "Stock alert created successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Admin access required
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
+
+stock_alert_by_id:
+  get:
+    tags:
+      - Stock Alerts
+    summary: Get stock alert by ID
+    description: Get detailed information about a specific stock alert
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Stock Alert ID
+        schema:
+          type: integer
+          example: 1
+    responses:
+      '200':
+        description: Stock alert retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    stock_alert:
+                      $ref: '../components/schemas.yaml#/StockAlert'
+                message:
+                  type: string
+                  example: "Stock alert retrieved successfully"
+      '404':
+        description: Stock alert not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
+
+  patch:
+    tags:
+      - Stock Alerts
+    summary: Update stock alert
+    description: Update stock alert information
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Stock Alert ID
+        schema:
+          type: integer
+          example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              threshold:
+                type: integer
+                example: 10
+              enabled:
+                type: boolean
+                example: true
+              notification_enabled:
+                type: boolean
+                example: true
     responses:
       '200':
         description: Stock alert updated successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        stock_alert:
-                          $ref: '../components/schemas.yaml#/stock_alert'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+                    stock_alert:
+                      $ref: '../components/schemas.yaml#/StockAlert'
+                message:
+                  type: string
+                  example: "Stock alert updated successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Stock alert not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
       - Stock Alerts
     summary: Delete stock alert
-    description: Delete a specific stock alert (Admin access required)
+    description: Delete a stock alert
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Stock Alert ID
         schema:
           type: integer
-        description: Stock alert ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Stock alert deleted successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      nullable: true
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Stock alert deleted successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-
-resolve_alert:
-  post:
-    tags:
-      - Stock Alerts
-    summary: Resolve stock alert
-    description: Mark a stock alert as resolved (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Stock alert ID
-        example: 1
-    responses:
-      '200':
-        description: Stock alert resolved successfully
+        description: Stock alert not found
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        stock_alert:
-                          $ref: '../components/schemas.yaml#/stock_alert'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-dismiss_alert:
-  post:
-    tags:
-      - Stock Alerts
-    summary: Dismiss stock alert
-    description: Dismiss a stock alert (Admin access required)
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        description: Stock alert ID
-        example: 1
-    responses:
-      '200':
-        description: Stock alert dismissed successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        stock_alert:
-                          $ref: '../components/schemas.yaml#/stock_alert'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-
-bulk_operation:
-  post:
-    tags:
-      - Stock Alerts
-    summary: Bulk operation on stock alerts (Admin only)
-    description: Perform bulk operations on multiple stock alerts (Admin access required)
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - operation
-              - alert_ids
-            properties:
-              operation:
-                type: string
-                enum: [resolve, dismiss, activate, deactivate]
-                example: resolve
-              alert_ids:
-                type: array
-                items:
-                  type: integer
-                example: [1, 2, 3]
-    responses:
-      '200':
-        description: Bulk operation completed successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        processed_count:
-                          type: integer
-                        results:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/stock_alert'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
-
-statistics:
-  get:
-    tags:
-      - Stock Alerts
-    summary: Get stock alert statistics (Admin only)
-    description: Get stock alert statistics and analytics (Admin access required)
-    responses:
-      '200':
-        description: Stock alert statistics retrieved successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        total_alerts:
-                          type: integer
-                        active_alerts:
-                          type: integer
-                        resolved_alerts:
-                          type: integer
-                        alerts_by_type:
-                          type: object
-                        critical_count:
-                          type: integer
-                        low_stock_count:
-                          type: integer
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-
-critical_alerts:
-  get:
-    tags:
-      - Stock Alerts
-    summary: Get critical stock alerts (Admin only)
-    description: Get all critical stock alerts (Admin access required)
-    responses:
-      '200':
-        description: Critical stock alerts retrieved successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        alerts:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/stock_alert'
-                        count:
-                          type: integer
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
-
-low_stock_alerts:
-  get:
-    tags:
-      - Stock Alerts
-    summary: Get low stock alerts (Admin only)
-    description: Get all low stock alerts (Admin access required)
-    responses:
-      '200':
-        description: Low stock alerts retrieved successfully
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        alerts:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/stock_alert'
-                        count:
-                          type: integer
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+              $ref: '../components/schemas.yaml#/ErrorResponse'

@@ -2,73 +2,62 @@ payments:
   get:
     tags:
       - Payments
-    summary: Get all payments (Admin only)
-    description: Retrieve all payments with pagination and filtering (Admin access required)
+    summary: List payments
+    description: Get a paginated list of payments
+    security:
+      - bearerAuth: []
     parameters:
       - name: page
         in: query
+        description: Page number
+        required: false
         schema:
           type: integer
           default: 1
-        description: Page number for pagination
       - name: per_page
         in: query
-        schema:
-          type: integer
-          default: 20
         description: Number of items per page
-      - name: status
-        in: query
-        schema:
-          type: string
-          enum: [pending, processing, completed, failed, refunded, partially_refunded]
-        description: Filter by payment status
-      - name: payment_method_id
-        in: query
+        required: false
         schema:
           type: integer
-        description: Filter by payment method ID
-      - name: start_date
-        in: query
-        schema:
-          type: string
-          format: date
-        description: Filter by start date (YYYY-MM-DD)
-      - name: end_date
-        in: query
-        schema:
-          type: string
-          format: date
-        description: Filter by end date (YYYY-MM-DD)
+          default: 10
     responses:
       '200':
         description: Payments retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        payments:
-                          type: array
-                          items:
-                            $ref: '../components/schemas.yaml#/payment'
-                        pagination:
-                          $ref: '../components/schemas.yaml#/pagination'
+                    payments:
+                      type: array
+                      items:
+                        $ref: '../components/schemas.yaml#/Payment'
+                    pagination:
+                      $ref: '../components/schemas.yaml#/Pagination'
+                message:
+                  type: string
+                  example: "Payments retrieved successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
       - Payments
-    summary: Process payment
-    description: Process a payment for an order
+    summary: Create payment
+    description: Create a new payment
+    security:
+      - bearerAuth: []
     requestBody:
       required: true
       content:
@@ -78,247 +67,246 @@ payments:
             required:
               - order_id
               - payment_method_id
+              - amount
             properties:
               order_id:
                 type: integer
-                description: Order ID to process payment for
                 example: 1
               payment_method_id:
                 type: integer
-                description: Payment method ID to use
                 example: 1
-              payment_data:
-                type: object
-                description: Additional payment data (e.g., card details, billing info)
-                example: {"card_token": "tok_1234567890", "billing_address": {...}}
+              amount:
+                type: number
+                example: 199.99
+              payment_reference:
+                type: string
+                example: "PAY_123456789"
     responses:
       '201':
-        description: Payment processed successfully
+        description: Payment created successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        payment:
-                          $ref: '../components/schemas.yaml#/payment'
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
+                    payment:
+                      $ref: '../components/schemas.yaml#/Payment'
+                message:
+                  type: string
+                  example: "Payment created successfully"
       '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 payment_by_id:
   get:
     tags:
       - Payments
-    summary: Get payment details
+    summary: Get payment by ID
     description: Get detailed information about a specific payment
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Payment ID
         schema:
           type: integer
-        description: Payment ID
-        example: 1
+          example: 1
     responses:
       '200':
-        description: Payment details retrieved successfully
+        description: Payment retrieved successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        payment:
-                          $ref: '../components/schemas.yaml#/payment'
-                        order:
-                          $ref: '../components/schemas.yaml#/order'
-                        payment_method:
-                          $ref: '../components/schemas.yaml#/payment_method'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+                    payment:
+                      $ref: '../components/schemas.yaml#/Payment'
+                message:
+                  type: string
+                  example: "Payment retrieved successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
+        description: Payment not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
-  put:
+  patch:
     tags:
       - Payments
-    summary: Update payment (Admin only)
-    description: Update payment information (Admin access required)
+    summary: Update payment
+    description: Update payment information
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Payment ID
         schema:
           type: integer
-        description: Payment ID
-        example: 1
+          example: 1
     requestBody:
       required: true
       content:
         application/json:
           schema:
             type: object
-            required:
-              - payment
             properties:
-              payment:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    enum: [pending, processing, completed, failed, refunded, partially_refunded]
-                    example: "completed"
-                  transaction_id:
-                    type: string
-                    example: "txn_1234567890"
-                  gateway_response:
-                    type: object
-                    example: {"id": "txn_1234567890", "status": "succeeded"}
-                  failure_reason:
-                    type: string
-                    example: "Insufficient funds"
-                  metadata:
-                    type: object
-                    example: {"gateway_fee": 2.90, "currency": "USD"}
+              status:
+                type: string
+                enum: [pending, processing, completed, failed, refunded]
+                example: "completed"
+              payment_reference:
+                type: string
+                example: "PAY_123456789_UPDATED"
     responses:
       '200':
         description: Payment updated successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
-                      type: object
-                      properties:
-                        payment:
-                          $ref: '../components/schemas.yaml#/payment'
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+                    payment:
+                      $ref: '../components/schemas.yaml#/Payment'
+                message:
+                  type: string
+                  example: "Payment updated successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Payment not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
       - Payments
-    summary: Delete payment (Admin only)
-    description: Delete a specific payment (Admin access required)
+    summary: Delete payment
+    description: Delete a payment (Admin only)
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Payment ID
         schema:
           type: integer
-        description: Payment ID
-        example: 1
+          example: 1
     responses:
       '200':
         description: Payment deleted successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      nullable: true
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
-      '403':
-        $ref: '../components/responses.yaml#/forbidden'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Payment deleted successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
+        description: Payment not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
 
 refund_payment:
   post:
     tags:
       - Payments
-    summary: Refund payment
+    summary: Process refund
     description: Process a refund for a payment
+    security:
+      - bearerAuth: []
     parameters:
       - name: id
         in: path
         required: true
+        description: Payment ID
         schema:
           type: integer
-        description: Payment ID
-        example: 1
+          example: 1
     requestBody:
       required: true
       content:
         application/json:
           schema:
             type: object
-            required:
-              - refund
             properties:
-              refund:
-                type: object
-                properties:
-                  amount:
-                    type: number
-                    format: decimal
-                    description: Refund amount (if not provided, full refund)
-                    example: 50.00
-                  reason:
-                    type: string
-                    description: Reason for refund
-                    example: "Customer requested refund"
+              refund_amount:
+                type: number
+                example: 50.00
+              reason:
+                type: string
+                example: "Customer requested refund"
     responses:
       '200':
         description: Refund processed successfully
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '../components/schemas.yaml#/success_response'
-                - type: object
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
                   properties:
-                    data:
+                    refund:
                       type: object
                       properties:
-                        payment:
-                          $ref: '../components/schemas.yaml#/payment'
-                        refund:
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                            amount:
-                              type: number
-                              format: decimal
-                            reason:
-                              type: string
-                            status:
-                              type: string
-                            created_at:
-                              type: string
-                              format: date-time
-      '401':
-        $ref: '../components/responses.yaml#/unauthorized'
+                        id:
+                          type: integer
+                          example: 1
+                        payment_id:
+                          type: integer
+                          example: 1
+                        refund_amount:
+                          type: number
+                          example: 50.00
+                        reason:
+                          type: string
+                          example: "Customer requested refund"
+                        status:
+                          type: string
+                          example: "processed"
+                message:
+                  type: string
+                  example: "Refund processed successfully"
       '404':
-        $ref: '../components/responses.yaml#/not_found'
-      '422':
-        $ref: '../components/responses.yaml#/validation_error'
+        description: Payment not found
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/ErrorResponse'
