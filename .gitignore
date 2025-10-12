@@ -83,7 +83,9 @@ backup_*.sql
 # Local development overrides
 docker-compose.override.yml
 
+# Development documentation (keep local only)
+DEVELOPMENT_COMMANDS.md
+docs/
+
 # Keep Makefile for development convenience
 # Makefile
-
-DEVELOPMENT_COMMANDS.md
