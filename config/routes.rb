@@ -38,10 +38,33 @@ Rails.application.routes.draw do
         member do
           post :confirm
           post :cancel
+          post :apply_discount
+          delete :remove_discount
         end
         resources :order_items
       end
       resources :order_items, only: %i[show update destroy]
+
+      # Discount & Promotion routes
+      resources :discounts do
+        member do
+          get :stats
+          post :generate_codes
+        end
+        collection do
+          post :validate
+        end
+      end
+
+      resources :promotions do
+        member do
+          get :stats
+          post :apply
+        end
+        collection do
+          get :applicable
+        end
+      end
 
       # Basic notifications
       resources :notifications, only: %i[index show update destroy] do
@@ -55,6 +78,31 @@ Rails.application.routes.draw do
 
       # Basic stock alerts
       resources :stock_alerts, only: %i[index show update destroy]
+
+      # Payment Methods
+      resources :payment_methods do
+        member do
+          get :stats
+          post :validate_config
+        end
+        collection do
+          post :calculate_fees
+        end
+      end
+
+      # Payments
+      resources :payments do
+        member do
+          post :refund
+        end
+      end
+
+      # Statistics
+      namespace :statistics do
+        get :dashboard
+        get :inventory
+        get :sales
+      end
     end
   end
 

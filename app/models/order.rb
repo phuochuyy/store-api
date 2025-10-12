@@ -14,9 +14,11 @@
 
 class Order < ApplicationRecord
   belongs_to :user, optional: true
+  belongs_to :discount, optional: true
   has_many :order_items, dependent: :destroy
   has_many :products, through: :order_items
   has_many :payments, dependent: :destroy
+  has_many :coupons, dependent: :nullify
 
   validates :customer_name, presence: true
   validates :customer_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
@@ -45,8 +47,57 @@ class Order < ApplicationRecord
   default_scope -> { order(created_at: :desc) }
 
   def update_total_amount
-    total = order_items.sum(&:total_price)
-    update_column(:total_amount, total)
+    subtotal = order_items.sum(&:total_price)
+    final_total = subtotal - (discount_amount || 0)
+    update_columns(total_amount: final_total, discount_amount: discount_amount || 0)
+  end
+
+  def subtotal_amount
+    order_items.sum(&:total_price)
+  end
+
+  def final_amount
+    subtotal_amount - (discount_amount || 0)
+  end
+
+  def has_discount?
+    discount_amount.present? && discount_amount > 0
+  end
+
+  def apply_discount(discount_code)
+    discount = Discount.available.find_by(code: discount_code.upcase)
+    return { success: false, error: 'Invalid discount code' } unless discount
+
+    # Check if discount applies to this order
+    return { success: false, error: 'Discount does not meet minimum amount requirement' } unless discount.meets_minimum_amount?(subtotal_amount)
+
+    # Check if discount applies to order items
+    return { success: false, error: 'Discount does not apply to items in this order' } unless discount.applies_to_items?(order_items)
+
+    # Calculate discount amount
+    calculated_discount = discount.calculate_discount(subtotal_amount)
+    return { success: false, error: 'No discount applicable' } if calculated_discount <= 0
+
+    # Apply discount
+    update!(
+      discount: discount,
+      discount_code: discount.code,
+      discount_amount: calculated_discount
+    )
+
+    update_total_amount
+
+    { success: true, discount_amount: calculated_discount, discount: discount }
+  end
+
+  def remove_discount
+    update!(
+      discount: nil,
+      discount_code: nil,
+      discount_amount: 0
+    )
+    update_total_amount
+    { success: true }
   end
 
   def total_items

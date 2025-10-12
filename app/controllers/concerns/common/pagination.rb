@@ -24,5 +24,12 @@ module Common
         has_prev_page: paginated_collection.prev_page.present?
       }
     end
+
+    def extract_pagination
+      {
+        page: params[:page]&.to_i || 1,
+        per_page: params[:per_page]&.to_i || 10
+      }
+    end
   end
 end

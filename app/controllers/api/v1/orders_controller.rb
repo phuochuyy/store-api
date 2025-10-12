@@ -1,7 +1,7 @@
 module Api
   module V1
     class OrdersController < Api::V1::BaseController
-      before_action :set_order, only: %i[show update destroy confirm cancel ship deliver]
+      before_action :set_order, only: %i[show update destroy confirm cancel ship deliver apply_discount remove_discount]
       before_action :admin_only!, only: %i[index update destroy confirm cancel ship deliver]
 
       # GET /api/v1/orders (Admin only)
@@ -215,6 +215,37 @@ module Api
           unit_price: item.unit_price,
           total_price: item.total_price
         }
+      end
+
+      # POST /api/v1/orders/:id/apply_discount
+      def apply_discount
+        discount_code = params[:discount_code]
+        return render_error('Discount code is required', :unprocessable_entity) if discount_code.blank?
+
+        result = @order.apply_discount(discount_code)
+
+        if result[:success]
+          render_success({
+            order: order_serializer(@order.reload),
+            discount: result[:discount],
+            discount_amount: result[:discount_amount]
+          }, 'Discount applied successfully')
+        else
+          render_error(result[:error], :unprocessable_entity)
+        end
+      end
+
+      # DELETE /api/v1/orders/:id/remove_discount
+      def remove_discount
+        result = @order.remove_discount
+
+        if result[:success]
+          render_success({
+            order: order_serializer(@order.reload)
+          }, 'Discount removed successfully')
+        else
+          render_error('Failed to remove discount', :unprocessable_entity)
+        end
       end
     end
   end
