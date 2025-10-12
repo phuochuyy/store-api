@@ -1,0 +1,209 @@
+brands:
+  get:
+    tags:
+      - Brands
+    summary: Get all brands
+    description: Retrieve all brands with pagination
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: Number of items per page
+    responses:
+      '200':
+        description: Brands retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        brands:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/brand'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+  post:
+    tags:
+      - Brands
+    summary: Create new brand
+    description: Create a new brand (Admin access required)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - brand
+            properties:
+              brand:
+                type: object
+                required:
+                  - name
+                properties:
+                  name:
+                    type: string
+                    example: "Apple"
+                  description:
+                    type: string
+                    example: "Technology company"
+    responses:
+      '201':
+        description: Brand created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        brand:
+                          $ref: '../components/schemas.yaml#/brand'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+brand_by_id:
+  get:
+    tags:
+      - Brands
+    summary: Get brand details
+    description: Get detailed information about a specific brand
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Brand ID
+        example: 1
+    responses:
+      '200':
+        description: Brand details retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        brand:
+                          $ref: '../components/schemas.yaml#/brand'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+  put:
+    tags:
+      - Brands
+    summary: Update brand
+    description: Update brand information (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Brand ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - brand
+            properties:
+              brand:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Apple"
+                  description:
+                    type: string
+                    example: "Technology company"
+    responses:
+      '200':
+        description: Brand updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        brand:
+                          $ref: '../components/schemas.yaml#/brand'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+  delete:
+    tags:
+      - Brands
+    summary: Delete brand
+    description: Delete a specific brand (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Brand ID
+        example: 1
+    responses:
+      '200':
+        description: Brand deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'

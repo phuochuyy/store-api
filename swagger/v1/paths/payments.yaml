@@ -1,0 +1,324 @@
+payments:
+  get:
+    tags:
+      - Payments
+    summary: Get all payments (Admin only)
+    description: Retrieve all payments with pagination and filtering (Admin access required)
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 20
+        description: Number of items per page
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [pending, processing, completed, failed, refunded, partially_refunded]
+        description: Filter by payment status
+      - name: payment_method_id
+        in: query
+        schema:
+          type: integer
+        description: Filter by payment method ID
+      - name: start_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: Filter by start date (YYYY-MM-DD)
+      - name: end_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: Filter by end date (YYYY-MM-DD)
+    responses:
+      '200':
+        description: Payments retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payments:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/payment'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+
+  post:
+    tags:
+      - Payments
+    summary: Process payment
+    description: Process a payment for an order
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - order_id
+              - payment_method_id
+            properties:
+              order_id:
+                type: integer
+                description: Order ID to process payment for
+                example: 1
+              payment_method_id:
+                type: integer
+                description: Payment method ID to use
+                example: 1
+              payment_data:
+                type: object
+                description: Additional payment data (e.g., card details, billing info)
+                example: {"card_token": "tok_1234567890", "billing_address": {...}}
+    responses:
+      '201':
+        description: Payment processed successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment:
+                          $ref: '../components/schemas.yaml#/payment'
+                        order:
+                          $ref: '../components/schemas.yaml#/order'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+payment_by_id:
+  get:
+    tags:
+      - Payments
+    summary: Get payment details
+    description: Get detailed information about a specific payment
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment ID
+        example: 1
+    responses:
+      '200':
+        description: Payment details retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment:
+                          $ref: '../components/schemas.yaml#/payment'
+                        order:
+                          $ref: '../components/schemas.yaml#/order'
+                        payment_method:
+                          $ref: '../components/schemas.yaml#/payment_method'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+  put:
+    tags:
+      - Payments
+    summary: Update payment (Admin only)
+    description: Update payment information (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - payment
+            properties:
+              payment:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [pending, processing, completed, failed, refunded, partially_refunded]
+                    example: "completed"
+                  transaction_id:
+                    type: string
+                    example: "txn_1234567890"
+                  gateway_response:
+                    type: object
+                    example: {"id": "txn_1234567890", "status": "succeeded"}
+                  failure_reason:
+                    type: string
+                    example: "Insufficient funds"
+                  metadata:
+                    type: object
+                    example: {"gateway_fee": 2.90, "currency": "USD"}
+    responses:
+      '200':
+        description: Payment updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment:
+                          $ref: '../components/schemas.yaml#/payment'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+  delete:
+    tags:
+      - Payments
+    summary: Delete payment (Admin only)
+    description: Delete a specific payment (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment ID
+        example: 1
+    responses:
+      '200':
+        description: Payment deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+refund_payment:
+  post:
+    tags:
+      - Payments
+    summary: Refund payment
+    description: Process a refund for a payment
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - refund
+            properties:
+              refund:
+                type: object
+                properties:
+                  amount:
+                    type: number
+                    format: decimal
+                    description: Refund amount (if not provided, full refund)
+                    example: 50.00
+                  reason:
+                    type: string
+                    description: Reason for refund
+                    example: "Customer requested refund"
+    responses:
+      '200':
+        description: Refund processed successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment:
+                          $ref: '../components/schemas.yaml#/payment'
+                        refund:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            amount:
+                              type: number
+                              format: decimal
+                            reason:
+                              type: string
+                            status:
+                              type: string
+                            created_at:
+                              type: string
+                              format: date-time
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'

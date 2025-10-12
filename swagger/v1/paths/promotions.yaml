@@ -1,0 +1,400 @@
+promotions:
+  get:
+    tags:
+      - Promotions
+    summary: Get all promotions
+    description: Retrieve all promotions with pagination
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: Number of items per page
+      - name: is_active
+        in: query
+        schema:
+          type: boolean
+        description: Filter by active status
+    responses:
+      '200':
+        description: Promotions retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        promotions:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/promotion'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+  post:
+    tags:
+      - Promotions
+    summary: Create new promotion
+    description: Create a new promotion (Admin access required)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - promotion
+            properties:
+              promotion:
+                type: object
+                required:
+                  - name
+                  - promotion_type
+                  - conditions
+                properties:
+                  name:
+                    type: string
+                    example: "Buy 2 Get 1 Free"
+                  description:
+                    type: string
+                    example: "Special promotion for selected items"
+                  promotion_type:
+                    type: string
+                    enum: [buy_x_get_y, bulk_discount, free_shipping]
+                    example: "buy_x_get_y"
+                  conditions:
+                    type: object
+                    example: {"min_quantity": 2, "discount_percentage": 50}
+                  is_active:
+                    type: boolean
+                    example: true
+                  starts_at:
+                    type: string
+                    format: date-time
+                    example: "2024-06-01T00:00:00Z"
+                  expires_at:
+                    type: string
+                    format: date-time
+                    example: "2024-08-31T23:59:59Z"
+    responses:
+      '201':
+        description: Promotion created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        promotion:
+                          $ref: '../components/schemas.yaml#/promotion'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+promotion_by_id:
+  get:
+    tags:
+      - Promotions
+    summary: Get promotion details
+    description: Get detailed information about a specific promotion
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Promotion ID
+        example: 1
+    responses:
+      '200':
+        description: Promotion details retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        promotion:
+                          $ref: '../components/schemas.yaml#/promotion'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+  put:
+    tags:
+      - Promotions
+    summary: Update promotion
+    description: Update promotion information (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Promotion ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - promotion
+            properties:
+              promotion:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Buy 2 Get 1 Free"
+                  description:
+                    type: string
+                    example: "Special promotion for selected items"
+                  promotion_type:
+                    type: string
+                    enum: [buy_x_get_y, bulk_discount, free_shipping]
+                    example: "buy_x_get_y"
+                  conditions:
+                    type: object
+                    example: {"min_quantity": 2, "discount_percentage": 50}
+                  is_active:
+                    type: boolean
+                    example: true
+                  starts_at:
+                    type: string
+                    format: date-time
+                    example: "2024-06-01T00:00:00Z"
+                  expires_at:
+                    type: string
+                    format: date-time
+                    example: "2024-08-31T23:59:59Z"
+    responses:
+      '200':
+        description: Promotion updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        promotion:
+                          $ref: '../components/schemas.yaml#/promotion'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+  delete:
+    tags:
+      - Promotions
+    summary: Delete promotion
+    description: Delete a specific promotion (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Promotion ID
+        example: 1
+    responses:
+      '200':
+        description: Promotion deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+promotion_stats:
+  get:
+    tags:
+      - Promotions
+    summary: Get promotion statistics
+    description: Get usage statistics for a specific promotion (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Promotion ID
+        example: 1
+      - name: period
+        in: query
+        schema:
+          type: string
+          enum: [day, week, month, year]
+          default: month
+        description: Statistics period
+    responses:
+      '200':
+        description: Promotion statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        promotion:
+                          $ref: '../components/schemas.yaml#/promotion'
+                        stats:
+                          type: object
+                          properties:
+                            total_usage:
+                              type: integer
+                            total_discount_amount:
+                              type: number
+                              format: decimal
+                            usage_by_period:
+                              type: object
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+apply_promotion:
+  post:
+    tags:
+      - Promotions
+    summary: Apply promotion to order
+    description: Apply a promotion to an order
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Promotion ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - order_id
+            properties:
+              order_id:
+                type: integer
+                example: 1
+    responses:
+      '200':
+        description: Promotion applied successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        promotion:
+                          $ref: '../components/schemas.yaml#/promotion'
+                        order:
+                          $ref: '../components/schemas.yaml#/order'
+                        discount_amount:
+                          type: number
+                          format: decimal
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+applicable_promotions:
+  get:
+    tags:
+      - Promotions
+    summary: Get applicable promotions
+    description: Get promotions that can be applied to a specific order
+    parameters:
+      - name: order_id
+        in: query
+        schema:
+          type: integer
+        description: Order ID to check applicable promotions
+        example: 1
+      - name: order_amount
+        in: query
+        schema:
+          type: number
+          format: decimal
+        description: Order amount to check applicable promotions
+        example: 150.00
+    responses:
+      '200':
+        description: Applicable promotions retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        promotions:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/promotion'
+                        total_applicable:
+                          type: integer
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'

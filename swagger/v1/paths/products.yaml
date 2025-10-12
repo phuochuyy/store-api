@@ -1,0 +1,498 @@
+products:
+  get:
+    tags:
+      - Products
+    summary: Get all products
+    description: Retrieve all products with pagination and filtering
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: Number of items per page
+      - name: brand_id
+        in: query
+        schema:
+          type: integer
+        description: Filter by brand ID
+      - name: category_id
+        in: query
+        schema:
+          type: integer
+        description: Filter by category ID
+      - name: min_price
+        in: query
+        schema:
+          type: number
+          format: decimal
+        description: Minimum price filter
+      - name: max_price
+        in: query
+        schema:
+          type: number
+          format: decimal
+        description: Maximum price filter
+      - name: in_stock
+        in: query
+        schema:
+          type: boolean
+        description: Filter products in stock
+    responses:
+      '200':
+        description: Products retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        products:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/product'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+  post:
+    tags:
+      - Products
+    summary: Create new product
+    description: Create a new product (Admin access required)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - product
+            properties:
+              product:
+                type: object
+                required:
+                  - name
+                  - description
+                  - price
+                  - stock_quantity
+                  - brand_id
+                  - category_id
+                properties:
+                  name:
+                    type: string
+                    example: "iPhone 15 Pro"
+                  description:
+                    type: string
+                    example: "Latest iPhone with advanced features"
+                  price:
+                    type: number
+                    format: decimal
+                    example: 999.99
+                  stock_quantity:
+                    type: integer
+                    example: 50
+                  brand_id:
+                    type: integer
+                    example: 1
+                  category_id:
+                    type: integer
+                    example: 1
+                  specifications:
+                    type: string
+                    example: "6.1-inch display, A17 Pro chip"
+    responses:
+      '201':
+        description: Product created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        product:
+                          $ref: '../components/schemas.yaml#/product'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+product_by_id:
+  get:
+    tags:
+      - Products
+    summary: Get product details
+    description: Get detailed information about a specific product
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+        example: 1
+    responses:
+      '200':
+        description: Product details retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        product:
+                          $ref: '../components/schemas.yaml#/product'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+  put:
+    tags:
+      - Products
+    summary: Update product
+    description: Update product information (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - product
+            properties:
+              product:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "iPhone 15 Pro"
+                  description:
+                    type: string
+                    example: "Latest iPhone with advanced features"
+                  price:
+                    type: number
+                    format: decimal
+                    example: 999.99
+                  stock_quantity:
+                    type: integer
+                    example: 50
+                  brand_id:
+                    type: integer
+                    example: 1
+                  category_id:
+                    type: integer
+                    example: 1
+                  specifications:
+                    type: string
+                    example: "6.1-inch display, A17 Pro chip"
+    responses:
+      '200':
+        description: Product updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        product:
+                          $ref: '../components/schemas.yaml#/product'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+  delete:
+    tags:
+      - Products
+    summary: Delete product
+    description: Delete a specific product (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+        example: 1
+    responses:
+      '200':
+        description: Product deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+search:
+  get:
+    tags:
+      - Products
+    summary: Search products
+    description: Search products with filters and pagination
+    parameters:
+      - name: search
+        in: query
+        schema:
+          type: string
+        description: Search term for product name or description
+        example: "iPhone"
+      - name: brand_id
+        in: query
+        schema:
+          type: integer
+        description: Filter by brand ID
+        example: 1
+      - name: category_id
+        in: query
+        schema:
+          type: integer
+        description: Filter by category ID
+        example: 1
+      - name: min_price
+        in: query
+        schema:
+          type: number
+          format: decimal
+        description: Minimum price filter
+        example: 100.00
+      - name: max_price
+        in: query
+        schema:
+          type: number
+          format: decimal
+        description: Maximum price filter
+        example: 1000.00
+      - name: in_stock
+        in: query
+        schema:
+          type: boolean
+        description: Filter products in stock
+        example: true
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: Number of items per page
+    responses:
+      '200':
+        description: Products retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        products:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/product'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+upload_image:
+  post:
+    tags:
+      - Products
+    summary: Upload product image
+    description: Upload an image for a specific product
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required:
+              - image
+            properties:
+              image:
+                type: string
+                format: binary
+                description: Image file to upload
+    responses:
+      '200':
+        description: Image uploaded successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+remove_image:
+  delete:
+    tags:
+      - Products
+    summary: Remove product image
+    description: Remove the image from a specific product
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+        example: 1
+    responses:
+      '200':
+        description: Image removed successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+
+stock_movements:
+  get:
+    tags:
+      - Products
+    summary: Get product stock movements (Admin only)
+    description: Get stock movement history for a specific product (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+        example: 1
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 20
+        description: Number of items per page
+    responses:
+      '200':
+        description: Product stock movements retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        movements:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              movement_type:
+                                type: string
+                              quantity:
+                                type: integer
+                              reason:
+                                type: string
+                              created_at:
+                                type: string
+                                format: date-time
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'

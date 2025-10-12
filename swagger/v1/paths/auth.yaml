@@ -1,0 +1,310 @@
+login:
+  post:
+    tags:
+      - Authentication
+    summary: User login
+    description: Authenticate user with email and password
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+                format: email
+                example: "user@example.com"
+              password:
+                type: string
+                format: password
+                example: "password123"
+    responses:
+      '200':
+        description: Login successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        token:
+                          type: string
+                          example: "eyJhbGciOiJIUzI1NiJ9..."
+                        refresh_token:
+                          type: string
+                          example: "eyJhbGciOiJIUzI1NiJ9..."
+                        user:
+                          $ref: '../components/schemas.yaml#/user'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+register:
+  post:
+    tags:
+      - Authentication
+    summary: User registration
+    description: Register a new user account
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - email
+              - password
+            properties:
+              name:
+                type: string
+                minLength: 2
+                maxLength: 50
+                example: "John Doe"
+              email:
+                type: string
+                format: email
+                example: "john@example.com"
+              password:
+                type: string
+                format: password
+                minLength: 6
+                example: "password123"
+              role:
+                type: string
+                enum: [customer, admin]
+                default: customer
+                example: "customer"
+    responses:
+      '201':
+        description: Registration successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        token:
+                          type: string
+                        refresh_token:
+                          type: string
+                        user:
+                          $ref: '../components/schemas.yaml#/user'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+verify_email:
+  get:
+    tags:
+      - Authentication
+    summary: Verify email address
+    description: Verify user email address using verification token
+    security: []
+    parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Email verification token
+        example: "abc123def456"
+    responses:
+      '200':
+        description: Email verified successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '../components/schemas.yaml#/user'
+      '400':
+        $ref: '../components/responses.yaml#/bad_request'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+resend_verification:
+  post:
+    tags:
+      - Authentication
+    summary: Resend verification email
+    description: Resend email verification link to user
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
+                format: email
+                example: "user@example.com"
+    responses:
+      '200':
+        description: Verification email sent successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '400':
+        $ref: '../components/responses.yaml#/bad_request'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+me:
+  get:
+    tags:
+      - Authentication
+    summary: Get current user
+    description: Get current authenticated user information
+    responses:
+      '200':
+        description: User information retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '../components/schemas.yaml#/user'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+logout:
+  post:
+    tags:
+      - Authentication
+    summary: User logout
+    description: Logout current user and invalidate token
+    responses:
+      '200':
+        description: Logout successful
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+refresh_token:
+  post:
+    tags:
+      - Authentication
+    summary: Refresh access token
+    description: Get new access token using refresh token
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - refresh_token
+            properties:
+              refresh_token:
+                type: string
+                example: "eyJhbGciOiJIUzI1NiJ9..."
+    responses:
+      '200':
+        description: Token refreshed successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        token:
+                          type: string
+                        refresh_token:
+                          type: string
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+revoke_all_tokens:
+  post:
+    tags:
+      - Authentication
+    summary: Revoke all user tokens (Admin only)
+    description: Revoke all JWT tokens for a user (Admin access required)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - user_id
+            properties:
+              user_id:
+                type: integer
+                description: User ID to revoke tokens for
+                example: 1
+    responses:
+      '200':
+        description: All tokens revoked successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        revoked_count:
+                          type: integer
+                          example: 5
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'

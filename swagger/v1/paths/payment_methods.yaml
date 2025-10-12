@@ -1,0 +1,425 @@
+payment_methods:
+  get:
+    tags:
+      - Payment Methods
+    summary: Get all payment methods
+    description: Retrieve all payment methods with pagination
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: Number of items per page
+      - name: gateway_type
+        in: query
+        schema:
+          type: string
+          enum: [stripe, paypal, square, manual]
+        description: Filter by gateway type
+      - name: is_active
+        in: query
+        schema:
+          type: boolean
+        description: Filter by active status
+    responses:
+      '200':
+        description: Payment methods retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment_methods:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/payment_method'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+  post:
+    tags:
+      - Payment Methods
+    summary: Create new payment method
+    description: Create a new payment method (Admin access required)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - payment_method
+            properties:
+              payment_method:
+                type: object
+                required:
+                  - name
+                  - gateway_type
+                properties:
+                  name:
+                    type: string
+                    example: "Credit Card"
+                  description:
+                    type: string
+                    example: "Visa, MasterCard, American Express"
+                  gateway_type:
+                    type: string
+                    enum: [stripe, paypal, square, manual]
+                    example: "stripe"
+                  processing_fee_percentage:
+                    type: number
+                    format: decimal
+                    example: 2.9
+                  processing_fee_fixed:
+                    type: number
+                    format: decimal
+                    example: 0.30
+                  is_active:
+                    type: boolean
+                    example: true
+                  gateway_config:
+                    type: object
+                    example: {"api_key": "sk_test_...", "webhook_secret": "whsec_..."}
+    responses:
+      '201':
+        description: Payment method created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment_method:
+                          $ref: '../components/schemas.yaml#/payment_method'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+payment_method_by_id:
+  get:
+    tags:
+      - Payment Methods
+    summary: Get payment method details
+    description: Get detailed information about a specific payment method
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment method ID
+        example: 1
+    responses:
+      '200':
+        description: Payment method details retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment_method:
+                          $ref: '../components/schemas.yaml#/payment_method'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+  put:
+    tags:
+      - Payment Methods
+    summary: Update payment method
+    description: Update payment method information (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment method ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - payment_method
+            properties:
+              payment_method:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Credit Card"
+                  description:
+                    type: string
+                    example: "Visa, MasterCard, American Express"
+                  gateway_type:
+                    type: string
+                    enum: [stripe, paypal, square, manual]
+                    example: "stripe"
+                  processing_fee_percentage:
+                    type: number
+                    format: decimal
+                    example: 2.9
+                  processing_fee_fixed:
+                    type: number
+                    format: decimal
+                    example: 0.30
+                  is_active:
+                    type: boolean
+                    example: true
+                  gateway_config:
+                    type: object
+                    example: {"api_key": "sk_test_...", "webhook_secret": "whsec_..."}
+    responses:
+      '200':
+        description: Payment method updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment_method:
+                          $ref: '../components/schemas.yaml#/payment_method'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+  delete:
+    tags:
+      - Payment Methods
+    summary: Delete payment method
+    description: Delete a specific payment method (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment method ID
+        example: 1
+    responses:
+      '200':
+        description: Payment method deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+payment_method_stats:
+  get:
+    tags:
+      - Payment Methods
+    summary: Get payment method statistics
+    description: Get usage statistics for a specific payment method (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment method ID
+        example: 1
+      - name: period
+        in: query
+        schema:
+          type: string
+          enum: [day, week, month, year]
+          default: month
+        description: Statistics period
+    responses:
+      '200':
+        description: Payment method statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment_method:
+                          $ref: '../components/schemas.yaml#/payment_method'
+                        stats:
+                          type: object
+                          properties:
+                            total_transactions:
+                              type: integer
+                            total_amount:
+                              type: number
+                              format: decimal
+                            total_fees:
+                              type: number
+                              format: decimal
+                            success_rate:
+                              type: number
+                              format: decimal
+                            period:
+                              type: string
+                            start_date:
+                              type: string
+                              format: date-time
+                            end_date:
+                              type: string
+                              format: date-time
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+validate_config:
+  post:
+    tags:
+      - Payment Methods
+    summary: Validate payment method configuration
+    description: Validate payment method gateway configuration (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Payment method ID
+        example: 1
+    responses:
+      '200':
+        description: Configuration validation completed
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        payment_method:
+                          $ref: '../components/schemas.yaml#/payment_method'
+                        is_valid:
+                          type: boolean
+                        errors:
+                          type: array
+                          items:
+                            type: string
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+calculate_fees:
+  post:
+    tags:
+      - Payment Methods
+    summary: Calculate processing fees
+    description: Calculate processing fees for a payment amount
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - amount
+              - payment_method_id
+            properties:
+              amount:
+                type: number
+                format: decimal
+                minimum: 0.01
+                description: Payment amount
+                example: 100.00
+              payment_method_id:
+                type: integer
+                description: Payment method ID
+                example: 1
+    responses:
+      '200':
+        description: Processing fees calculated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        original_amount:
+                          type: number
+                          format: decimal
+                        processing_fee:
+                          type: number
+                          format: decimal
+                        total_amount:
+                          type: number
+                          format: decimal
+                        fee_breakdown:
+                          type: object
+                        payment_method:
+                          $ref: '../components/schemas.yaml#/payment_method'
+      '400':
+        $ref: '../components/responses.yaml#/bad_request'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'

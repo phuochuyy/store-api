@@ -1,0 +1,359 @@
+notifications:
+  get:
+    tags:
+      - Notifications
+    summary: Get all notifications
+    description: Retrieve all notifications for the current user
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 20
+        description: Number of items per page
+      - name: notification_type
+        in: query
+        schema:
+          type: string
+          enum: [order_update, stock_alert, promotion, system]
+        description: Filter by notification type
+      - name: is_read
+        in: query
+        schema:
+          type: boolean
+        description: Filter by read status
+    responses:
+      '200':
+        description: Notifications retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        notifications:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/notification'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+                        unread_count:
+                          type: integer
+                          example: 5
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+notification_by_id:
+  get:
+    tags:
+      - Notifications
+    summary: Get notification details
+    description: Get detailed information about a specific notification
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Notification ID
+        example: 1
+    responses:
+      '200':
+        description: Notification details retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        notification:
+                          $ref: '../components/schemas.yaml#/notification'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+  put:
+    tags:
+      - Notifications
+    summary: Update notification
+    description: Update notification information (e.g., mark as read)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Notification ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - notification
+            properties:
+              notification:
+                type: object
+                properties:
+                  is_read:
+                    type: boolean
+                    example: true
+    responses:
+      '200':
+        description: Notification updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        notification:
+                          $ref: '../components/schemas.yaml#/notification'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+  delete:
+    tags:
+      - Notifications
+    summary: Delete notification
+    description: Delete a specific notification
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Notification ID
+        example: 1
+    responses:
+      '200':
+        description: Notification deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+mark_read:
+  post:
+    tags:
+      - Notifications
+    summary: Mark notification as read
+    description: Mark a specific notification as read
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Notification ID
+        example: 1
+    responses:
+      '200':
+        description: Notification marked as read successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        notification:
+                          $ref: '../components/schemas.yaml#/notification'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+mark_all_read:
+  post:
+    tags:
+      - Notifications
+    summary: Mark all notifications as read
+    description: Mark all notifications for the current user as read
+    responses:
+      '200':
+        description: All notifications marked as read successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        updated_count:
+                          type: integer
+                          example: 10
+                        notifications:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/notification'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+
+mark_unread:
+  post:
+    tags:
+      - Notifications
+    summary: Mark notification as unread
+    description: Mark a specific notification as unread
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Notification ID
+        example: 1
+    responses:
+      '200':
+        description: Notification marked as unread successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        notification:
+                          $ref: '../components/schemas.yaml#/notification'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+unread_count:
+  get:
+    tags:
+      - Notifications
+    summary: Get unread notification count
+    description: Get count of unread notifications for current user
+    responses:
+      '200':
+        description: Unread count retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        unread_count:
+                          type: integer
+                          example: 5
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+recent:
+  get:
+    tags:
+      - Notifications
+    summary: Get recent notifications
+    description: Get recent notifications for current user
+    parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: Number of recent notifications to retrieve
+    responses:
+      '200':
+        description: Recent notifications retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        notifications:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/notification'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+statistics:
+  get:
+    tags:
+      - Notifications
+    summary: Get notification statistics (Admin only)
+    description: Get notification statistics and analytics (Admin access required)
+    responses:
+      '200':
+        description: Notification statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        total_notifications:
+                          type: integer
+                        unread_count:
+                          type: integer
+                        notifications_by_type:
+                          type: object
+                        recent_activity:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/notification'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'

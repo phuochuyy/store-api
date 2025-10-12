@@ -1,0 +1,221 @@
+dashboard:
+  get:
+    tags:
+      - Statistics
+    summary: Get dashboard statistics (Admin only)
+    description: Get overall dashboard statistics including totals and counts
+    responses:
+      '200':
+        description: Dashboard statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        total_orders:
+                          type: integer
+                          example: 150
+                        total_revenue:
+                          type: number
+                          format: decimal
+                          example: 45000.00
+                        total_products:
+                          type: integer
+                          example: 25
+                        total_customers:
+                          type: integer
+                          example: 89
+                        recent_orders:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/order'
+                        top_products:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              product:
+                                $ref: '../components/schemas.yaml#/product'
+                              total_sold:
+                                type: integer
+                              revenue:
+                                type: number
+                                format: decimal
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+
+inventory:
+  get:
+    tags:
+      - Statistics
+    summary: Get inventory statistics (Admin only)
+    description: Get inventory-related statistics and analytics
+    responses:
+      '200':
+        description: Inventory statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        low_stock_products:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/product'
+                        out_of_stock_products:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/product'
+                        total_inventory_value:
+                          type: number
+                          format: decimal
+                          example: 125000.00
+                        products_by_brand:
+                          type: object
+                          additionalProperties:
+                            type: integer
+                          example:
+                            "Apple": 15
+                            "Samsung": 8
+                        products_by_category:
+                          type: object
+                          additionalProperties:
+                            type: integer
+                          example:
+                            "Smartphones": 20
+                            "Accessories": 5
+                        inventory_trends:
+                          type: object
+                          properties:
+                            total_products:
+                              type: integer
+                            average_stock_level:
+                              type: number
+                              format: decimal
+                            stock_turnover_rate:
+                              type: number
+                              format: decimal
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+
+sales:
+  get:
+    tags:
+      - Statistics
+    summary: Get sales statistics (Admin only)
+    description: Get sales analytics and trends
+    parameters:
+      - name: start_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: Start date for sales analysis (YYYY-MM-DD)
+        example: "2024-01-01"
+      - name: end_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: End date for sales analysis (YYYY-MM-DD)
+        example: "2024-01-31"
+      - name: group_by
+        in: query
+        schema:
+          type: string
+          enum: [day, week, month, year]
+          default: day
+        description: Group sales data by period
+    responses:
+      '200':
+        description: Sales statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        total_sales:
+                          type: number
+                          format: decimal
+                          example: 15000.00
+                        total_orders:
+                          type: integer
+                          example: 45
+                        average_order_value:
+                          type: number
+                          format: decimal
+                          example: 333.33
+                        sales_by_period:
+                          type: object
+                          additionalProperties:
+                            type: number
+                            format: decimal
+                          example:
+                            "2024-01-01": 500.00
+                            "2024-01-02": 750.00
+                        top_customers:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              customer_email:
+                                type: string
+                              customer_name:
+                                type: string
+                              total_amount:
+                                type: number
+                                format: decimal
+                              order_count:
+                                type: integer
+                        sales_by_product:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              product:
+                                $ref: '../components/schemas.yaml#/product'
+                              total_sold:
+                                type: integer
+                              revenue:
+                                type: number
+                                format: decimal
+                        sales_by_category:
+                          type: object
+                          additionalProperties:
+                            type: number
+                            format: decimal
+                        conversion_metrics:
+                          type: object
+                          properties:
+                            cart_abandonment_rate:
+                              type: number
+                              format: decimal
+                            checkout_completion_rate:
+                              type: number
+                              format: decimal
+                            repeat_customer_rate:
+                              type: number
+                              format: decimal
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'

@@ -1,0 +1,213 @@
+categories:
+  get:
+    tags:
+      - Categories
+    summary: Get all categories
+    description: Retrieve all categories with pagination
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number for pagination
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: Number of items per page
+    responses:
+      '200':
+        description: Categories retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        categories:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/category'
+                        pagination:
+                          $ref: '../components/schemas.yaml#/pagination'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+
+  post:
+    tags:
+      - Categories
+    summary: Create new category
+    description: Create a new category (Admin access required)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - category
+            properties:
+              category:
+                type: object
+                required:
+                  - name
+                properties:
+                  name:
+                    type: string
+                    example: "Smartphones"
+                  description:
+                    type: string
+                    example: "Mobile phones and accessories"
+    responses:
+      '201':
+        description: Category created successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        category:
+                          $ref: '../components/schemas.yaml#/category'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+category_by_id:
+  get:
+    tags:
+      - Categories
+    summary: Get category details
+    description: Get detailed information about a specific category
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Category ID
+        example: 1
+    responses:
+      '200':
+        description: Category details retrieved successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        category:
+                          $ref: '../components/schemas.yaml#/category'
+                        products:
+                          type: array
+                          items:
+                            $ref: '../components/schemas.yaml#/product'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+
+  put:
+    tags:
+      - Categories
+    summary: Update category
+    description: Update category information (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Category ID
+        example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - category
+            properties:
+              category:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Smartphones"
+                  description:
+                    type: string
+                    example: "Mobile phones and accessories"
+    responses:
+      '200':
+        description: Category updated successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        category:
+                          $ref: '../components/schemas.yaml#/category'
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
+      '422':
+        $ref: '../components/responses.yaml#/validation_error'
+
+  delete:
+    tags:
+      - Categories
+    summary: Delete category
+    description: Delete a specific category (Admin access required)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Category ID
+        example: 1
+    responses:
+      '200':
+        description: Category deleted successfully
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '../components/schemas.yaml#/success_response'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      nullable: true
+      '401':
+        $ref: '../components/responses.yaml#/unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/not_found'
