@@ -34,4 +34,3 @@ group :development do
   gem 'better_errors'               # Better error pages
   gem 'binding_of_caller'           # Better debugging
 end
-

@@ -226,10 +226,10 @@ module Api
 
         if result[:success]
           render_success({
-            order: order_serializer(@order.reload),
-            discount: result[:discount],
-            discount_amount: result[:discount_amount]
-          }, 'Discount applied successfully')
+                           order: order_serializer(@order.reload),
+                           discount: result[:discount],
+                           discount_amount: result[:discount_amount]
+                         }, 'Discount applied successfully')
         else
           render_error(result[:error], :unprocessable_entity)
         end
@@ -241,8 +241,8 @@ module Api
 
         if result[:success]
           render_success({
-            order: order_serializer(@order.reload)
-          }, 'Discount removed successfully')
+                           order: order_serializer(@order.reload)
+                         }, 'Discount removed successfully')
         else
           render_error('Failed to remove discount', :unprocessable_entity)
         end

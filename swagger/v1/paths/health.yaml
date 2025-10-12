@@ -15,9 +15,15 @@ health:
                 status:
                   type: string
                   example: "ok"
+                message:
+                  type: string
+                  example: "Phone Store API is running"
+                version:
+                  type: string
+                  example: "1.0.0"
                 timestamp:
                   type: string
                   format: date-time
-                version:
+                database:
                   type: string
-                  example: "v1"
+                  example: "connected"

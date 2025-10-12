@@ -26,7 +26,7 @@ class PromotionSerializer < ActiveModel::Serializer
 
   def conditions
     return nil if object.conditions.blank?
-    
+
     if object.conditions.is_a?(String)
       JSON.parse(object.conditions)
     else
@@ -38,7 +38,7 @@ class PromotionSerializer < ActiveModel::Serializer
 
   def benefits
     return nil if object.benefits.blank?
-    
+
     if object.benefits.is_a?(String)
       JSON.parse(object.benefits)
     else

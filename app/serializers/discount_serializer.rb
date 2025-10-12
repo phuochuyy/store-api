@@ -27,7 +27,7 @@ class DiscountSerializer < ActiveModel::Serializer
 
   def conditions
     return nil if object.conditions.blank?
-    
+
     if object.conditions.is_a?(String)
       JSON.parse(object.conditions)
     else

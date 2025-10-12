@@ -3,7 +3,7 @@ namespace :jwt do
   task cleanup: :environment do
     puts 'Cleaning up expired JWT blacklist tokens...'
 
-    initial_count = JwtBlacklistToken.count
+    JwtBlacklistToken.count
     cleaned_count = JwtBlacklistService.cleanup_expired_tokens
 
     puts "Cleaned up #{cleaned_count} expired tokens"

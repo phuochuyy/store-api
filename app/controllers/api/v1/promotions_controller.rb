@@ -17,7 +17,7 @@ module Api
       # GET /api/v1/promotions/:id
       def show
         result = Discounts::PromotionService.find_promotion(@promotion.id)
-        
+
         if result[:error]
           render_error(result[:error], :not_found)
         else

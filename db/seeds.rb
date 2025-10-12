@@ -249,4 +249,4 @@ Rails.logger.debug { "- Orders: #{Order.count}" }
 Rails.logger.debug { "- Order Items: #{OrderItem.count}" }
 
 # Load discount and promotion seeds
-load Rails.root.join('db', 'seeds', 'discounts.rb')
+load Rails.root.join('db/seeds/discounts.rb')

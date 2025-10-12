@@ -69,10 +69,16 @@ class Order < ApplicationRecord
     return { success: false, error: 'Invalid discount code' } unless discount
 
     # Check if discount applies to this order
-    return { success: false, error: 'Discount does not meet minimum amount requirement' } unless discount.meets_minimum_amount?(subtotal_amount)
+    unless discount.meets_minimum_amount?(subtotal_amount)
+      return { success: false,
+               error: 'Discount does not meet minimum amount requirement' }
+    end
 
     # Check if discount applies to order items
-    return { success: false, error: 'Discount does not apply to items in this order' } unless discount.applies_to_items?(order_items)
+    unless discount.applies_to_items?(order_items)
+      return { success: false,
+               error: 'Discount does not apply to items in this order' }
+    end
 
     # Calculate discount amount
     calculated_discount = discount.calculate_discount(subtotal_amount)

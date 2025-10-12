@@ -26,7 +26,8 @@ class DiscountValidator
   validates :usage_limit, numericality: { greater_than: 0 }, allow_nil: true
   validates :applies_to, inclusion: { in: %w[all products categories brands] }
   validates :code, presence: true, length: { minimum: 3, maximum: 50 }
-  validates :code, format: { with: /\A[A-Z0-9_]+\z/, message: 'can only contain uppercase letters, numbers, and underscores' }
+  validates :code,
+            format: { with: /\A[A-Z0-9_]+\z/, message: 'can only contain uppercase letters, numbers, and underscores' }
 
   validate :valid_discount_value
   validate :valid_date_range
@@ -38,13 +39,9 @@ class DiscountValidator
   def valid_discount_value
     case discount_type
     when 'percentage'
-      if value > 100
-        errors.add(:value, 'must be between 0 and 100 for percentage discounts')
-      end
+      errors.add(:value, 'must be between 0 and 100 for percentage discounts') if value > 100
     when 'fixed_amount'
-      if value <= 0
-        errors.add(:value, 'must be positive for fixed amount discounts')
-      end
+      errors.add(:value, 'must be positive for fixed amount discounts') if value <= 0
     when 'free_shipping'
       # Free shipping doesn't need a value
     end
@@ -53,9 +50,9 @@ class DiscountValidator
   def valid_date_range
     return unless start_date.present? && end_date.present?
 
-    if end_date <= start_date
-      errors.add(:end_date, 'must be after start date')
-    end
+    return unless end_date <= start_date
+
+    errors.add(:end_date, 'must be after start date')
   end
 
   def valid_conditions_json
@@ -73,7 +70,7 @@ class DiscountValidator
 
     # Check if applies_to_ids contains valid comma-separated integers
     ids = applies_to_ids.split(',').map(&:strip)
-    
+
     ids.each do |id|
       unless id.match?(/\A\d+\z/)
         errors.add(:applies_to_ids, 'must contain only comma-separated integers')
@@ -95,9 +92,9 @@ class DiscountValidator
   def validate_ids_exist(model_class, ids, type_name)
     existing_ids = model_class.where(id: ids).pluck(:id).map(&:to_s)
     missing_ids = ids - existing_ids
-    
-    if missing_ids.any?
-      errors.add(:applies_to_ids, "references non-existent #{type_name}: #{missing_ids.join(', ')}")
-    end
+
+    return unless missing_ids.any?
+
+    errors.add(:applies_to_ids, "references non-existent #{type_name}: #{missing_ids.join(', ')}")
   end
 end

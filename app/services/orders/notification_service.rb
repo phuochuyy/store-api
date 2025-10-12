@@ -331,43 +331,43 @@ module Orders
       end
 
       # Send order shipped email
-      def send_order_shipped_email(order, tracking_info)
+      def send_order_shipped_email(order, _tracking_info)
         Rails.logger.info "Order shipped email sent to #{order.user.email} for order #{order.id}"
         # Implement email sending logic
       end
 
       # Send order delivered email
-      def send_order_delivered_email(order, delivery_info)
+      def send_order_delivered_email(order, _delivery_info)
         Rails.logger.info "Order delivered email sent to #{order.user.email} for order #{order.id}"
         # Implement email sending logic
       end
 
       # Send order cancelled email
-      def send_order_cancelled_email(order, reason)
+      def send_order_cancelled_email(order, _reason)
         Rails.logger.info "Order cancelled email sent to #{order.user.email} for order #{order.id}"
         # Implement email sending logic
       end
 
       # Send payment status email
-      def send_payment_status_email(order, payment_status)
+      def send_payment_status_email(order, _payment_status)
         Rails.logger.info "Payment status email sent to #{order.user.email} for order #{order.id}"
         # Implement email sending logic
       end
 
       # Send order reminder email
-      def send_order_reminder_email(order, reminder_type)
+      def send_order_reminder_email(order, _reminder_type)
         Rails.logger.info "Order reminder email sent to #{order.user.email} for order #{order.id}"
         # Implement email sending logic
       end
 
       # Send order shipped SMS
-      def send_order_shipped_sms(order, tracking_info)
+      def send_order_shipped_sms(order, _tracking_info)
         Rails.logger.info "Order shipped SMS sent to #{order.user.phone} for order #{order.id}"
         # Implement SMS sending logic
       end
 
       # Send order delivered SMS
-      def send_order_delivered_sms(order, delivery_info)
+      def send_order_delivered_sms(order, _delivery_info)
         Rails.logger.info "Order delivered SMS sent to #{order.user.phone} for order #{order.id}"
         # Implement SMS sending logic
       end

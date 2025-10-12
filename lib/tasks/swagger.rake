@@ -189,8 +189,8 @@ namespace :swagger do
 
       # Response codes
       response_codes = Set.new
-      paths.each do |path, methods|
-        methods.each do |method, details|
+      paths.each do |_path, methods|
+        methods.each do |_method, details|
           details['responses']&.each do |code, _|
             response_codes.add(code)
           end

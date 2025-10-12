@@ -11,7 +11,7 @@ module Api
 
     private
 
-    def record_not_found(exception)
+    def record_not_found(_exception)
       render_error('Record not found', :not_found)
     end
 

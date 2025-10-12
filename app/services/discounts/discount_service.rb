@@ -4,7 +4,7 @@ module Discounts
       # Create a new discount
       def create_discount(params)
         discount = Discount.new(params)
-        
+
         if discount.save
           { success: true, discount: discount }
         else
@@ -58,9 +58,9 @@ module Discounts
 
         # Check minimum amount
         unless discount.meets_minimum_amount?(order_amount)
-          return { 
-            valid: false, 
-            error: "Minimum order amount of $#{discount.minimum_amount} required" 
+          return {
+            valid: false,
+            error: "Minimum order amount of $#{discount.minimum_amount} required"
           }
         end
 
@@ -84,7 +84,7 @@ module Discounts
       # Generate discount codes
       def generate_discount_codes(discount, quantity)
         codes = []
-        
+
         quantity.times do
           coupon = discount.coupons.create!(
             code: generate_unique_coupon_code,
@@ -135,14 +135,10 @@ module Discounts
         discounts = discounts.where(is_active: filters[:is_active]) if filters[:is_active].present?
         discounts = discounts.where('name ILIKE ?', "%#{filters[:search]}%") if filters[:search].present?
         discounts = discounts.where('code ILIKE ?', "%#{filters[:code]}%") if filters[:code].present?
-        
-        if filters[:date_from].present?
-          discounts = discounts.where('created_at >= ?', filters[:date_from])
-        end
-        
-        if filters[:date_to].present?
-          discounts = discounts.where('created_at <= ?', filters[:date_to])
-        end
+
+        discounts = discounts.where('created_at >= ?', filters[:date_from]) if filters[:date_from].present?
+
+        discounts = discounts.where('created_at <= ?', filters[:date_to]) if filters[:date_to].present?
 
         discounts
       end
@@ -150,7 +146,7 @@ module Discounts
       def paginate(discounts, pagination)
         page = pagination[:page] || 1
         per_page = pagination[:per_page] || 10
-        
+
         discounts.page(page).per(per_page)
       end
 

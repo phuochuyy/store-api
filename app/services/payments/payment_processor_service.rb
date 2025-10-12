@@ -89,7 +89,7 @@ module Payments
         end
       end
 
-      def process_stripe_payment(payment, payment_data)
+      def process_stripe_payment(payment, _payment_data)
         # Mock Stripe payment processing
         # In real implementation, integrate with Stripe API
         Rails.logger.info "Processing Stripe payment for #{payment.amount}"
@@ -110,7 +110,7 @@ module Payments
         }
       end
 
-      def process_paypal_payment(payment, payment_data)
+      def process_paypal_payment(payment, _payment_data)
         # Mock PayPal payment processing
         Rails.logger.info "Processing PayPal payment for #{payment.amount}"
 
@@ -128,7 +128,7 @@ module Payments
         }
       end
 
-      def process_bank_transfer_payment(payment, payment_data)
+      def process_bank_transfer_payment(payment, _payment_data)
         # Bank transfer is always pending until manually confirmed
         Rails.logger.info "Creating bank transfer payment for #{payment.amount}"
 
@@ -143,7 +143,7 @@ module Payments
         }
       end
 
-      def process_cash_on_delivery_payment(payment, payment_data)
+      def process_cash_on_delivery_payment(payment, _payment_data)
         # Cash on delivery is always pending
         Rails.logger.info "Creating cash on delivery payment for #{payment.amount}"
 
@@ -157,7 +157,7 @@ module Payments
         }
       end
 
-      def process_wallet_payment(payment, payment_data)
+      def process_wallet_payment(payment, _payment_data)
         # Mock wallet payment processing
         Rails.logger.info "Processing wallet payment for #{payment.amount}"
 
@@ -186,7 +186,7 @@ module Payments
         end
       end
 
-      def process_stripe_refund(payment, amount, reason)
+      def process_stripe_refund(_payment, amount, reason)
         Rails.logger.info "Processing Stripe refund for #{amount}"
 
         sleep(0.1)
@@ -203,7 +203,7 @@ module Payments
         }
       end
 
-      def process_paypal_refund(payment, amount, reason)
+      def process_paypal_refund(_payment, amount, reason)
         Rails.logger.info "Processing PayPal refund for #{amount}"
 
         sleep(0.1)

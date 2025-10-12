@@ -4,7 +4,7 @@ module Discounts
       # Create a new promotion
       def create_promotion(params)
         promotion = Promotion.new(params)
-        
+
         if promotion.save
           { success: true, promotion: promotion }
         else
@@ -50,15 +50,15 @@ module Discounts
       # Get applicable promotions for an order
       def get_applicable_promotions(order)
         applicable_promotions = []
-        
+
         Promotion.available.order(priority: :desc).each do |promotion|
-          if promotion.applies_to_order?(order)
-            benefit = promotion.calculate_benefit(order)
-            applicable_promotions << {
-              promotion: PromotionSerializer.new(promotion).as_json,
-              benefit: benefit
-            }
-          end
+          next unless promotion.applies_to_order?(order)
+
+          benefit = promotion.calculate_benefit(order)
+          applicable_promotions << {
+            promotion: PromotionSerializer.new(promotion).as_json,
+            benefit: benefit
+          }
         end
 
         { promotions: applicable_promotions }
@@ -75,14 +75,15 @@ module Discounts
         end
 
         benefit = promotion.calculate_benefit(order)
-        return { success: false, error: 'No benefit from this promotion' } if benefit[:discount_amount] == 0 && benefit[:free_items].empty? && !benefit[:free_shipping]
+        if benefit[:discount_amount] == 0 && benefit[:free_items].empty? && !benefit[:free_shipping]
+          return { success: false,
+                   error: 'No benefit from this promotion' }
+        end
 
         # Apply the promotion benefit
         result = apply_promotion_benefit(order, promotion, benefit)
-        
-        if result[:success]
-          promotion.increment_usage!
-        end
+
+        promotion.increment_usage! if result[:success]
 
         result
       end
@@ -122,14 +123,10 @@ module Discounts
         promotions = promotions.where(is_active: filters[:is_active]) if filters[:is_active].present?
         promotions = promotions.where(priority: filters[:priority]) if filters[:priority].present?
         promotions = promotions.where('name ILIKE ?', "%#{filters[:search]}%") if filters[:search].present?
-        
-        if filters[:date_from].present?
-          promotions = promotions.where('created_at >= ?', filters[:date_from])
-        end
-        
-        if filters[:date_to].present?
-          promotions = promotions.where('created_at <= ?', filters[:date_to])
-        end
+
+        promotions = promotions.where('created_at >= ?', filters[:date_from]) if filters[:date_from].present?
+
+        promotions = promotions.where('created_at <= ?', filters[:date_to]) if filters[:date_to].present?
 
         promotions
       end
@@ -137,7 +134,7 @@ module Discounts
       def paginate(promotions, pagination)
         page = pagination[:page] || 1
         per_page = pagination[:per_page] || 10
-        
+
         promotions.page(page).per(per_page)
       end
 
@@ -163,7 +160,7 @@ module Discounts
           if benefit[:free_items].present?
             benefit[:free_items].each do |free_item|
               existing_item = order.order_items.find_by(product_id: free_item[:product_id])
-              
+
               if existing_item
                 existing_item.update!(quantity: existing_item.quantity + free_item[:quantity])
               else
