@@ -9,29 +9,11 @@ module Payments
       # @param payment_data [Hash] Additional payment data (card details, etc.)
       # @return [Hash] Result with success status and payment information
       def process_payment(order:, payment_method:, payment_data: {})
-        return { success: false, error: 'Order not found' } unless order
-        return { success: false, error: 'Payment method not found' } unless payment_method
-        return { success: false, error: 'Order cannot be paid' } unless order.can_be_paid?
-        return { success: false, error: 'Payment method is not active' } unless payment_method.is_active?
-
-        # Calculate total amount including processing fees
-        total_amount = payment_method.total_amount_with_fees(order.total_amount)
-
-        # Create payment record
-        payment = create_payment_record(order, payment_method, total_amount, payment_data)
-
-        # Process payment based on gateway type
-        result = process_with_gateway(payment, payment_data)
-
-        # Update payment status based on result
-        update_payment_status(payment, result)
-
-        result
-      rescue StandardError => e
-        Rails.logger.error "Payment processing error: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-
-        { success: false, error: 'Payment processing failed', details: e.message }
+        PaymentProcessingCoreService.process_payment(
+          order: order,
+          payment_method: payment_method,
+          payment_data: payment_data
+        )
       end
 
       # Refund a payment
@@ -40,210 +22,139 @@ module Payments
       # @param reason [String] Reason for refund
       # @return [Hash] Result with success status
       def refund_payment(payment:, amount: nil, reason: nil)
-        return { success: false, error: 'Payment not found' } unless payment
-        return { success: false, error: 'Payment cannot be refunded' } unless payment.can_be_refunded?
+        PaymentProcessingCoreService.refund_payment(
+          payment: payment,
+          amount: amount,
+          reason: reason
+        )
+      end
 
-        refund_amount = amount || payment.amount
-        return { success: false, error: 'Refund amount exceeds payment amount' } if refund_amount > payment.amount
+      # Process webhook from payment gateway
+      # @param gateway_type [String] Type of payment gateway
+      # @param payload [Hash] Webhook payload
+      # @param signature [String] Webhook signature for verification
+      # @return [Hash] Processing result
+      def process_webhook(gateway_type:, payload:, signature: nil)
+        PaymentWebhookService.process_webhook(
+          gateway_type: gateway_type,
+          payload: payload,
+          signature: signature
+        )
+      end
 
-        # Process refund with gateway
-        result = process_refund_with_gateway(payment, refund_amount, reason)
+      # Process Stripe webhook
+      # @param payload [Hash] Stripe webhook payload
+      # @param signature [String] Stripe signature
+      # @return [Hash] Processing result
+      def process_stripe_webhook(payload:, signature:)
+        PaymentWebhookService.process_stripe_webhook(payload: payload, signature: signature)
+      end
 
-        # Update payment status based on result
-        update_refund_status(payment, result, refund_amount)
+      # Process PayPal webhook
+      # @param payload [Hash] PayPal webhook payload
+      # @param signature [String] PayPal signature
+      # @return [Hash] Processing result
+      def process_paypal_webhook(payload:, signature:)
+        PaymentWebhookService.process_paypal_webhook(payload: payload, signature: signature)
+      end
 
-        result
-      rescue StandardError => e
-        Rails.logger.error "Refund processing error: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
+      # Process Square webhook
+      # @param payload [Hash] Square webhook payload
+      # @param signature [String] Square signature
+      # @return [Hash] Processing result
+      def process_square_webhook(payload:, signature:)
+        PaymentWebhookService.process_square_webhook(payload: payload, signature: signature)
+      end
 
-        { success: false, error: 'Refund processing failed', details: e.message }
+      # Get payment processing statistics
+      # @param period [String] Time period for statistics
+      # @return [Hash] Processing statistics
+      def get_processing_statistics(period = 'month')
+        start_date = calculate_start_date(period)
+        payments = Payment.where(created_at: start_date..)
+
+        {
+          total_payments: payments.count,
+          successful_payments: payments.successful.count,
+          failed_payments: payments.failed.count,
+          refunded_payments: payments.refunded.count,
+          total_amount: payments.successful.sum(:amount),
+          total_fees: calculate_total_fees(payments),
+          success_rate: calculate_success_rate(payments),
+          average_processing_time: calculate_average_processing_time(payments),
+          period: period,
+          start_date: start_date,
+          end_date: Time.current
+        }
+      end
+
+      # Get payment method performance
+      # @param period [String] Time period for analysis
+      # @return [Hash] Payment method performance data
+      def get_payment_method_performance(period = 'month')
+        start_date = calculate_start_date(period)
+
+        PaymentMethod.active.includes(:payments).map do |pm|
+          payments = pm.payments.where(created_at: start_date..)
+          {
+            payment_method_id: pm.id,
+            name: pm.name,
+            gateway_type: pm.gateway_type,
+            total_transactions: payments.count,
+            successful_transactions: payments.successful.count,
+            total_amount: payments.successful.sum(:amount),
+            success_rate: calculate_success_rate(payments),
+            average_amount: calculate_average_amount(payments.successful)
+          }
+        end.sort_by { |data| -data[:total_amount] }
       end
 
       private
 
-      def create_payment_record(order, payment_method, amount, payment_data)
-        Payment.create!(
-          order: order,
-          payment_method: payment_method,
-          amount: amount,
-          currency: 'USD',
-          metadata: payment_data.except(:card_number, :cvv, :expiry_month, :expiry_year)
-        )
-      end
-
-      def process_with_gateway(payment, payment_data)
-        case payment.payment_method.gateway_type
-        when 'stripe'
-          process_stripe_payment(payment, payment_data)
-        when 'paypal'
-          process_paypal_payment(payment, payment_data)
-        when 'bank_transfer'
-          process_bank_transfer_payment(payment, payment_data)
-        when 'cash_on_delivery'
-          process_cash_on_delivery_payment(payment, payment_data)
-        when 'wallet'
-          process_wallet_payment(payment, payment_data)
+      def calculate_start_date(period)
+        case period
+        when 'day'
+          1.day.ago
+        when 'week'
+          1.week.ago
+        when 'year'
+          1.year.ago
         else
-          { success: false, error: 'Unsupported payment gateway' }
+          1.month.ago
         end
       end
 
-      def process_stripe_payment(payment, _payment_data)
-        # Mock Stripe payment processing
-        # In real implementation, integrate with Stripe API
-        Rails.logger.info "Processing Stripe payment for #{payment.amount}"
-
-        # Simulate processing delay
-        sleep(0.1)
-
-        # Mock success response
-        {
-          success: true,
-          transaction_id: "stripe_#{SecureRandom.hex(8)}",
-          gateway_response: {
-            id: "pi_#{SecureRandom.hex(8)}",
-            status: 'succeeded',
-            amount: (payment.amount * 100).to_i, # Stripe uses cents
-            currency: payment.currency.downcase
-          }.to_json
-        }
-      end
-
-      def process_paypal_payment(payment, _payment_data)
-        # Mock PayPal payment processing
-        Rails.logger.info "Processing PayPal payment for #{payment.amount}"
-
-        sleep(0.1)
-
-        {
-          success: true,
-          transaction_id: "paypal_#{SecureRandom.hex(8)}",
-          gateway_response: {
-            id: "PAY-#{SecureRandom.hex(8)}",
-            state: 'approved',
-            amount: payment.amount,
-            currency: payment.currency
-          }.to_json
-        }
-      end
-
-      def process_bank_transfer_payment(payment, _payment_data)
-        # Bank transfer is always pending until manually confirmed
-        Rails.logger.info "Creating bank transfer payment for #{payment.amount}"
-
-        {
-          success: true,
-          transaction_id: "bank_#{SecureRandom.hex(8)}",
-          gateway_response: {
-            status: 'pending',
-            instructions: 'Please transfer the amount to our bank account',
-            reference: payment.transaction_id
-          }.to_json
-        }
-      end
-
-      def process_cash_on_delivery_payment(payment, _payment_data)
-        # Cash on delivery is always pending
-        Rails.logger.info "Creating cash on delivery payment for #{payment.amount}"
-
-        {
-          success: true,
-          transaction_id: "cod_#{SecureRandom.hex(8)}",
-          gateway_response: {
-            status: 'pending',
-            instructions: 'Payment will be collected on delivery'
-          }.to_json
-        }
-      end
-
-      def process_wallet_payment(payment, _payment_data)
-        # Mock wallet payment processing
-        Rails.logger.info "Processing wallet payment for #{payment.amount}"
-
-        sleep(0.1)
-
-        {
-          success: true,
-          transaction_id: "wallet_#{SecureRandom.hex(8)}",
-          gateway_response: {
-            id: "wallet_#{SecureRandom.hex(8)}",
-            status: 'completed',
-            amount: payment.amount,
-            currency: payment.currency
-          }.to_json
-        }
-      end
-
-      def process_refund_with_gateway(payment, amount, reason)
-        case payment.payment_method.gateway_type
-        when 'stripe'
-          process_stripe_refund(payment, amount, reason)
-        when 'paypal'
-          process_paypal_refund(payment, amount, reason)
-        else
-          { success: false, error: 'Refunds not supported for this payment method' }
-        end
-      end
-
-      def process_stripe_refund(_payment, amount, reason)
-        Rails.logger.info "Processing Stripe refund for #{amount}"
-
-        sleep(0.1)
-
-        {
-          success: true,
-          transaction_id: "re_#{SecureRandom.hex(8)}",
-          gateway_response: {
-            id: "re_#{SecureRandom.hex(8)}",
-            status: 'succeeded',
-            amount: (amount * 100).to_i,
-            reason: reason
-          }.to_json
-        }
-      end
-
-      def process_paypal_refund(_payment, amount, reason)
-        Rails.logger.info "Processing PayPal refund for #{amount}"
-
-        sleep(0.1)
-
-        {
-          success: true,
-          transaction_id: "refund_#{SecureRandom.hex(8)}",
-          gateway_response: {
-            id: "refund_#{SecureRandom.hex(8)}",
-            state: 'completed',
-            amount: amount,
-            reason: reason
-          }.to_json
-        }
-      end
-
-      def update_payment_status(payment, result)
-        if result[:success]
-          payment.mark_as_completed!(
-            transaction_id: result[:transaction_id],
-            gateway_response: result[:gateway_response]
-          )
-        else
-          payment.mark_as_failed!(
-            reason: result[:error],
-            gateway_response: result[:gateway_response]
-          )
-        end
-      end
-
-      def update_refund_status(payment, result, refund_amount)
-        if result[:success]
-          if refund_amount == payment.amount
-            payment.mark_as_refunded!(gateway_response: result[:gateway_response])
+      def calculate_total_fees(payments)
+        payments.successful.sum do |payment|
+          if payment.payment_method.fee_percentage
+            (payment.amount * payment.payment_method.fee_percentage / 100)
           else
-            payment.mark_as_partially_refunded!(gateway_response: result[:gateway_response])
+            0
           end
-        else
-          Rails.logger.error "Refund failed: #{result[:error]}"
         end
+      end
+
+      def calculate_success_rate(payments)
+        return 0 if payments.empty?
+
+        (payments.successful.count.to_f / payments.count * 100).round(2)
+      end
+
+      def calculate_average_processing_time(payments)
+        successful_payments = payments.successful.where.not(processed_at: nil)
+        return 0 if successful_payments.empty?
+
+        total_time = successful_payments.sum do |payment|
+          (payment.processed_at - payment.created_at).to_f
+        end
+
+        (total_time / successful_payments.count).round(2)
+      end
+
+      def calculate_average_amount(payments)
+        return 0 if payments.empty?
+
+        (payments.sum(:amount) / payments.count.to_f).round(2)
       end
     end
   end

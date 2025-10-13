@@ -77,23 +77,22 @@ class PromotionValidator
 
   def validate_conditions_structure(conditions)
     # Validate common condition fields
-    if conditions['minimum_amount'].present? && !(conditions['minimum_amount'].is_a?(Numeric) && conditions['minimum_amount'] > 0)
+    if conditions['minimum_amount'].present? &&
+       !(conditions['minimum_amount'].is_a?(Numeric) && conditions['minimum_amount'].positive?)
       errors.add(:conditions, 'minimum_amount must be a positive number')
     end
 
-    if conditions['product_ids'].present? && !(conditions['product_ids'].is_a?(Array) && conditions['product_ids'].all? do |id|
-      id.is_a?(Integer)
-    end)
+    if conditions['product_ids'].present? &&
+       !(conditions['product_ids'].is_a?(Array) && conditions['product_ids'].all? { |id| id.is_a?(Integer) })
       errors.add(:conditions, 'product_ids must be an array of integers')
     end
 
-    if conditions['category_ids'].present? && !(conditions['category_ids'].is_a?(Array) && conditions['category_ids'].all? do |id|
-      id.is_a?(Integer)
-    end)
+    if conditions['category_ids'].present? &&
+       !(conditions['category_ids'].is_a?(Array) && conditions['category_ids'].all? { |id| id.is_a?(Integer) })
       errors.add(:conditions, 'category_ids must be an array of integers')
     end
 
-    return unless conditions['brand_ids'].present?
+    return if conditions['brand_ids'].blank?
     return if conditions['brand_ids'].is_a?(Array) && conditions['brand_ids'].all? { |id| id.is_a?(Integer) }
 
     errors.add(:conditions, 'brand_ids must be an array of integers')
@@ -120,7 +119,7 @@ class PromotionValidator
           next
         end
 
-        unless tier['min_quantity'].is_a?(Integer) && tier['min_quantity'] > 0
+        unless tier['min_quantity'].is_a?(Integer) && tier['min_quantity'].positive?
           errors.add(:benefits, "tier #{index} min_quantity must be a positive integer")
         end
 
@@ -128,7 +127,7 @@ class PromotionValidator
           errors.add(:benefits, "tier #{index} discount_type must be 'percentage' or 'fixed_amount'")
         end
 
-        unless tier['discount_value'].is_a?(Numeric) && tier['discount_value'] > 0
+        unless tier['discount_value'].is_a?(Numeric) && tier['discount_value'].positive?
           errors.add(:benefits, "tier #{index} discount_value must be a positive number")
         end
 
@@ -147,11 +146,11 @@ class PromotionValidator
     begin
       parsed_benefits = JSON.parse(benefits)
 
-      unless parsed_benefits['buy_quantity'].is_a?(Integer) && parsed_benefits['buy_quantity'] > 0
+      unless parsed_benefits['buy_quantity'].is_a?(Integer) && parsed_benefits['buy_quantity'].positive?
         errors.add(:benefits, 'buy_quantity must be a positive integer')
       end
 
-      unless parsed_benefits['get_quantity'].is_a?(Integer) && parsed_benefits['get_quantity'] > 0
+      unless parsed_benefits['get_quantity'].is_a?(Integer) && parsed_benefits['get_quantity'].positive?
         errors.add(:benefits, 'get_quantity must be a positive integer')
       end
     rescue JSON::ParserError
@@ -165,11 +164,12 @@ class PromotionValidator
     begin
       parsed_benefits = JSON.parse(benefits)
 
-      unless parsed_benefits['gift_product_id'].is_a?(Integer) && parsed_benefits['gift_product_id'] > 0
+      unless parsed_benefits['gift_product_id'].is_a?(Integer) && parsed_benefits['gift_product_id'].positive?
         errors.add(:benefits, 'gift_product_id must be a positive integer')
       end
 
-      if parsed_benefits['gift_quantity'].present? && !(parsed_benefits['gift_quantity'].is_a?(Integer) && parsed_benefits['gift_quantity'] > 0)
+      if parsed_benefits['gift_quantity'].present? &&
+         !(parsed_benefits['gift_quantity'].is_a?(Integer) && parsed_benefits['gift_quantity'].positive?)
         errors.add(:benefits, 'gift_quantity must be a positive integer')
       end
     rescue JSON::ParserError

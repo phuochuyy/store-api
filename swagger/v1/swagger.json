@@ -166,7 +166,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/AuthResponse"
+                  "$ref": "#/components/schemas/AuthResponse"
                 }
               }
             }
@@ -176,7 +176,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
                   "success": false,
@@ -250,7 +250,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/AuthResponse"
+                  "$ref": "#/components/schemas/AuthResponse"
                 }
               }
             }
@@ -260,7 +260,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -293,7 +293,7 @@
                       "example": true
                     },
                     "data": {
-                      "$ref": "../components/schemas.yaml#/User"
+                      "$ref": "#/components/schemas/User"
                     }
                   }
                 }
@@ -305,7 +305,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -351,7 +351,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -411,11 +411,11 @@
                         "products": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Product"
+                            "$ref": "#/components/schemas/Product"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -433,7 +433,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -510,7 +510,7 @@
                       "type": "object",
                       "properties": {
                         "product": {
-                          "$ref": "../components/schemas.yaml#/Product"
+                          "$ref": "#/components/schemas/Product"
                         }
                       }
                     },
@@ -528,7 +528,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -538,7 +538,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -586,7 +586,7 @@
                       "type": "object",
                       "properties": {
                         "product": {
-                          "$ref": "../components/schemas.yaml#/Product"
+                          "$ref": "#/components/schemas/Product"
                         }
                       }
                     },
@@ -604,7 +604,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -678,7 +678,7 @@
                       "type": "object",
                       "properties": {
                         "product": {
-                          "$ref": "../components/schemas.yaml#/Product"
+                          "$ref": "#/components/schemas/Product"
                         }
                       }
                     },
@@ -696,7 +696,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -752,7 +752,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -822,11 +822,11 @@
                         "products": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Product"
+                            "$ref": "#/components/schemas/Product"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -1007,11 +1007,11 @@
                         "brands": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Brand"
+                            "$ref": "#/components/schemas/Brand"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -1029,7 +1029,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1086,7 +1086,7 @@
                       "type": "object",
                       "properties": {
                         "brand": {
-                          "$ref": "../components/schemas.yaml#/Brand"
+                          "$ref": "#/components/schemas/Brand"
                         }
                       }
                     },
@@ -1104,7 +1104,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1114,7 +1114,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1162,7 +1162,7 @@
                       "type": "object",
                       "properties": {
                         "brand": {
-                          "$ref": "../components/schemas.yaml#/Brand"
+                          "$ref": "#/components/schemas/Brand"
                         }
                       },
                       "message": {
@@ -1180,7 +1180,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1246,7 +1246,7 @@
                       "type": "object",
                       "properties": {
                         "brand": {
-                          "$ref": "../components/schemas.yaml#/Brand"
+                          "$ref": "#/components/schemas/Brand"
                         }
                       }
                     },
@@ -1264,7 +1264,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1320,7 +1320,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1380,11 +1380,11 @@
                         "categories": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Category"
+                            "$ref": "#/components/schemas/Category"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -1402,7 +1402,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1459,7 +1459,7 @@
                       "type": "object",
                       "properties": {
                         "category": {
-                          "$ref": "../components/schemas.yaml#/Category"
+                          "$ref": "#/components/schemas/Category"
                         }
                       }
                     },
@@ -1477,7 +1477,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1487,7 +1487,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1535,12 +1535,12 @@
                       "type": "object",
                       "properties": {
                         "category": {
-                          "$ref": "../components/schemas.yaml#/Category"
+                          "$ref": "#/components/schemas/Category"
                         },
                         "products": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Product"
+                            "$ref": "#/components/schemas/Product"
                           }
                         }
                       }
@@ -1559,7 +1559,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1625,7 +1625,7 @@
                       "type": "object",
                       "properties": {
                         "category": {
-                          "$ref": "../components/schemas.yaml#/Category"
+                          "$ref": "#/components/schemas/Category"
                         }
                       }
                     },
@@ -1643,7 +1643,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1699,7 +1699,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1735,7 +1735,7 @@
                       "type": "object",
                       "properties": {
                         "cart": {
-                          "$ref": "../components/schemas.yaml#/Cart"
+                          "$ref": "#/components/schemas/Cart"
                         }
                       }
                     },
@@ -1753,7 +1753,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1787,7 +1787,7 @@
                       "type": "object",
                       "properties": {
                         "cart": {
-                          "$ref": "../components/schemas.yaml#/Cart"
+                          "$ref": "#/components/schemas/Cart"
                         }
                       }
                     },
@@ -1805,7 +1805,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1863,7 +1863,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1921,7 +1921,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1993,7 +1993,7 @@
                       "type": "object",
                       "properties": {
                         "cart_item": {
-                          "$ref": "../components/schemas.yaml#/CartItem"
+                          "$ref": "#/components/schemas/CartItem"
                         }
                       }
                     },
@@ -2011,7 +2011,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2075,7 +2075,7 @@
                       "type": "object",
                       "properties": {
                         "cart_item": {
-                          "$ref": "../components/schemas.yaml#/CartItem"
+                          "$ref": "#/components/schemas/CartItem"
                         }
                       }
                     },
@@ -2093,7 +2093,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2149,7 +2149,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2209,11 +2209,11 @@
                         "orders": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Order"
+                            "$ref": "#/components/schemas/Order"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -2231,7 +2231,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2294,7 +2294,7 @@
                       "type": "object",
                       "properties": {
                         "order": {
-                          "$ref": "../components/schemas.yaml#/Order"
+                          "$ref": "#/components/schemas/Order"
                         }
                       }
                     },
@@ -2312,7 +2312,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2360,7 +2360,7 @@
                       "type": "object",
                       "properties": {
                         "order": {
-                          "$ref": "../components/schemas.yaml#/Order"
+                          "$ref": "#/components/schemas/Order"
                         }
                       }
                     },
@@ -2378,7 +2378,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2436,7 +2436,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2446,7 +2446,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2504,7 +2504,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2552,7 +2552,7 @@
                       "type": "object",
                       "properties": {
                         "order_item": {
-                          "$ref": "../components/schemas.yaml#/OrderItem"
+                          "$ref": "#/components/schemas/OrderItem"
                         }
                       }
                     },
@@ -2570,7 +2570,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2632,7 +2632,7 @@
                       "type": "object",
                       "properties": {
                         "order_item": {
-                          "$ref": "../components/schemas.yaml#/OrderItem"
+                          "$ref": "#/components/schemas/OrderItem"
                         }
                       }
                     },
@@ -2650,7 +2650,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2706,7 +2706,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2766,11 +2766,11 @@
                         "discounts": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Discount"
+                            "$ref": "#/components/schemas/Discount"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -2788,7 +2788,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2875,7 +2875,7 @@
                       "type": "object",
                       "properties": {
                         "discount": {
-                          "$ref": "../components/schemas.yaml#/Discount"
+                          "$ref": "#/components/schemas/Discount"
                         }
                       }
                     },
@@ -2893,7 +2893,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2903,7 +2903,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2951,7 +2951,7 @@
                       "type": "object",
                       "properties": {
                         "discount": {
-                          "$ref": "../components/schemas.yaml#/Discount"
+                          "$ref": "#/components/schemas/Discount"
                         }
                       }
                     },
@@ -2969,7 +2969,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3043,7 +3043,7 @@
                       "type": "object",
                       "properties": {
                         "discount": {
-                          "$ref": "../components/schemas.yaml#/Discount"
+                          "$ref": "#/components/schemas/Discount"
                         }
                       }
                     },
@@ -3061,7 +3061,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3117,7 +3117,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3177,11 +3177,11 @@
                         "promotions": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Promotion"
+                            "$ref": "#/components/schemas/Promotion"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -3199,7 +3199,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3283,7 +3283,7 @@
                       "type": "object",
                       "properties": {
                         "promotion": {
-                          "$ref": "../components/schemas.yaml#/Promotion"
+                          "$ref": "#/components/schemas/Promotion"
                         }
                       }
                     },
@@ -3301,7 +3301,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3311,7 +3311,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3359,7 +3359,7 @@
                       "type": "object",
                       "properties": {
                         "promotion": {
-                          "$ref": "../components/schemas.yaml#/Promotion"
+                          "$ref": "#/components/schemas/Promotion"
                         }
                       }
                     },
@@ -3377,7 +3377,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3451,7 +3451,7 @@
                       "type": "object",
                       "properties": {
                         "promotion": {
-                          "$ref": "../components/schemas.yaml#/Promotion"
+                          "$ref": "#/components/schemas/Promotion"
                         }
                       }
                     },
@@ -3469,7 +3469,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3525,7 +3525,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3585,11 +3585,11 @@
                         "notifications": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Notification"
+                            "$ref": "#/components/schemas/Notification"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -3607,7 +3607,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3655,7 +3655,7 @@
                       "type": "object",
                       "properties": {
                         "notification": {
-                          "$ref": "../components/schemas.yaml#/Notification"
+                          "$ref": "#/components/schemas/Notification"
                         }
                       }
                     },
@@ -3673,7 +3673,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3743,7 +3743,7 @@
                       "type": "object",
                       "properties": {
                         "notification": {
-                          "$ref": "../components/schemas.yaml#/Notification"
+                          "$ref": "#/components/schemas/Notification"
                         }
                       }
                     },
@@ -3761,7 +3761,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3817,7 +3817,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3875,7 +3875,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3935,11 +3935,11 @@
                         "stock_alerts": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/StockAlert"
+                            "$ref": "#/components/schemas/StockAlert"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -3957,7 +3957,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4023,7 +4023,7 @@
                       "type": "object",
                       "properties": {
                         "stock_alert": {
-                          "$ref": "../components/schemas.yaml#/StockAlert"
+                          "$ref": "#/components/schemas/StockAlert"
                         }
                       }
                     },
@@ -4041,7 +4041,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4051,7 +4051,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4099,7 +4099,7 @@
                       "type": "object",
                       "properties": {
                         "stock_alert": {
-                          "$ref": "../components/schemas.yaml#/StockAlert"
+                          "$ref": "#/components/schemas/StockAlert"
                         }
                       }
                     },
@@ -4117,7 +4117,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4187,7 +4187,7 @@
                       "type": "object",
                       "properties": {
                         "stock_alert": {
-                          "$ref": "../components/schemas.yaml#/StockAlert"
+                          "$ref": "#/components/schemas/StockAlert"
                         }
                       }
                     },
@@ -4205,7 +4205,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4261,7 +4261,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4321,11 +4321,11 @@
                         "payment_methods": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/PaymentMethod"
+                            "$ref": "#/components/schemas/PaymentMethod"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -4343,7 +4343,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4424,7 +4424,7 @@
                       "type": "object",
                       "properties": {
                         "payment_method": {
-                          "$ref": "../components/schemas.yaml#/PaymentMethod"
+                          "$ref": "#/components/schemas/PaymentMethod"
                         }
                       }
                     },
@@ -4442,7 +4442,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4452,7 +4452,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4500,7 +4500,7 @@
                       "type": "object",
                       "properties": {
                         "payment_method": {
-                          "$ref": "../components/schemas.yaml#/PaymentMethod"
+                          "$ref": "#/components/schemas/PaymentMethod"
                         }
                       }
                     },
@@ -4518,7 +4518,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4592,7 +4592,7 @@
                       "type": "object",
                       "properties": {
                         "payment_method": {
-                          "$ref": "../components/schemas.yaml#/PaymentMethod"
+                          "$ref": "#/components/schemas/PaymentMethod"
                         }
                       }
                     },
@@ -4610,7 +4610,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4666,7 +4666,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4745,7 +4745,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4835,7 +4835,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4972,11 +4972,11 @@
                         "payments": {
                           "type": "array",
                           "items": {
-                            "$ref": "../components/schemas.yaml#/Payment"
+                            "$ref": "#/components/schemas/Payment"
                           }
                         },
                         "pagination": {
-                          "$ref": "../components/schemas.yaml#/Pagination"
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     },
@@ -4994,7 +4994,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5061,7 +5061,7 @@
                       "type": "object",
                       "properties": {
                         "payment": {
-                          "$ref": "../components/schemas.yaml#/Payment"
+                          "$ref": "#/components/schemas/Payment"
                         }
                       }
                     },
@@ -5079,7 +5079,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5127,7 +5127,7 @@
                       "type": "object",
                       "properties": {
                         "payment": {
-                          "$ref": "../components/schemas.yaml#/Payment"
+                          "$ref": "#/components/schemas/Payment"
                         }
                       }
                     },
@@ -5145,7 +5145,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5218,7 +5218,7 @@
                       "type": "object",
                       "properties": {
                         "payment": {
-                          "$ref": "../components/schemas.yaml#/Payment"
+                          "$ref": "#/components/schemas/Payment"
                         }
                       }
                     },
@@ -5236,7 +5236,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5292,7 +5292,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5400,7 +5400,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5475,7 +5475,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5485,7 +5485,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5576,7 +5576,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5586,7 +5586,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5715,7 +5715,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5725,7 +5725,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "../components/schemas.yaml#/ErrorResponse"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -5811,10 +5811,10 @@
             "example": "https://example.com/image.jpg"
           },
           "brand": {
-            "$ref": "#/Brand"
+            "$ref": "#/components/schemas/Brand"
           },
           "category": {
-            "$ref": "#/Category"
+            "$ref": "#/components/schemas/Category"
           },
           "created_at": {
             "type": "string",
@@ -5902,7 +5902,7 @@
           "cart_items": {
             "type": "array",
             "items": {
-              "$ref": "#/CartItem"
+              "$ref": "#/components/schemas/CartItem"
             }
           },
           "created_at": {
@@ -5943,7 +5943,7 @@
             "example": 1999.98
           },
           "product": {
-            "$ref": "#/Product"
+            "$ref": "#/components/schemas/Product"
           },
           "created_at": {
             "type": "string",
@@ -6005,7 +6005,7 @@
           "order_items": {
             "type": "array",
             "items": {
-              "$ref": "#/OrderItem"
+              "$ref": "#/components/schemas/OrderItem"
             }
           },
           "created_at": {
@@ -6046,7 +6046,7 @@
             "example": 1999.98
           },
           "product": {
-            "$ref": "#/Product"
+            "$ref": "#/components/schemas/Product"
           },
           "created_at": {
             "type": "string",
@@ -6244,7 +6244,7 @@
             "nullable": true
           },
           "product": {
-            "$ref": "#/Product"
+            "$ref": "#/components/schemas/Product"
           },
           "created_at": {
             "type": "string",
@@ -6352,10 +6352,10 @@
             "example": "TXN_987654321"
           },
           "payment_method": {
-            "$ref": "#/PaymentMethod"
+            "$ref": "#/components/schemas/PaymentMethod"
           },
           "order": {
-            "$ref": "#/Order"
+            "$ref": "#/components/schemas/Order"
           },
           "created_at": {
             "type": "string",
@@ -6403,7 +6403,7 @@
                 "example": "eyJhbGciOiJIUzI1NiJ9..."
               },
               "user": {
-                "$ref": "#/User"
+                "$ref": "#/components/schemas/User"
               }
             }
           },

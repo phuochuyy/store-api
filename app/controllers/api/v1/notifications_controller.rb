@@ -135,7 +135,7 @@ module Api
       # POST /api/v1/notifications/send_stock_alerts
       def send_stock_alerts
         alert_ids = params[:alert_ids]
-        return render_error('Alert IDs are required', :bad_request) unless alert_ids.present?
+        return render_error('Alert IDs are required', :bad_request) if alert_ids.blank?
 
         stock_alerts = StockAlert.where(id: alert_ids)
         return render_error('No valid stock alerts found', :not_found) if stock_alerts.empty?
@@ -179,13 +179,13 @@ module Api
       end
 
       def notification_params
-        params.require(:notification).permit(
-          :notification_type,
-          :title,
-          :message,
-          :read,
-          :read_at,
-          metadata: {}
+        params.expect(
+          notification: [:notification_type,
+                         :title,
+                         :message,
+                         :read,
+                         :read_at,
+                         { metadata: {} }]
         )
       end
 

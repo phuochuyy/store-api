@@ -31,7 +31,8 @@ module Orders
           create_shipping_notification(order, shipped_by, tracking_number, carrier)
 
           # Log the shipping action
-          Rails.logger.info "Order #{order.id} shipped by user #{shipped_by.id}. Tracking: #{tracking_number}, Carrier: #{carrier}"
+          Rails.logger.info "Order #{order.id} shipped by user #{shipped_by.id}. " \
+                            "Tracking: #{tracking_number}, Carrier: #{carrier}"
         end
 
         { success: true, message: 'Order shipped successfully' }

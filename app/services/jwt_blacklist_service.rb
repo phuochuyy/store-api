@@ -102,7 +102,7 @@ class JwtBlacklistService
     # @param reason [String] Reason for blacklisting
     # @return [Boolean] True if successful
     def blacklist_user_tokens(user_id, reason: 'User logout')
-      JwtBlacklistToken.blacklist_user_tokens(user_id, reason: reason)
+      JwtBlacklistToken.blacklist_user_tokens?(user_id, reason: reason)
     rescue StandardError => e
       Rails.logger.error "Failed to blacklist user tokens: #{e.message}"
       false

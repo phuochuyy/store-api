@@ -8,7 +8,7 @@ class ApiDocsController < ApplicationController
   end
 
   def swagger_json
-    json_content = File.read(Rails.root.join('swagger/v1/swagger.json'))
+    json_content = Rails.root.join('swagger/v1/swagger.json').read
     render json: json_content
   end
 
@@ -36,6 +36,8 @@ class ApiDocsController < ApplicationController
             margin:0;
             background: #fafafa;
           }
+          .swagger-ui .topbar { display: none; }
+          .swagger-ui .info { margin: 20px 0; }
         </style>
       </head>
       <body>
@@ -45,7 +47,7 @@ class ApiDocsController < ApplicationController
         <script>
           window.onload = function() {
             const ui = SwaggerUIBundle({
-              url: '/swagger/v1/swagger.yaml',
+              url: '/swagger/v1/swagger.json',
               dom_id: '#swagger-ui',
               deepLinking: true,
               presets: [

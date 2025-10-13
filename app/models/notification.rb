@@ -135,7 +135,9 @@ class Notification < ApplicationRecord
   end
 
   def self.mark_all_as_read_for_user(user)
-    where(user: user, read: false).update_all(read: true, read_at: Time.current)
+    where(user: user, read: false).find_each do |notification|
+      notification.update!(read: true, read_at: Time.current)
+    end
   end
 
   def self.get_unread_count_for_user(user)
@@ -153,6 +155,6 @@ class Notification < ApplicationRecord
   end
 
   def set_sent_at
-    update_column(:sent_at, Time.current) if sent_at.nil?
+    update!(sent_at: Time.current) if sent_at.nil?
   end
 end

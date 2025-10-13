@@ -68,7 +68,8 @@ Rails.logger.debug { "Created #{Category.count} categories" }
 products_data = [
   {
     name: 'iPhone 15 Pro',
-    description: 'The most advanced iPhone with titanium design and A17 Pro chip. Features include Pro camera system, Action button, and USB-C connectivity.',
+    description: 'The most advanced iPhone with titanium design and A17 Pro chip. ' \
+                 'Features include Pro camera system, Action button, and USB-C connectivity.',
     price: 999.99,
     stock_quantity: 50,
     brand: brands[0], # Apple

@@ -80,7 +80,7 @@ module Api
       end
 
       def category_params
-        params.require(:category).permit(:name, :description)
+        params.expect(category: %i[name description])
       end
 
       def category_serializer(category)

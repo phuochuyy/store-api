@@ -7,7 +7,7 @@ class EmailVerificationMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: 'Xác thực email của bạn - Store API'
+      subject: I18n.t('mailers.email_verification.subject')
     )
   end
 
@@ -17,7 +17,7 @@ class EmailVerificationMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: 'Gửi lại email xác thực - Store API'
+      subject: I18n.t('mailers.email_verification.resend_subject')
     )
   end
 

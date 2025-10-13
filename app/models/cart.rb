@@ -36,7 +36,7 @@ class Cart < ApplicationRecord
 
   def calculate_total_amount
     total = cart_items.sum { |item| item.quantity * item.unit_price }
-    update_column(:total_amount, total)
+    update!(total_amount: total)
     total
   end
 
@@ -57,7 +57,7 @@ class Cart < ApplicationRecord
     calculate_total_amount
   end
 
-  def remove_product(product)
+  def remove_product?(product)
     cart_item = cart_items.find_by(product: product)
     return false unless cart_item
 
@@ -66,7 +66,7 @@ class Cart < ApplicationRecord
     true
   end
 
-  def update_product_quantity(product, quantity)
+  def update_product_quantity?(product, quantity)
     cart_item = cart_items.find_by(product: product)
     return false unless cart_item
 
@@ -82,7 +82,7 @@ class Cart < ApplicationRecord
 
   def clear
     cart_items.destroy_all
-    update_column(:total_amount, 0.0)
+    update!(total_amount: 0.0)
   end
 
   delegate :empty?, to: :cart_items

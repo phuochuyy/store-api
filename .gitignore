@@ -89,3 +89,5 @@ docs/
 
 # Keep Makefile for development convenience
 # Makefile
+
+my_cv.tex

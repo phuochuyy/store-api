@@ -159,7 +159,7 @@ module Api
       # POST /api/v1/stock_alerts/mark_notifications_sent
       def mark_notifications_sent
         alert_ids = params[:alert_ids]
-        return render_error('Alert IDs are required', :bad_request) unless alert_ids.present?
+        return render_error('Alert IDs are required', :bad_request) if alert_ids.blank?
 
         updated_count = StockAlerts::StockMonitoringService.mark_notifications_sent(alert_ids)
 
@@ -183,16 +183,16 @@ module Api
       end
 
       def stock_alert_params
-        params.require(:stock_alert).permit(
-          :alert_type,
-          :threshold,
-          :status,
-          :message,
-          :resolved_by,
-          :resolution_notes,
-          :dismissed_by,
-          :dismissal_reason,
-          metadata: {}
+        params.expect(
+          stock_alert: [:alert_type,
+                        :threshold,
+                        :status,
+                        :message,
+                        :resolved_by,
+                        :resolution_notes,
+                        :dismissed_by,
+                        :dismissal_reason,
+                        { metadata: {} }]
         )
       end
 

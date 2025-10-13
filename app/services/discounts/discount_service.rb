@@ -136,9 +136,9 @@ module Discounts
         discounts = discounts.where('name ILIKE ?', "%#{filters[:search]}%") if filters[:search].present?
         discounts = discounts.where('code ILIKE ?', "%#{filters[:code]}%") if filters[:code].present?
 
-        discounts = discounts.where('created_at >= ?', filters[:date_from]) if filters[:date_from].present?
+        discounts = discounts.where(created_at: (filters[:date_from])..) if filters[:date_from].present?
 
-        discounts = discounts.where('created_at <= ?', filters[:date_to]) if filters[:date_to].present?
+        discounts = discounts.where(created_at: ..(filters[:date_to])) if filters[:date_to].present?
 
         discounts
       end

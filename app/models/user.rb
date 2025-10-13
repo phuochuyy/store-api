@@ -127,10 +127,6 @@ class User < ApplicationRecord
     [first_name, last_name].compact.join(' ')
   end
 
-  def display_name
-    full_name.presence || name
-  end
-
   def age
     return nil unless date_of_birth
 
@@ -155,7 +151,7 @@ class User < ApplicationRecord
     user_addresses.find_by(address_type: address_type, is_default: true)
   end
 
-  def has_address?(address_type = 'shipping')
+  def address?(address_type = 'shipping')
     user_addresses.exists?(address_type: address_type)
   end
 
@@ -172,7 +168,7 @@ class User < ApplicationRecord
     password_reset_tokens.active
   end
 
-  def has_active_password_reset_token?
+  def active_password_reset_token?
     active_password_reset_tokens.exists?
   end
 

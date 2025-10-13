@@ -9,25 +9,37 @@ module Api
 
       # GET /api/v1/payments
       def index
-        @payments = Payment.includes(:order, :payment_method)
-                           .recent
-                           .page(params[:page])
-                           .per(params[:per_page] || 20)
+        @payments = build_payments_query
+        data = build_payments_response
+        render_success(data, 'Payments retrieved successfully')
+      end
 
-        # Filter by status if provided
-        @payments = @payments.by_status(params[:status]) if params[:status].present?
+      private
 
-        # Filter by payment method if provided
-        @payments = @payments.by_payment_method(params[:payment_method_id]) if params[:payment_method_id].present?
+      def build_payments_query
+        payments = Payment.includes(:order, :payment_method)
+                          .recent
+                          .page(params[:page])
+                          .per(params[:per_page] || 20)
 
-        # Filter by date range if provided
+        apply_payment_filters(payments)
+      end
+
+      def apply_payment_filters(payments)
+        payments = payments.by_status(params[:status]) if params[:status].present?
+        payments = payments.by_payment_method(params[:payment_method_id]) if params[:payment_method_id].present?
+
         if params[:start_date].present? && params[:end_date].present?
           start_date = Date.parse(params[:start_date])
           end_date = Date.parse(params[:end_date])
-          @payments = @payments.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+          payments = payments.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
         end
 
-        data = {
+        payments
+      end
+
+      def build_payments_response
+        {
           payments: @payments.map { |payment| payment_serializer(payment) },
           pagination: {
             current_page: @payments.current_page,
@@ -36,8 +48,6 @@ module Api
             per_page: @payments.limit_value
           }
         }
-
-        render_success(data, 'Payments retrieved successfully')
       end
 
       # GET /api/v1/payments/:id
@@ -119,8 +129,6 @@ module Api
         end
       end
 
-      private
-
       def set_payment
         @payment = Payment.find_by(id: params[:id])
         render_error('Payment not found', :not_found) unless @payment
@@ -131,24 +139,24 @@ module Api
       end
 
       def payment_params
-        params.require(:payment).permit(
-          :payment_method_id,
-          payment_data: {}
+        params.expect(
+          payment: [:payment_method_id,
+                    { payment_data: {} }]
         )
       end
 
       def payment_update_params
-        params.require(:payment).permit(
-          :status,
-          :transaction_id,
-          :gateway_response,
-          :failure_reason,
-          metadata: {}
+        params.expect(
+          payment: [:status,
+                    :transaction_id,
+                    :gateway_response,
+                    :failure_reason,
+                    { metadata: {} }]
         )
       end
 
       def refund_params
-        params.require(:refund).permit(:amount, :reason)
+        params.expect(refund: %i[amount reason])
       end
 
       def payment_serializer(payment)

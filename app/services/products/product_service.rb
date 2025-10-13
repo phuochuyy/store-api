@@ -20,6 +20,18 @@ module Products
         }
       end
 
+      def search_products(filters: {}, pagination: {})
+        products = Product.includes(:brand, :category)
+        products = apply_search_filters(products, filters)
+        products = paginate(products, pagination)
+
+        {
+          products: products.map { |product| ProductSerializer.new(product).as_json },
+          pagination: pagination_meta(products),
+          search_query: filters[:search]
+        }
+      end
+
       def create_product(params)
         product = Product.new(params)
 
@@ -57,8 +69,24 @@ module Products
         products = products.where('name ILIKE ?', "%#{filters[:search]}%") if filters[:search].present?
         products = products.where(brand_id: filters[:brand_id]) if filters[:brand_id].present?
         products = products.where(category_id: filters[:category_id]) if filters[:category_id].present?
-        products = products.where('price >= ?', filters[:min_price]) if filters[:min_price].present?
-        products = products.where('price <= ?', filters[:max_price]) if filters[:max_price].present?
+        products = products.where(price: (filters[:min_price])..) if filters[:min_price].present?
+        products = products.where(price: ..(filters[:max_price])) if filters[:max_price].present?
+        products = products.where('stock_quantity > 0') if filters[:in_stock] == true
+        products
+      end
+
+      def apply_search_filters(products, filters)
+        if filters[:search].present?
+          search_term = "%#{filters[:search]}%"
+          products = products.left_joins(:brand, :category).where(
+            'products.name ILIKE ? OR products.description ILIKE ? OR brands.name ILIKE ? OR categories.name ILIKE ?',
+            search_term, search_term, search_term, search_term
+          )
+        end
+        products = products.where(brand_id: filters[:brand_id]) if filters[:brand_id].present?
+        products = products.where(category_id: filters[:category_id]) if filters[:category_id].present?
+        products = products.where(price: (filters[:min_price])..) if filters[:min_price].present?
+        products = products.where(price: ..(filters[:max_price])) if filters[:max_price].present?
         products = products.where('stock_quantity > 0') if filters[:in_stock] == true
         products
       end

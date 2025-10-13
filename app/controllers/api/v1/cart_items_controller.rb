@@ -95,7 +95,7 @@ module Api
       end
 
       def cart_item_params
-        params.require(:cart_item).permit(:product_id, :quantity)
+        params.expect(cart_item: %i[product_id quantity])
       end
 
       def session_id

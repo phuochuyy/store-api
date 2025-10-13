@@ -1,0 +1,9 @@
+en:
+  mailers:
+    email_verification:
+      subject: "Email Verification - Store API"
+      resend_subject: "Resend Email Verification - Store API"
+  
+  validators:
+    discount:
+      code_format_message: "can only contain uppercase letters, numbers, and underscores"

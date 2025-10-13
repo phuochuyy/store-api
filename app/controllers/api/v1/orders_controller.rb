@@ -1,8 +1,8 @@
 module Api
   module V1
     class OrdersController < Api::V1::BaseController
-      before_action :set_order, only: %i[show update destroy confirm cancel ship deliver apply_discount remove_discount]
-      before_action :admin_only!, only: %i[index update destroy confirm cancel ship deliver]
+      before_action :set_order, only: %i[show update destroy confirm cancel ship]
+      before_action :admin_only!, only: %i[index update destroy confirm cancel ship]
 
       # GET /api/v1/orders (Admin only)
       def index
@@ -30,30 +30,16 @@ module Api
 
       # POST /api/v1/orders
       def create
-        @order = Order.new(order_params)
+        result = Orders::OrderCreationService.create_order(order_params, params[:order_items])
 
-        if @order.save
-          # Add order items from params
-          if params[:order_items].present?
-            params[:order_items].each do |item_params|
-              product = Product.find(item_params[:product_id])
-              @order.order_items.create!(
-                product: product,
-                quantity: item_params[:quantity].to_i,
-                unit_price: product.price
-              )
-              product.reduce_stock(item_params[:quantity].to_i)
-            end
-            @order.update_total_amount
-          end
-
+        if result[:success]
           render json: {
-            message: 'Order created successfully',
-            order: order_serializer(@order)
+            message: result[:message],
+            order: order_serializer(result[:order])
           }, status: :created
         else
           render json: {
-            errors: @order.errors.full_messages
+            errors: result[:details]
           }, status: :unprocessable_entity
         end
       end
@@ -122,20 +108,27 @@ module Api
 
       # POST /api/v1/orders/:id/ship (Admin only)
       def ship
-        result = Orders::ShippingService.ship_order(
+        result = ship_order_with_service
+        render_ship_response(result)
+      end
+
+      private
+
+      def ship_order_with_service
+        Orders::ShippingService.ship_order(
           @order,
           current_user,
           tracking_number: params[:tracking_number],
           carrier: params[:carrier]
         )
+      end
 
+      def render_ship_response(result)
         if result[:success]
           render json: {
             success: true,
             message: 'Order shipped successfully',
-            data: {
-              order: order_serializer(@order.reload)
-            }
+            data: { order: order_serializer(@order.reload) }
           }
         else
           render json: {
@@ -148,20 +141,25 @@ module Api
 
       # POST /api/v1/orders/:id/deliver (Admin only)
       def deliver
-        result = Orders::DeliveryService.deliver_order(
+        result = deliver_order_with_service
+        render_deliver_response(result)
+      end
+
+      def deliver_order_with_service
+        Orders::DeliveryService.deliver_order(
           @order,
           current_user,
           delivery_notes: params[:delivery_notes],
           delivery_signature: params[:delivery_signature]
         )
+      end
 
+      def render_deliver_response(result)
         if result[:success]
           render json: {
             success: true,
             message: 'Order delivered successfully',
-            data: {
-              order: order_serializer(@order.reload)
-            }
+            data: { order: order_serializer(@order.reload) }
           }
         else
           render json: {
@@ -172,8 +170,6 @@ module Api
         end
       end
 
-      private
-
       def set_order
         @order = Order.find(params[:id])
       end
@@ -183,38 +179,11 @@ module Api
       end
 
       def order_serializer(order)
-        {
-          id: order.id,
-          customer_name: order.customer_name,
-          customer_email: order.customer_email,
-          customer_phone: order.customer_phone,
-          total_amount: order.total_amount,
-          status: order.status,
-          tracking_number: order.tracking_number,
-          carrier: order.carrier,
-          shipped_at: order.shipped_at,
-          delivered_at: order.delivered_at,
-          delivery_notes: order.delivery_notes,
-          delivery_signature: order.delivery_signature,
-          shipping_status: order.shipping_status,
-          estimated_delivery_date: order.estimated_delivery_date,
-          created_at: order.created_at,
-          updated_at: order.updated_at
-        }
+        Orders::OrderSerializerService.serialize_order(order)
       end
 
       def order_item_serializer(item)
-        {
-          id: item.id,
-          product: {
-            id: item.product.id,
-            name: item.product.name,
-            price: item.product.price
-          },
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          total_price: item.total_price
-        }
+        Orders::OrderSerializerService.serialize_order_item(item)
       end
 
       # POST /api/v1/orders/:id/apply_discount

@@ -24,7 +24,7 @@ class ProductValidator
   private
 
   def brand_exists
-    return unless brand_id.present?
+    return if brand_id.blank?
 
     return if Brand.exists?(brand_id)
 
@@ -32,7 +32,7 @@ class ProductValidator
   end
 
   def category_exists
-    return unless category_id.present?
+    return if category_id.blank?
 
     return if Category.exists?(category_id)
 
@@ -40,7 +40,7 @@ class ProductValidator
   end
 
   def valid_specifications
-    return unless specifications.present?
+    return if specifications.blank?
 
     begin
       JSON.parse(specifications) if specifications.is_a?(String)

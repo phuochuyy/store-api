@@ -115,9 +115,9 @@ module Api
       end
 
       def promotion_params
-        params.require(:promotion).permit(
-          :name, :description, :promotion_type, :conditions, :benefits,
-          :start_date, :end_date, :is_active, :usage_limit, :priority, :stackable
+        params.expect(
+          promotion: %i[name description promotion_type conditions benefits
+                        start_date end_date is_active usage_limit priority stackable]
         )
       end
 

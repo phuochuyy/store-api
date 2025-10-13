@@ -89,7 +89,7 @@ class Product < ApplicationRecord
     stock_alerts.active_alerts.first
   end
 
-  def has_active_alert?
+  def active_alert?
     stock_alerts.active_alerts.exists?
   end
 

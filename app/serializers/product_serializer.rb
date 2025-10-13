@@ -29,7 +29,7 @@ class ProductSerializer
   end
 
   def specifications
-    return {} unless @product.specifications.present?
+    return {} if @product.specifications.blank?
 
     if @product.specifications.is_a?(String)
       JSON.parse(@product.specifications)

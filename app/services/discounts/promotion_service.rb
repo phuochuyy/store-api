@@ -75,7 +75,7 @@ module Discounts
         end
 
         benefit = promotion.calculate_benefit(order)
-        if benefit[:discount_amount] == 0 && benefit[:free_items].empty? && !benefit[:free_shipping]
+        if benefit[:discount_amount].zero? && benefit[:free_items].empty? && !benefit[:free_shipping]
           return { success: false,
                    error: 'No benefit from this promotion' }
         end
@@ -124,9 +124,9 @@ module Discounts
         promotions = promotions.where(priority: filters[:priority]) if filters[:priority].present?
         promotions = promotions.where('name ILIKE ?', "%#{filters[:search]}%") if filters[:search].present?
 
-        promotions = promotions.where('created_at >= ?', filters[:date_from]) if filters[:date_from].present?
+        promotions = promotions.where(created_at: (filters[:date_from])..) if filters[:date_from].present?
 
-        promotions = promotions.where('created_at <= ?', filters[:date_to]) if filters[:date_to].present?
+        promotions = promotions.where(created_at: ..(filters[:date_to])) if filters[:date_to].present?
 
         promotions
       end
@@ -148,50 +148,7 @@ module Discounts
       end
 
       def apply_promotion_benefit(order, promotion, benefit)
-        ActiveRecord::Base.transaction do
-          # Apply discount amount
-          if benefit[:discount_amount] > 0
-            current_discount = order.discount_amount || 0
-            new_discount = current_discount + benefit[:discount_amount]
-            order.update!(discount_amount: new_discount)
-          end
-
-          # Add free items to order
-          if benefit[:free_items].present?
-            benefit[:free_items].each do |free_item|
-              existing_item = order.order_items.find_by(product_id: free_item[:product_id])
-
-              if existing_item
-                existing_item.update!(quantity: existing_item.quantity + free_item[:quantity])
-              else
-                order.order_items.create!(
-                  product_id: free_item[:product_id],
-                  quantity: free_item[:quantity],
-                  unit_price: 0 # Free item
-                )
-              end
-            end
-          end
-
-          # Handle free shipping (this would be handled in shipping calculation)
-          if benefit[:free_shipping]
-            # This would be stored in order metadata or handled separately
-            Rails.logger.info "Free shipping applied to order #{order.id}"
-          end
-
-          order.update_total_amount
-
-          {
-            success: true,
-            benefit: benefit,
-            promotion: PromotionSerializer.new(promotion).as_json
-          }
-        end
-      rescue StandardError => e
-        {
-          success: false,
-          error: "Failed to apply promotion: #{e.message}"
-        }
+        PromotionBenefitService.apply_promotion_benefit(order, promotion, benefit)
       end
     end
   end

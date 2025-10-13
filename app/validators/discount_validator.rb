@@ -27,7 +27,7 @@ class DiscountValidator
   validates :applies_to, inclusion: { in: %w[all products categories brands] }
   validates :code, presence: true, length: { minimum: 3, maximum: 50 }
   validates :code,
-            format: { with: /\A[A-Z0-9_]+\z/, message: 'can only contain uppercase letters, numbers, and underscores' }
+            format: { with: /\A[A-Z0-9_]+\z/, message: I18n.t('validators.discount.code_format_message') }
 
   validate :valid_discount_value
   validate :valid_date_range

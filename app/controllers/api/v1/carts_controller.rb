@@ -92,7 +92,7 @@ module Api
       def merge
         guest_session_id = params[:guest_session_id]
 
-        return render_error('Guest session ID is required', :bad_request) unless guest_session_id.present?
+        return render_error('Guest session ID is required', :bad_request) if guest_session_id.blank?
 
         guest_cart = Cart.find_by(session_id: guest_session_id, status: 'active')
         user_cart = Cart.find_or_create_for_user(current_user)
@@ -124,7 +124,7 @@ module Api
       end
 
       def cart_params
-        params.require(:cart).permit(:status)
+        params.expect(cart: [:status])
       end
 
       def session_id

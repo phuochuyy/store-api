@@ -6,21 +6,13 @@ class PaymentHistorySerializer
   attributes :id, :action, :previous_status, :new_status, :amount, :transaction_id,
              :gateway_response, :performed_by, :performed_at, :notes, :metadata
 
-  attribute :status_transition do |object|
-    object.status_transition
-  end
+  attribute :status_transition, &:status_transition
 
-  attribute :duration_since_previous do |object|
-    object.duration_since_previous
-  end
+  attribute :duration_since_previous, &:duration_since_previous
 
-  attribute :gateway_data do |object|
-    object.gateway_data
-  end
+  attribute :gateway_data, &:gateway_data
 
-  attribute :metadata_data do |object|
-    object.metadata_data
-  end
+  attribute :metadata_data, &:metadata_data
 
   belongs_to :payment, serializer: PaymentSerializer
 end

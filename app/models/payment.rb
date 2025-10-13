@@ -44,9 +44,9 @@ class Payment < ApplicationRecord
 
   # Scopes
   scope :recent, -> { order(created_at: :desc) }
-  scope :successful, -> { where(status: %w[completed]) }
+  scope :successful, -> { where(status: 'completed') }
   scope :failed, -> { where(status: %w[failed cancelled]) }
-  scope :refundable, -> { where(status: %w[completed]) }
+  scope :refundable, -> { successful }
   scope :by_status, ->(status) { where(status: status) }
   scope :by_payment_method, ->(method) { where(payment_method: method) }
 
@@ -138,7 +138,7 @@ class Payment < ApplicationRecord
   end
 
   def gateway_data
-    return {} unless gateway_response.present?
+    return {} if gateway_response.blank?
 
     JSON.parse(gateway_response)
   rescue JSON::ParserError

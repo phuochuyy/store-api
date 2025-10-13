@@ -1,0 +1,9 @@
+vi:
+  mailers:
+    email_verification:
+      subject: "Xác thực email của bạn - Store API"
+      resend_subject: "Gửi lại email xác thực - Store API"
+  
+  validators:
+    discount:
+      code_format_message: "chỉ có thể chứa chữ hoa, số và dấu gạch dưới"

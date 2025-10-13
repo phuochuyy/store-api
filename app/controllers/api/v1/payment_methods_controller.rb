@@ -139,14 +139,14 @@ module Api
       end
 
       def payment_method_params
-        params.require(:payment_method).permit(
-          :name,
-          :description,
-          :gateway_type,
-          :processing_fee_percentage,
-          :processing_fee_fixed,
-          :is_active,
-          gateway_config: {}
+        params.expect(
+          payment_method: [:name,
+                           :description,
+                           :gateway_type,
+                           :processing_fee_percentage,
+                           :processing_fee_fixed,
+                           :is_active,
+                           { gateway_config: {} }]
         )
       end
 

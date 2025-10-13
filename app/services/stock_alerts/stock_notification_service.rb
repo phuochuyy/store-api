@@ -71,7 +71,7 @@ module StockAlerts
         end
 
         {
-          success: results[:notifications_sent] > 0,
+          success: results[:notifications_sent].positive?,
           results: results,
           message: "Processed #{results[:alerts_processed]} alerts, sent #{results[:notifications_sent]} notifications"
         }
@@ -81,7 +81,7 @@ module StockAlerts
       # @return [Hash] Result with success status and summary
       def send_critical_stock_alert_notifications
         critical_alerts = StockAlerts::StockMonitoringService.get_critical_alerts
-        pending_alerts = critical_alerts.select { |alert| !alert.notification_sent? }
+        pending_alerts = critical_alerts.reject(&:notification_sent?)
 
         return { success: true, message: 'No critical alerts pending notification' } if pending_alerts.empty?
 
@@ -145,14 +145,12 @@ module StockAlerts
         start_date = case period
                      when 'day'
                        1.day.ago
-                     when 'week'
-                       1.week.ago
                      when 'month'
                        1.month.ago
                      when 'year'
                        1.year.ago
                      else
-                       1.week.ago
+                       1.week.ago # Default to week
                      end
 
         notifications = Notification.where(created_at: start_date..)

@@ -64,7 +64,7 @@ payment_methods_data = [
   }
 ]
 
-puts 'Creating payment methods...'
+Rails.logger.debug 'Creating payment methods...'
 
 payment_methods_data.each do |method_data|
   payment_method = PaymentMethod.find_or_create_by(name: method_data[:name]) do |pm|
@@ -77,11 +77,11 @@ payment_methods_data.each do |method_data|
   end
 
   if payment_method.persisted?
-    puts "✓ Created payment method: #{payment_method.name}"
+    Rails.logger.debug { "✓ Created payment method: #{payment_method.name}" }
   else
-    puts "✗ Failed to create payment method: #{payment_method.name}"
-    puts "  Errors: #{payment_method.errors.full_messages.join(', ')}"
+    Rails.logger.debug { "✗ Failed to create payment method: #{payment_method.name}" }
+    Rails.logger.debug { "  Errors: #{payment_method.errors.full_messages.join(', ')}" }
   end
 end
 
-puts 'Payment methods seeding completed!'
+Rails.logger.debug 'Payment methods seeding completed!'

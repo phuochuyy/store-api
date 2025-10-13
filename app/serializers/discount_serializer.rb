@@ -9,21 +9,13 @@ class DiscountSerializer < ActiveModel::Serializer
   attribute :expired, key: :is_expired
   attribute :within_usage_limit, key: :within_usage_limit
 
-  def available
-    object.available?
-  end
+  delegate :available?, to: :object
 
-  def current
-    object.current?
-  end
+  delegate :current?, to: :object
 
-  def expired
-    object.expired?
-  end
+  delegate :expired?, to: :object
 
-  def within_usage_limit
-    object.within_usage_limit?
-  end
+  delegate :within_usage_limit?, to: :object
 
   def conditions
     return nil if object.conditions.blank?

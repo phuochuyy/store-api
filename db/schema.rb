@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_09_050006) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -47,6 +47,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_09_050006) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_brands_on_name_unique", unique: true
   end
 
   create_table "cart_items", force: :cascade do |t|
@@ -79,6 +80,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_09_050006) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_categories_on_name_unique", unique: true
   end
 
   create_table "coupons", force: :cascade do |t|
@@ -435,6 +437,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_09_050006) do
     t.text "bio"
     t.json "preferences", default: {}
     t.index ["date_of_birth"], name: "index_users_on_date_of_birth"
+    t.index ["email"], name: "index_users_on_email_unique", unique: true
     t.index ["email_verification_token"], name: "index_users_on_email_verification_token", unique: true
     t.index ["phone"], name: "index_users_on_phone"
   end

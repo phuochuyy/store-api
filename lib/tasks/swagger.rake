@@ -66,7 +66,7 @@ namespace :swagger do
 
       # Validate paths
       paths = swagger_content['paths']
-      if paths.nil? || paths.empty?
+      if paths.blank?
         puts '❌ No paths defined'
         exit 1
       end
@@ -80,14 +80,14 @@ namespace :swagger do
 
       # Validate schemas
       schemas = components['schemas']
-      if schemas.nil? || schemas.empty?
+      if schemas.blank?
         puts '❌ No schemas defined'
         exit 1
       end
 
       # Validate security schemes
       security_schemes = components['securitySchemes']
-      if security_schemes.nil? || security_schemes.empty?
+      if security_schemes.blank?
         puts '❌ No security schemes defined'
         exit 1
       end
@@ -104,28 +104,6 @@ namespace :swagger do
       exit 1
     rescue StandardError => e
       puts "❌ Validation error: #{e.message}"
-      exit 1
-    end
-  end
-
-  desc 'Export Swagger documentation to JSON'
-  task export_json: :environment do
-    puts '📤 Exporting Swagger documentation to JSON...'
-
-    begin
-      require 'yaml'
-      require 'json'
-
-      swagger_file = Rails.root.join('swagger/v1/swagger.yaml')
-      swagger_content = YAML.load_file(swagger_file)
-
-      json_file = Rails.root.join('swagger/v1/swagger.json')
-      File.write(json_file, JSON.pretty_generate(swagger_content))
-
-      puts "✅ Exported to: #{json_file}"
-      puts "📊 File size: #{File.size(json_file)} bytes"
-    rescue StandardError => e
-      puts "❌ Export error: #{e.message}"
       exit 1
     end
   end
@@ -166,7 +144,7 @@ namespace :swagger do
       # Schemas
       schemas = swagger_content['components']['schemas']
       puts "📋 Schemas (#{schemas.keys.count}):"
-      schemas.keys.each do |schema|
+      schemas.each_key do |schema|
         puts "   - #{schema}"
       end
       puts ''
@@ -189,9 +167,9 @@ namespace :swagger do
 
       # Response codes
       response_codes = Set.new
-      paths.each do |_path, methods|
-        methods.each do |_method, details|
-          details['responses']&.each do |code, _|
+      paths.each_value do |methods|
+        methods.each_value do |details|
+          details['responses']&.each_key do |code|
             response_codes.add(code)
           end
         end

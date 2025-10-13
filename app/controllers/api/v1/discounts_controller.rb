@@ -116,10 +116,10 @@ module Api
       end
 
       def discount_params
-        params.require(:discount).permit(
-          :name, :description, :discount_type, :value, :minimum_amount,
-          :maximum_discount, :usage_limit, :start_date, :end_date,
-          :is_active, :code, :applies_to, :applies_to_ids, :conditions
+        params.expect(
+          discount: %i[name description discount_type value minimum_amount
+                       maximum_discount usage_limit start_date end_date
+                       is_active code applies_to applies_to_ids conditions]
         )
       end
 

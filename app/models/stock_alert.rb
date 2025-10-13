@@ -147,23 +147,10 @@ class StockAlert < ApplicationRecord
   end
 
   def self.create_alert_for_product(product, alert_type, threshold = nil)
-    # Don't create duplicate active alerts for the same product and type
     existing_alert = active_alerts.find_by(product: product, alert_type: alert_type)
     return existing_alert if existing_alert
 
-    # Set default threshold based on alert type if not provided
-    threshold ||= case alert_type
-                  when 'out_of_stock'
-                    0
-                  when 'critical_stock'
-                    5
-                  when 'low_stock'
-                    10
-                  when 'reorder_point'
-                    20
-                  else
-                    0
-                  end
+    threshold ||= default_threshold_for_alert_type(alert_type)
 
     create!(
       product: product,
@@ -173,6 +160,21 @@ class StockAlert < ApplicationRecord
       triggered_at: Time.current,
       message: generate_alert_message(product, alert_type, threshold, product.stock_quantity)
     )
+  end
+
+  def self.default_threshold_for_alert_type(alert_type)
+    case alert_type
+    when 'out_of_stock'
+      0
+    when 'critical_stock'
+      5
+    when 'low_stock'
+      10
+    when 'reorder_point'
+      20
+    else
+      10 # Default to low_stock threshold
+    end
   end
 
   def self.generate_alert_message(product, alert_type, threshold, current_stock)
@@ -186,7 +188,7 @@ class StockAlert < ApplicationRecord
     when 'reorder_point'
       "Product '#{product.name}' has reached reorder point (#{current_stock} units remaining, threshold: #{threshold})"
     else
-      "Stock alert for product '#{product.name}'"
+      "Unknown stock alert for product '#{product.name}'"
     end
   end
 
@@ -197,7 +199,7 @@ class StockAlert < ApplicationRecord
     alerts_created << create_alert_for_product(product, 'out_of_stock', 0) if product.stock_quantity <= 0
 
     # Check for critical stock (1-5 units)
-    if product.stock_quantity > 0 && product.stock_quantity <= 5
+    if product.stock_quantity.positive? && product.stock_quantity <= 5
       alerts_created << create_alert_for_product(product, 'critical_stock', 5)
     end
 
@@ -219,7 +221,7 @@ class StockAlert < ApplicationRecord
       # Check if alert should be resolved based on current stock
       should_resolve = case alert.alert_type
                        when 'out_of_stock'
-                         product.stock_quantity > 0
+                         product.stock_quantity.positive?
                        when 'critical_stock'
                          product.stock_quantity > 5
                        when 'low_stock'
@@ -233,8 +235,6 @@ class StockAlert < ApplicationRecord
       alert.resolve! if should_resolve
     end
   end
-
-  private
 
   def set_defaults
     self.triggered_at ||= Time.current
@@ -256,4 +256,6 @@ class StockAlert < ApplicationRecord
     # Send notification in background to avoid blocking
     StockAlertNotificationJob.perform_later(self)
   end
+
+  private_class_method :check_and_create_alerts_for_product, :resolve_alerts_for_product
 end

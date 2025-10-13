@@ -49,7 +49,7 @@ class Order < ApplicationRecord
   def update_total_amount
     subtotal = order_items.sum(&:total_price)
     final_total = subtotal - (discount_amount || 0)
-    update_columns(total_amount: final_total, discount_amount: discount_amount || 0)
+    update!(total_amount: final_total, discount_amount: discount_amount || 0)
   end
 
   def subtotal_amount
@@ -60,8 +60,8 @@ class Order < ApplicationRecord
     subtotal_amount - (discount_amount || 0)
   end
 
-  def has_discount?
-    discount_amount.present? && discount_amount > 0
+  def discount?
+    discount_amount.present? && discount_amount.positive?
   end
 
   def apply_discount(discount_code)
@@ -180,7 +180,7 @@ class Order < ApplicationRecord
   end
 
   # Shipping and delivery methods
-  def has_tracking_info?
+  def tracking_info?
     tracking_number.present? || carrier.present?
   end
 

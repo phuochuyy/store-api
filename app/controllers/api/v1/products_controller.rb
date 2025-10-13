@@ -20,6 +20,16 @@ module Api
         render_success(result, 'Product retrieved successfully')
       end
 
+      # GET /api/v1/products/search
+      def search
+        filters = extract_filters
+        pagination = extract_pagination
+
+        result = Products::ProductService.search_products(filters: filters, pagination: pagination)
+
+        render_success(result, 'Products search completed successfully')
+      end
+
       # POST /api/v1/products
       def create
         validator = ProductValidator.new(product_params)
@@ -95,8 +105,8 @@ module Api
       end
 
       def product_params
-        params.require(:product).permit(:name, :description, :price, :stock_quantity, :brand_id, :category_id,
-                                        :specifications)
+        params.expect(product: %i[name description price stock_quantity brand_id category_id
+                                  specifications])
       end
 
       def extract_filters

@@ -18,7 +18,7 @@ class JwtBlacklistToken < ApplicationRecord
   validates :token_type, inclusion: { in: %w[access refresh password_reset email_verification] }
 
   scope :active, -> { where('expires_at > ?', Time.current) }
-  scope :expired, -> { where('expires_at <= ?', Time.current) }
+  scope :expired, -> { where(expires_at: ..Time.current) }
   scope :by_token_type, ->(type) { where(token_type: type) }
   scope :by_user, ->(user_id) { where(user_id: user_id) }
 
@@ -38,30 +38,37 @@ class JwtBlacklistToken < ApplicationRecord
   def self.blacklist_token(token, user_id: nil, token_type: 'access', reason: nil, expires_at: nil)
     return false if token.blank?
 
-    # If no expires_at provided, try to decode token to get expiry
-    if expires_at.nil?
-      begin
-        payload = JWT.decode(token, Rails.application.credentials.secret_key_base, true, { algorithm: 'HS256' }).first
-        expires_at = Time.zone.at(payload['exp']) if payload['exp']
-      rescue JWT::DecodeError
-        # If we can't decode, set a default expiry
-        expires_at = 24.hours.from_now
-      end
-    end
+    expires_at ||= extract_token_expiry(token)
 
-    # Check if token already exists
     existing_token = find_by(token: token)
     if existing_token
-      # Update existing token if needed
-      existing_token.update!(
-        user_id: user_id,
-        token_type: token_type,
-        reason: reason,
-        expires_at: expires_at
-      )
-      return true
+      update_existing_token(existing_token, user_id, token_type, reason, expires_at)
+    else
+      create_new_blacklisted_token(token, user_id, token_type, reason, expires_at)
     end
+    true
+  rescue ActiveRecord::RecordNotUnique
+    # Token already blacklisted
+    true
+  end
 
+  def self.extract_token_expiry(token)
+    payload = JWT.decode(token, Rails.application.credentials.secret_key_base, true, { algorithm: 'HS256' }).first
+    Time.zone.at(payload['exp']) if payload['exp']
+  rescue JWT::DecodeError
+    24.hours.from_now
+  end
+
+  def self.update_existing_token(existing_token, user_id, token_type, reason, expires_at)
+    existing_token.update!(
+      user_id: user_id,
+      token_type: token_type,
+      reason: reason,
+      expires_at: expires_at
+    )
+  end
+
+  def self.create_new_blacklisted_token(token, user_id, token_type, reason, expires_at)
     create!(
       token: token,
       user_id: user_id,
@@ -69,13 +76,10 @@ class JwtBlacklistToken < ApplicationRecord
       reason: reason,
       expires_at: expires_at
     )
-  rescue ActiveRecord::RecordNotUnique
-    # Token already blacklisted
-    true
   end
 
   # Blacklist all tokens for a user
-  def self.blacklist_user_tokens(user_id, reason: 'User logout')
+  def self.blacklist_user_tokens?(user_id, reason: 'User logout')
     # This is a simplified implementation
     # In a real scenario, you might want to store user-specific token identifiers
     # and blacklist them individually
@@ -93,6 +97,9 @@ class JwtBlacklistToken < ApplicationRecord
       by_user: group(:user_id).count
     }
   end
+
+  private_class_method :update_existing_token, :create_new_blacklisted_token,
+                       :blacklist_user_tokens?
 
   # Check if token is expired
   def expired?

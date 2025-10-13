@@ -67,9 +67,9 @@ module Api
       def verify_email
         token = params[:token]
 
-        return render_error('Verification token is required', :bad_request) unless token.present?
+        return render_error('Verification token is required', :bad_request) if token.blank?
 
-        user = User.find_by_verification_token(token)
+        user = User.find_by(verification_token: token)
 
         return render_error('Invalid or expired verification token', :not_found) unless user
 
@@ -83,9 +83,9 @@ module Api
       def resend_verification
         email = params[:email]
 
-        return render_error('Email is required', :bad_request) unless email.present?
+        return render_error('Email is required', :bad_request) if email.blank?
 
-        user = User.find_by_email(email)
+        user = User.find_by(email: email)
 
         return render_error('User not found', :not_found) unless user
 
@@ -108,7 +108,7 @@ module Api
         admin_only!
 
         user_id = params[:user_id]
-        return render_error('User ID is required', :bad_request) unless user_id.present?
+        return render_error('User ID is required', :bad_request) if user_id.blank?
 
         user = User.find_by(id: user_id)
         return render_error('User not found', :not_found) unless user
@@ -129,7 +129,7 @@ module Api
 
         # Support both nested user object and direct parameters
         if params[:user].present?
-          params.require(:user).permit(permitted_params)
+          params.expect(user: [permitted_params])
         else
           params.permit(permitted_params)
         end

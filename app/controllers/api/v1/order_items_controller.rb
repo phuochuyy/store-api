@@ -64,7 +64,7 @@ module Api
       end
 
       def order_item_params
-        params.require(:order_item).permit(:product_id, :quantity)
+        params.expect(order_item: %i[product_id quantity])
       end
     end
   end

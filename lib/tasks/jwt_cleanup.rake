@@ -9,7 +9,7 @@ namespace :jwt do
     puts "Cleaned up #{cleaned_count} expired tokens"
     puts "Remaining tokens: #{JwtBlacklistToken.count}"
 
-    if cleaned_count > 0
+    if cleaned_count.positive?
       puts '✅ Cleanup completed successfully'
     else
       puts 'ℹ️  No expired tokens found'
@@ -43,7 +43,7 @@ namespace :jwt do
     puts '⚠️  WARNING: This will clear ALL JWT blacklist tokens!'
     print "Are you sure? Type 'yes' to continue: "
 
-    confirmation = STDIN.gets.chomp
+    confirmation = $stdin.gets.chomp
     if confirmation == 'yes'
       count = JwtBlacklistService.clear_all_blacklisted_tokens
       puts "✅ Cleared #{count} tokens"

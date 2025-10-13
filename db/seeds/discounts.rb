@@ -1,5 +1,5 @@
 # Discount Seeds
-puts 'Creating discount seeds...'
+Rails.logger.debug 'Creating discount seeds...'
 
 # Percentage discount
 Discount.create!(
@@ -90,10 +90,10 @@ if Product.exists?
   )
 end
 
-puts "Created #{Discount.count} discounts"
+Rails.logger.debug { "Created #{Discount.count} discounts" }
 
 # Promotion Seeds
-puts 'Creating promotion seeds...'
+Rails.logger.debug 'Creating promotion seeds...'
 
 # Bulk pricing promotion
 Promotion.create!(
@@ -197,5 +197,5 @@ Promotion.create!(
   stackable: true
 )
 
-puts "Created #{Promotion.count} promotions"
-puts 'Discount and Promotion seeds completed!'
+Rails.logger.debug { "Created #{Promotion.count} promotions" }
+Rails.logger.debug 'Discount and Promotion seeds completed!'
