@@ -60,20 +60,19 @@ curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:3002/api/v1/products
 - JWT Authentication
 - Docker & Docker Compose
 - Swagger/OpenAPI
-- RSpec (testing)
 - RuboCop (code quality)
 
 ## Development
 
 ```bash
-# Run tests
-docker compose exec web bundle exec rspec
-
 # Code quality check
 docker compose exec web bundle exec rubocop
 
 # Access Rails console
 docker compose exec web bundle exec rails console
+
+# View logs
+docker compose logs web
 ```
 
 ## Default Users
