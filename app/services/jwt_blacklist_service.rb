@@ -61,7 +61,7 @@ class JwtBlacklistService
     # Get all blacklisted tokens (for admin purposes)
     # @return [Array<JwtBlacklistToken>] Array of blacklisted tokens
     def all_blacklisted_tokens
-      JwtBlacklistToken.active.includes(:user)
+      JwtBlacklistToken.active
     rescue StandardError => e
       Rails.logger.error "Failed to get blacklisted tokens: #{e.message}"
       []
@@ -102,7 +102,7 @@ class JwtBlacklistService
     # @param reason [String] Reason for blacklisting
     # @return [Boolean] True if successful
     def blacklist_user_tokens(user_id, reason: 'User logout')
-      JwtBlacklistToken.blacklist_user_tokens?(user_id, reason: reason)
+      JwtBlacklistToken.blacklist_user_tokens(user_id, reason: reason)
     rescue StandardError => e
       Rails.logger.error "Failed to blacklist user tokens: #{e.message}"
       false

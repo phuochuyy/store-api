@@ -79,7 +79,7 @@ class JwtBlacklistToken < ApplicationRecord
   end
 
   # Blacklist all tokens for a user
-  def self.blacklist_user_tokens?(user_id, reason: 'User logout')
+  def self.blacklist_user_tokens(user_id, reason: 'User logout')
     # This is a simplified implementation
     # In a real scenario, you might want to store user-specific token identifiers
     # and blacklist them individually
@@ -98,8 +98,7 @@ class JwtBlacklistToken < ApplicationRecord
     }
   end
 
-  private_class_method :update_existing_token, :create_new_blacklisted_token,
-                       :blacklist_user_tokens?
+  private_class_method :update_existing_token, :create_new_blacklisted_token
 
   # Check if token is expired
   def expired?
