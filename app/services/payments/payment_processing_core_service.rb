@@ -123,7 +123,7 @@ module Payments
       end
 
       # Gateway-specific payment processing methods
-      def process_stripe_payment(payment, payment_data)
+      def process_stripe_payment(_payment, _payment_data)
         # Mock Stripe payment processing
         {
           success: true,
@@ -132,7 +132,7 @@ module Payments
         }
       end
 
-      def process_paypal_payment(payment, payment_data)
+      def process_paypal_payment(_payment, _payment_data)
         # Mock PayPal payment processing
         {
           success: true,
@@ -141,7 +141,7 @@ module Payments
         }
       end
 
-      def process_square_payment(payment, payment_data)
+      def process_square_payment(_payment, _payment_data)
         # Mock Square payment processing
         {
           success: true,
@@ -150,7 +150,7 @@ module Payments
         }
       end
 
-      def process_stripe_refund(payment, refund_amount, reason)
+      def process_stripe_refund(_payment, _refund_amount, _reason)
         # Mock Stripe refund processing
         {
           success: true,
@@ -159,7 +159,7 @@ module Payments
         }
       end
 
-      def process_paypal_refund(payment, refund_amount, reason)
+      def process_paypal_refund(_payment, _refund_amount, _reason)
         # Mock PayPal refund processing
         {
           success: true,
@@ -168,7 +168,7 @@ module Payments
         }
       end
 
-      def process_square_refund(payment, refund_amount, reason)
+      def process_square_refund(_payment, _refund_amount, _reason)
         # Mock Square refund processing
         {
           success: true,

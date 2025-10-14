@@ -79,7 +79,7 @@ module StockAlerts
         end
       end
 
-      def adjust_for_seasonality(product, base_quantity)
+      def adjust_for_seasonality(_product, base_quantity)
         # Simple seasonality adjustment
         current_month = Time.current.month
         seasonal_multiplier = case current_month
@@ -117,7 +117,7 @@ module StockAlerts
         current_stock = product.stock_quantity
         reorder_point = calculate_reorder_point(product)
 
-        if current_stock == 0
+        if current_stock.zero?
           100 # Critical
         elsif current_stock <= reorder_point * 0.5
           80 # High
@@ -147,7 +147,7 @@ module StockAlerts
         current_stock = product.stock_quantity
         reorder_point = calculate_reorder_point(product)
 
-        if current_stock == 0
+        if current_stock.zero?
           recommendations << 'Immediate reorder required - out of stock'
         elsif current_stock <= reorder_point * 0.5
           recommendations << 'Urgent reorder needed - stock critically low'

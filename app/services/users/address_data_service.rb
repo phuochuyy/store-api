@@ -96,7 +96,7 @@ module Users
         end
 
         {
-          success: import_results[:failed] == 0,
+          success: import_results[:failed].zero?,
           import_summary: import_results,
           message: "Import completed: #{import_results[:successful]} successful, #{import_results[:failed]} failed"
         }

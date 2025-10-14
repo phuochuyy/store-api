@@ -54,7 +54,7 @@ module Orders
         end
       end
 
-      def send_email_notification(order, delivery_info)
+      def send_email_notification(order, _delivery_info)
         # Email notification logic would go here
         Rails.logger.info "Sending order delivered email for order #{order.id}"
       end

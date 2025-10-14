@@ -35,7 +35,7 @@ module Users
       end
 
       def validate_profile_params(params)
-        return { success: true } unless params[:date_of_birth].present?
+        return { success: true } if params[:date_of_birth].blank?
 
         date_validation = validate_date_of_birth(params[:date_of_birth])
         return date_validation unless date_validation[:success]

@@ -60,7 +60,7 @@ module Orders
         end
       end
 
-      def send_email_notification(order, payment_status)
+      def send_email_notification(order, _payment_status)
         # Email notification logic would go here
         Rails.logger.info "Sending payment status email for order #{order.id}"
       end

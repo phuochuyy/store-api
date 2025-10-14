@@ -65,7 +65,7 @@ module Discounts
       end
 
       def add_free_items(order, benefit)
-        return unless benefit[:free_items].present?
+        return if benefit[:free_items].blank?
 
         benefit[:free_items].each do |free_item|
           existing_item = order.order_items.find_by(product_id: free_item[:product_id])

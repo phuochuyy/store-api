@@ -45,7 +45,7 @@ module Orders
         )
       end
 
-      def send_email_notification(order, reason)
+      def send_email_notification(order, _reason)
         # Email notification logic would go here
         Rails.logger.info "Sending order cancelled email for order #{order.id}"
       end

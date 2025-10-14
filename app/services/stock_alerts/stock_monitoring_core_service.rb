@@ -73,7 +73,7 @@ module StockAlerts
       def should_resolve_alert?(alert, product)
         case alert.alert_type
         when 'out_of_stock'
-          product.stock_quantity > 0
+          product.stock_quantity.positive?
         when 'critical_stock'
           product.stock_quantity > alert.threshold
         when 'low_stock'

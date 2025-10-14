@@ -75,17 +75,17 @@ module Payments
         end
       end
 
-      def verify_stripe_signature(payload, signature)
+      def verify_stripe_signature(_payload, _signature)
         # Mock Stripe signature verification
         { success: true, message: 'Stripe signature verified' }
       end
 
-      def verify_paypal_signature(payload, signature)
+      def verify_paypal_signature(_payload, _signature)
         # Mock PayPal signature verification
         { success: true, message: 'PayPal signature verified' }
       end
 
-      def verify_square_signature(payload, signature)
+      def verify_square_signature(_payload, _signature)
         # Mock Square signature verification
         { success: true, message: 'Square signature verified' }
       end

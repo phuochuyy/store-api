@@ -93,36 +93,36 @@ module Payments
       def validate_fee_config(payment_method)
         errors = []
 
-        if payment_method.fee_percentage.present? && (payment_method.fee_percentage < 0 || payment_method.fee_percentage > 100)
+        if payment_method.fee_percentage.present? && (payment_method.fee_percentage.negative? || payment_method.fee_percentage > 100)
           errors << 'Fee percentage must be between 0 and 100'
         end
 
-        if payment_method.fee_fixed_amount.present? && (payment_method.fee_fixed_amount < 0)
+        if payment_method.fee_fixed_amount.present? && payment_method.fee_fixed_amount.negative?
           errors << 'Fixed fee amount cannot be negative'
         end
 
         errors
       end
 
-      def validate_stripe_config(payment_method)
+      def validate_stripe_config(_payment_method)
         []
         # Add Stripe-specific validation logic here
         # errors << 'Stripe API key is required' if payment_method.api_key.blank?
       end
 
-      def validate_paypal_config(payment_method)
+      def validate_paypal_config(_payment_method)
         []
         # Add PayPal-specific validation logic here
         # errors << 'PayPal client ID is required' if payment_method.client_id.blank?
       end
 
-      def validate_square_config(payment_method)
+      def validate_square_config(_payment_method)
         []
         # Add Square-specific validation logic here
         # errors << 'Square application ID is required' if payment_method.app_id.blank?
       end
 
-      def test_stripe_connectivity(payment_method)
+      def test_stripe_connectivity(_payment_method)
         # Mock Stripe connectivity test
         {
           success: true,
@@ -131,7 +131,7 @@ module Payments
         }
       end
 
-      def test_paypal_connectivity(payment_method)
+      def test_paypal_connectivity(_payment_method)
         # Mock PayPal connectivity test
         {
           success: true,
@@ -140,7 +140,7 @@ module Payments
         }
       end
 
-      def test_square_connectivity(payment_method)
+      def test_square_connectivity(_payment_method)
         # Mock Square connectivity test
         {
           success: true,

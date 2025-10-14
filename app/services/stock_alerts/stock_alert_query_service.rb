@@ -63,7 +63,7 @@ module StockAlerts
         alerts.page(page).per(per_page)
       end
 
-      def build_pagination_info(alerts, page, per_page)
+      def build_pagination_info(alerts, _page, per_page)
         {
           current_page: alerts.current_page,
           total_pages: alerts.total_pages,
