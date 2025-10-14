@@ -38,9 +38,9 @@ categories:
                     categories:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Category'
+                        $ref: './components/schemas.yaml#/Category'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Categories retrieved successfully"
@@ -49,7 +49,7 @@ categories:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -88,7 +88,7 @@ categories:
                   type: object
                   properties:
                     category:
-                      $ref: '../components/schemas.yaml#/Category'
+                      $ref: './components/schemas.yaml#/Category'
                 message:
                   type: string
                   example: "Category created successfully"
@@ -97,16 +97,16 @@ categories:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-category_by_id:
-  get:
+  category_by_id:
+    get::
     tags:
       - Categories
     summary: Get category by ID
@@ -136,11 +136,11 @@ category_by_id:
                   type: object
                   properties:
                     category:
-                      $ref: '../components/schemas.yaml#/Category'
+                      $ref: './components/schemas.yaml#/Category'
                     products:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Product'
+                        $ref: './components/schemas.yaml#/Product'
                 message:
                   type: string
                   example: "Category retrieved successfully"
@@ -149,7 +149,7 @@ category_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -194,7 +194,7 @@ category_by_id:
                   type: object
                   properties:
                     category:
-                      $ref: '../components/schemas.yaml#/Category'
+                      $ref: './components/schemas.yaml#/Category'
                 message:
                   type: string
                   example: "Category updated successfully"
@@ -203,7 +203,7 @@ category_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -239,4 +239,4 @@ category_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'

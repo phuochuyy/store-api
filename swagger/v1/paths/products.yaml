@@ -38,9 +38,9 @@ products:
                     products:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Product'
+                        $ref: './components/schemas.yaml#/Product'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Products retrieved successfully"
@@ -49,7 +49,7 @@ products:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -104,7 +104,7 @@ products:
                   type: object
                   properties:
                     product:
-                      $ref: '../components/schemas.yaml#/Product'
+                      $ref: './components/schemas.yaml#/Product'
                 message:
                   type: string
                   example: "Product created successfully"
@@ -113,23 +113,23 @@ products:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-product_by_id:
-  get:
-    tags:
-      - Products
-    summary: Get product by ID
-    description: Get detailed information about a specific product
-    security:
-      - bearerAuth: []
-    parameters:
+  product_by_id:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      description: Get detailed information about a specific product
+      security:
+        - bearerAuth: []
+      parameters:
       - name: id
         in: path
         required: true
@@ -152,7 +152,7 @@ product_by_id:
                   type: object
                   properties:
                     product:
-                      $ref: '../components/schemas.yaml#/Product'
+                      $ref: './components/schemas.yaml#/Product'
                 message:
                   type: string
                   example: "Product retrieved successfully"
@@ -161,7 +161,7 @@ product_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -212,7 +212,7 @@ product_by_id:
                   type: object
                   properties:
                     product:
-                      $ref: '../components/schemas.yaml#/Product'
+                      $ref: './components/schemas.yaml#/Product'
                 message:
                   type: string
                   example: "Product updated successfully"
@@ -221,7 +221,7 @@ product_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -257,10 +257,10 @@ product_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-search:
-  get:
+  search:
+    get::
     tags:
       - Products
     summary: Search products
@@ -306,15 +306,15 @@ search:
                     products:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Product'
+                        $ref: './components/schemas.yaml#/Product'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Search results retrieved successfully"
 
-upload_image:
-  post:
+  upload_image:
+    post::
     tags:
       - Products
     summary: Upload product image
@@ -355,8 +355,8 @@ upload_image:
                   type: string
                   example: "Image uploaded successfully"
 
-remove_image:
-  delete:
+  remove_image:
+    delete::
     tags:
       - Products
     summary: Remove product image

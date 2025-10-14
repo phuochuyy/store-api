@@ -38,9 +38,9 @@ discounts:
                     discounts:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Discount'
+                        $ref: './components/schemas.yaml#/Discount'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Discounts retrieved successfully"
@@ -49,7 +49,7 @@ discounts:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -109,7 +109,7 @@ discounts:
                   type: object
                   properties:
                     discount:
-                      $ref: '../components/schemas.yaml#/Discount'
+                      $ref: './components/schemas.yaml#/Discount'
                 message:
                   type: string
                   example: "Discount created successfully"
@@ -118,16 +118,16 @@ discounts:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-discount_by_id:
-  get:
+  discount_by_id:
+    get::
     tags:
       - Discounts
     summary: Get discount by ID
@@ -157,7 +157,7 @@ discount_by_id:
                   type: object
                   properties:
                     discount:
-                      $ref: '../components/schemas.yaml#/Discount'
+                      $ref: './components/schemas.yaml#/Discount'
                 message:
                   type: string
                   example: "Discount retrieved successfully"
@@ -166,7 +166,7 @@ discount_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -217,7 +217,7 @@ discount_by_id:
                   type: object
                   properties:
                     discount:
-                      $ref: '../components/schemas.yaml#/Discount'
+                      $ref: './components/schemas.yaml#/Discount'
                 message:
                   type: string
                   example: "Discount updated successfully"
@@ -226,7 +226,7 @@ discount_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -262,4 +262,208 @@ discount_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  stats:
+    get::
+    tags:
+      - Discounts
+    summary: Get discount statistics
+    description: Get usage statistics for a specific discount
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Discount ID
+        schema:
+          type: integer
+          example: 1
+    responses:
+      '200':
+        description: Discount statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    discount_id:
+                      type: integer
+                      example: 1
+                    total_usage:
+                      type: integer
+                      example: 150
+                    remaining_usage:
+                      type: integer
+                      example: 50
+                    total_discount_amount:
+                      type: number
+                      example: 1500.00
+                    usage_percentage:
+                      type: number
+                      example: 75.0
+                message:
+                  type: string
+                  example: "Discount statistics retrieved successfully"
+      '404':
+        description: Discount not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  generate_codes:
+    post::
+    tags:
+      - Discounts
+    summary: Generate discount codes
+    description: Generate multiple discount codes for a specific discount
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Discount ID
+        schema:
+          type: integer
+          example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - count
+            properties:
+              count:
+                type: integer
+                example: 10
+                description: Number of codes to generate
+              prefix:
+                type: string
+                example: "SUMMER"
+                description: Prefix for generated codes
+    responses:
+      '201':
+        description: Discount codes generated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    codes:
+                      type: array
+                      items:
+                        type: string
+                      example: ["SUMMER001", "SUMMER002", "SUMMER003"]
+                    count:
+                      type: integer
+                      example: 10
+                message:
+                  type: string
+                  example: "Discount codes generated successfully"
+      '400':
+        description: Invalid request data
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Discount not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  validate:
+    post::
+    tags:
+      - Discounts
+    summary: Validate discount code
+    description: Validate a discount code and check if it can be applied
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - order_amount
+            properties:
+              code:
+                type: string
+                example: "SAVE20"
+              order_amount:
+                type: number
+                example: 150.00
+              user_id:
+                type: integer
+                example: 1
+                description: User ID (optional, for user-specific discounts)
+    responses:
+      '200':
+        description: Discount code validated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    valid:
+                      type: boolean
+                      example: true
+                    discount_amount:
+                      type: number
+                      example: 30.00
+                    final_amount:
+                      type: number
+                      example: 120.00
+                    discount:
+                      $ref: './components/schemas.yaml#/Discount'
+                message:
+                  type: string
+                  example: "Discount code is valid"
+      '400':
+        description: Invalid discount code
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                error:
+                  type: string
+                  example: "Invalid discount code"
+                data:
+                  type: object
+                  properties:
+                    valid:
+                      type: boolean
+                      example: false
+                    reason:
+                      type: string
+                      example: "Code has expired"

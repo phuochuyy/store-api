@@ -1,5 +1,6 @@
-dashboard:
-  get:
+statistics:
+  dashboard:
+    get:
     tags:
       - Statistics
     summary: Get dashboard statistics
@@ -46,16 +47,16 @@ dashboard:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-inventory:
-  get:
+  inventory:
+    get:
     tags:
       - Statistics
     summary: Get inventory statistics
@@ -113,16 +114,16 @@ inventory:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-sales:
-  get:
+  sales:
+    get:
     tags:
       - Statistics
     summary: Get sales statistics
@@ -203,10 +204,10 @@ sales:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'

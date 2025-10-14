@@ -21,7 +21,7 @@ carts:
                   type: object
                   properties:
                     cart:
-                      $ref: '../components/schemas.yaml#/Cart'
+                      $ref: './components/schemas.yaml#/Cart'
                 message:
                   type: string
                   example: "Cart retrieved successfully"
@@ -30,7 +30,7 @@ carts:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -54,7 +54,7 @@ carts:
                   type: object
                   properties:
                     cart:
-                      $ref: '../components/schemas.yaml#/Cart'
+                      $ref: './components/schemas.yaml#/Cart'
                 message:
                   type: string
                   example: "Cart created successfully"
@@ -63,10 +63,10 @@ carts:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-cart_by_id:
-  delete:
+  cart_by_id:
+    delete::
     tags:
       - Shopping Cart
     summary: Delete cart
@@ -100,10 +100,10 @@ cart_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-clear_cart:
-  delete:
+  clear_cart:
+    delete::
     tags:
       - Shopping Cart
     summary: Clear cart
@@ -137,9 +137,58 @@ clear_cart:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-cart_items:
+  cart_items:
+    get::
+    tags:
+      - Shopping Cart
+    summary: Get cart items
+    description: Get all items in a specific cart
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: cart_id
+        in: path
+        required: true
+        description: Cart ID
+        schema:
+          type: integer
+          example: 1
+    responses:
+      '200':
+        description: Cart items retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    cart_items:
+                      type: array
+                      items:
+                        $ref: './components/schemas.yaml#/CartItem'
+                    total_items:
+                      type: integer
+                      example: 3
+                    total_amount:
+                      type: number
+                      example: 299.97
+                message:
+                  type: string
+                  example: "Cart items retrieved successfully"
+      '404':
+        description: Cart not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
   post:
     tags:
       - Shopping Cart
@@ -186,7 +235,7 @@ cart_items:
                   type: object
                   properties:
                     cart_item:
-                      $ref: '../components/schemas.yaml#/CartItem'
+                      $ref: './components/schemas.yaml#/CartItem'
                 message:
                   type: string
                   example: "Item added to cart successfully"
@@ -195,10 +244,10 @@ cart_items:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-cart_item_by_id:
-  patch:
+  cart_item_by_id:
+    patch::
     tags:
       - Shopping Cart
     summary: Update cart item
@@ -238,7 +287,7 @@ cart_item_by_id:
                   type: object
                   properties:
                     cart_item:
-                      $ref: '../components/schemas.yaml#/CartItem'
+                      $ref: './components/schemas.yaml#/CartItem'
                 message:
                   type: string
                   example: "Cart item updated successfully"
@@ -247,7 +296,7 @@ cart_item_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -283,4 +332,4 @@ cart_item_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'

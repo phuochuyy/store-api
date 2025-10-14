@@ -10,13 +10,11 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-
 servers:
-- url: http://localhost:3000
+- url: http://localhost:3002
   description: Development server
 - url: https://api.store.com
   description: Production server
-
 tags:
 - name: Authentication
   description: User authentication and management
@@ -46,124 +44,125 @@ tags:
   description: Payment processing
 - name: Statistics
   description: System statistics and analytics
-
 paths:
-  # Health endpoints
-  /api/v1/health:
-    $ref: './paths/health.yaml#/health'
-
-  # Authentication endpoints
-  /api/v1/auth/login:
-    $ref: './paths/auth.yaml#/login'
-  /api/v1/auth/register:
-    $ref: './paths/auth.yaml#/register'
-  /api/v1/auth/me:
-    $ref: './paths/auth.yaml#/me'
-  /api/v1/auth/logout:
-    $ref: './paths/auth.yaml#/logout'
-
-  # Product endpoints
-  /api/v1/products:
-    $ref: './paths/products.yaml#/products'
-  /api/v1/products/{id}:
-    $ref: './paths/products.yaml#/product_by_id'
-  /api/v1/products/search:
-    $ref: './paths/products.yaml#/search'
-  /api/v1/products/{id}/upload_image:
-    $ref: './paths/products.yaml#/upload_image'
-  /api/v1/products/{id}/remove_image:
-    $ref: './paths/products.yaml#/remove_image'
-
-  # Brand endpoints
-  /api/v1/brands:
-    $ref: './paths/brands.yaml#/brands'
-  /api/v1/brands/{id}:
-    $ref: './paths/brands.yaml#/brand_by_id'
-
-  # Category endpoints
-  /api/v1/categories:
-    $ref: './paths/categories.yaml#/categories'
-  /api/v1/categories/{id}:
-    $ref: './paths/categories.yaml#/category_by_id'
-
-  # Shopping Cart endpoints
-  /api/v1/carts:
-    $ref: './paths/carts.yaml#/carts'
-  /api/v1/carts/{id}:
-    $ref: './paths/carts.yaml#/cart_by_id'
-  /api/v1/carts/{id}/clear:
-    $ref: './paths/carts.yaml#/clear_cart'
-  /api/v1/carts/{cart_id}/cart_items:
-    $ref: './paths/carts.yaml#/cart_items'
-  /api/v1/cart_items/{id}:
-    $ref: './paths/carts.yaml#/cart_item_by_id'
-
-  # Order endpoints
-  /api/v1/orders:
-    $ref: './paths/orders.yaml#/orders'
-  /api/v1/orders/{id}:
-    $ref: './paths/orders.yaml#/order_by_id'
-  /api/v1/orders/{id}/confirm:
-    $ref: './paths/orders.yaml#/confirm_order'
-  /api/v1/orders/{id}/cancel:
-    $ref: './paths/orders.yaml#/cancel_order'
-  /api/v1/order_items/{id}:
-    $ref: './paths/orders.yaml#/order_item_by_id'
-
-  # Discount endpoints
-  /api/v1/discounts:
-    $ref: './paths/discounts.yaml#/discounts'
-  /api/v1/discounts/{id}:
-    $ref: './paths/discounts.yaml#/discount_by_id'
-
-  # Promotion endpoints
-  /api/v1/promotions:
-    $ref: './paths/promotions.yaml#/promotions'
-  /api/v1/promotions/{id}:
-    $ref: './paths/promotions.yaml#/promotion_by_id'
-
-  # Notification endpoints
-  /api/v1/notifications:
-    $ref: './paths/notifications.yaml#/notifications'
-  /api/v1/notifications/{id}:
-    $ref: './paths/notifications.yaml#/notification_by_id'
-  /api/v1/notifications/{id}/mark_read:
-    $ref: './paths/notifications.yaml#/mark_read'
-
-  # Stock Alert endpoints
-  /api/v1/stock_alerts:
-    $ref: './paths/stock_alerts.yaml#/stock_alerts'
-  /api/v1/stock_alerts/{id}:
-    $ref: './paths/stock_alerts.yaml#/stock_alert_by_id'
-
-  # Payment Method endpoints
-  /api/v1/payment_methods:
-    $ref: './paths/payment_methods.yaml#/payment_methods'
-  /api/v1/payment_methods/{id}:
-    $ref: './paths/payment_methods.yaml#/payment_method_by_id'
-  /api/v1/payment_methods/{id}/stats:
-    $ref: './paths/payment_methods.yaml#/payment_method_stats'
-  /api/v1/payment_methods/{id}/validate_config:
-    $ref: './paths/payment_methods.yaml#/validate_config'
-  /api/v1/payment_methods/calculate_fees:
-    $ref: './paths/payment_methods.yaml#/calculate_fees'
-
-  # Payment endpoints
-  /api/v1/payments:
-    $ref: './paths/payments.yaml#/payments'
-  /api/v1/payments/{id}:
-    $ref: './paths/payments.yaml#/payment_by_id'
-  /api/v1/payments/{id}/refund:
-    $ref: './paths/payments.yaml#/refund_payment'
-
-  # Statistics endpoints
-  /api/v1/statistics/dashboard:
-    $ref: './paths/statistics.yaml#/dashboard'
-  /api/v1/statistics/inventory:
-    $ref: './paths/statistics.yaml#/inventory'
-  /api/v1/statistics/sales:
-    $ref: './paths/statistics.yaml#/sales'
-
+  "/api/v1/health":
+    "$ref": "./paths/health.yaml#/health"
+  "/api/v1/auth/login":
+    "$ref": "./paths/auth.yaml#/auth/login"
+  "/api/v1/auth/register":
+    "$ref": "./paths/auth.yaml#/auth/register"
+  "/api/v1/auth/me":
+    "$ref": "./paths/auth.yaml#/auth/me"
+  "/api/v1/auth/logout":
+    "$ref": "./paths/auth.yaml#/auth/logout"
+  "/api/v1/auth/refresh_token":
+    "$ref": "./paths/auth.yaml#/auth/refresh_token"
+  "/api/v1/auth/verify_email":
+    "$ref": "./paths/auth.yaml#/auth/verify_email"
+  "/api/v1/auth/resend_verification":
+    "$ref": "./paths/auth.yaml#/auth/resend_verification"
+  "/api/v1/auth/revoke_all_tokens":
+    "$ref": "./paths/auth.yaml#/auth/revoke_all_tokens"
+  "/api/v1/products":
+    "$ref": "./paths/products.yaml#/products"
+  "/api/v1/products/{id}":
+    "$ref": "./paths/products.yaml#/products/product_by_id"
+  "/api/v1/products/search":
+    "$ref": "./paths/products.yaml#/products/search"
+  "/api/v1/products/{id}/upload_image":
+    "$ref": "./paths/products.yaml#/products/upload_image"
+  "/api/v1/products/{id}/remove_image":
+    "$ref": "./paths/products.yaml#/products/remove_image"
+  "/api/v1/brands":
+    "$ref": "./paths/brands.yaml#/brands"
+  "/api/v1/brands/{id}":
+    "$ref": "./paths/brands.yaml#/brands/brand_by_id"
+  "/api/v1/categories":
+    "$ref": "./paths/categories.yaml#/categories"
+  "/api/v1/categories/{id}":
+    "$ref": "./paths/categories.yaml#/categories/category_by_id"
+  "/api/v1/carts":
+    "$ref": "./paths/carts.yaml#/carts"
+  "/api/v1/carts/{id}":
+    "$ref": "./paths/carts.yaml#/carts/cart_by_id"
+  "/api/v1/carts/{id}/clear":
+    "$ref": "./paths/carts.yaml#/carts/clear_cart"
+  "/api/v1/carts/{cart_id}/cart_items":
+    "$ref": "./paths/carts.yaml#/carts/cart_items"
+  "/api/v1/carts/{cart_id}/cart_items/{id}":
+    "$ref": "./paths/carts.yaml#/carts/cart_item_by_id"
+  "/api/v1/cart_items/{id}":
+    "$ref": "./paths/carts.yaml#/carts/cart_item_by_id"
+  "/api/v1/orders":
+    "$ref": "./paths/orders.yaml#/orders"
+  "/api/v1/orders/{id}":
+    "$ref": "./paths/orders.yaml#/orders/order_by_id"
+  "/api/v1/orders/{id}/confirm":
+    "$ref": "./paths/orders.yaml#/orders/confirm_order"
+  "/api/v1/orders/{id}/cancel":
+    "$ref": "./paths/orders.yaml#/orders/cancel_order"
+  "/api/v1/orders/{id}/apply_discount":
+    "$ref": "./paths/orders.yaml#/orders/apply_discount"
+  "/api/v1/orders/{id}/remove_discount":
+    "$ref": "./paths/orders.yaml#/orders/remove_discount"
+  "/api/v1/orders/{order_id}/order_items":
+    "$ref": "./paths/orders.yaml#/orders/order_items"
+  "/api/v1/order_items/{id}":
+    "$ref": "./paths/orders.yaml#/orders/order_item_by_id"
+  "/api/v1/discounts":
+    "$ref": "./paths/discounts.yaml#/discounts"
+  "/api/v1/discounts/{id}":
+    "$ref": "./paths/discounts.yaml#/discounts/discount_by_id"
+  "/api/v1/discounts/{id}/stats":
+    "$ref": "./paths/discounts.yaml#/discounts/stats"
+  "/api/v1/discounts/{id}/generate_codes":
+    "$ref": "./paths/discounts.yaml#/discounts/generate_codes"
+  "/api/v1/discounts/validate":
+    "$ref": "./paths/discounts.yaml#/discounts/validate"
+  "/api/v1/promotions":
+    "$ref": "./paths/promotions.yaml#/promotions"
+  "/api/v1/promotions/{id}":
+    "$ref": "./paths/promotions.yaml#/promotions/promotion_by_id"
+  "/api/v1/promotions/{id}/stats":
+    "$ref": "./paths/promotions.yaml#/promotions/stats"
+  "/api/v1/promotions/{id}/apply":
+    "$ref": "./paths/promotions.yaml#/promotions/apply"
+  "/api/v1/promotions/applicable":
+    "$ref": "./paths/promotions.yaml#/promotions/applicable"
+  "/api/v1/notifications":
+    "$ref": "./paths/notifications.yaml#/notifications"
+  "/api/v1/notifications/{id}":
+    "$ref": "./paths/notifications.yaml#/notifications/notification_by_id"
+  "/api/v1/notifications/{id}/mark_read":
+    "$ref": "./paths/notifications.yaml#/notifications/mark_read"
+  "/api/v1/notifications/mark_all_read":
+    "$ref": "./paths/notifications.yaml#/notifications/mark_all_read"
+  "/api/v1/stock_alerts":
+    "$ref": "./paths/stock_alerts.yaml#/stock_alerts"
+  "/api/v1/stock_alerts/{id}":
+    "$ref": "./paths/stock_alerts.yaml#/stock_alerts/stock_alert_by_id"
+  "/api/v1/payment_methods":
+    "$ref": "./paths/payment_methods.yaml#/payment_methods"
+  "/api/v1/payment_methods/{id}":
+    "$ref": "./paths/payment_methods.yaml#/payment_methods/payment_method_by_id"
+  "/api/v1/payment_methods/{id}/stats":
+    "$ref": "./paths/payment_methods.yaml#/payment_methods/payment_method_stats"
+  "/api/v1/payment_methods/{id}/validate_config":
+    "$ref": "./paths/payment_methods.yaml#/payment_methods/validate_config"
+  "/api/v1/payment_methods/calculate_fees":
+    "$ref": "./paths/payment_methods.yaml#/payment_methods/calculate_fees"
+  "/api/v1/payments":
+    "$ref": "./paths/payments.yaml#/payments"
+  "/api/v1/payments/{id}":
+    "$ref": "./paths/payments.yaml#/payments/payment_by_id"
+  "/api/v1/payments/{id}/refund":
+    "$ref": "./paths/payments.yaml#/payments/refund_payment"
+  "/api/v1/statistics/dashboard":
+    "$ref": "./paths/statistics.yaml#/statistics/dashboard"
+  "/api/v1/statistics/inventory":
+    "$ref": "./paths/statistics.yaml#/statistics/inventory"
+  "/api/v1/statistics/sales":
+    "$ref": "./paths/statistics.yaml#/statistics/sales"
 components:
   securitySchemes:
     bearerAuth:
@@ -171,54 +170,38 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT token obtained from login endpoint
-
   schemas:
-    # Core schemas
     User:
-      $ref: './components/schemas.yaml#/User'
+      "$ref": "./components/schemas.yaml#/User"
     Product:
-      $ref: './components/schemas.yaml#/Product'
+      "$ref": "./components/schemas.yaml#/Product"
     Brand:
-      $ref: './components/schemas.yaml#/Brand'
+      "$ref": "./components/schemas.yaml#/Brand"
     Category:
-      $ref: './components/schemas.yaml#/Category'
-    
-    # Cart schemas
+      "$ref": "./components/schemas.yaml#/Category"
     Cart:
-      $ref: './components/schemas.yaml#/Cart'
+      "$ref": "./components/schemas.yaml#/Cart"
     CartItem:
-      $ref: './components/schemas.yaml#/CartItem'
-    
-    # Order schemas
+      "$ref": "./components/schemas.yaml#/CartItem"
     Order:
-      $ref: './components/schemas.yaml#/Order'
+      "$ref": "./components/schemas.yaml#/Order"
     OrderItem:
-      $ref: './components/schemas.yaml#/OrderItem'
-    
-    # Discount & Promotion schemas
+      "$ref": "./components/schemas.yaml#/OrderItem"
     Discount:
-      $ref: './components/schemas.yaml#/Discount'
+      "$ref": "./components/schemas.yaml#/Discount"
     Promotion:
-      $ref: './components/schemas.yaml#/Promotion'
-    
-    # Notification schemas
+      "$ref": "./components/schemas.yaml#/Promotion"
     Notification:
-      $ref: './components/schemas.yaml#/Notification'
-    
-    # Stock Alert schemas
+      "$ref": "./components/schemas.yaml#/Notification"
     StockAlert:
-      $ref: './components/schemas.yaml#/StockAlert'
-    
-    # Payment schemas
+      "$ref": "./components/schemas.yaml#/StockAlert"
     PaymentMethod:
-      $ref: './components/schemas.yaml#/PaymentMethod'
+      "$ref": "./components/schemas.yaml#/PaymentMethod"
     Payment:
-      $ref: './components/schemas.yaml#/Payment'
-    
-    # Common schemas
+      "$ref": "./components/schemas.yaml#/Payment"
     Pagination:
-      $ref: './components/schemas.yaml#/Pagination'
+      "$ref": "./components/schemas.yaml#/Pagination"
     AuthResponse:
-      $ref: './components/schemas.yaml#/AuthResponse'
+      "$ref": "./components/schemas.yaml#/AuthResponse"
     ErrorResponse:
-      $ref: './components/schemas.yaml#/ErrorResponse'
+      "$ref": "./components/schemas.yaml#/ErrorResponse"

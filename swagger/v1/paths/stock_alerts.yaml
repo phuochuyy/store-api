@@ -38,9 +38,9 @@ stock_alerts:
                     stock_alerts:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/StockAlert'
+                        $ref: './components/schemas.yaml#/StockAlert'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Stock alerts retrieved successfully"
@@ -49,7 +49,7 @@ stock_alerts:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -95,7 +95,7 @@ stock_alerts:
                   type: object
                   properties:
                     stock_alert:
-                      $ref: '../components/schemas.yaml#/StockAlert'
+                      $ref: './components/schemas.yaml#/StockAlert'
                 message:
                   type: string
                   example: "Stock alert created successfully"
@@ -104,16 +104,16 @@ stock_alerts:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-stock_alert_by_id:
-  get:
+  stock_alert_by_id:
+    get::
     tags:
       - Stock Alerts
     summary: Get stock alert by ID
@@ -143,7 +143,7 @@ stock_alert_by_id:
                   type: object
                   properties:
                     stock_alert:
-                      $ref: '../components/schemas.yaml#/StockAlert'
+                      $ref: './components/schemas.yaml#/StockAlert'
                 message:
                   type: string
                   example: "Stock alert retrieved successfully"
@@ -152,7 +152,7 @@ stock_alert_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -200,7 +200,7 @@ stock_alert_by_id:
                   type: object
                   properties:
                     stock_alert:
-                      $ref: '../components/schemas.yaml#/StockAlert'
+                      $ref: './components/schemas.yaml#/StockAlert'
                 message:
                   type: string
                   example: "Stock alert updated successfully"
@@ -209,7 +209,7 @@ stock_alert_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -245,4 +245,4 @@ stock_alert_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'

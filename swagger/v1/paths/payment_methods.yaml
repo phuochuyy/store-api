@@ -38,9 +38,9 @@ payment_methods:
                     payment_methods:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/PaymentMethod'
+                        $ref: './components/schemas.yaml#/PaymentMethod'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Payment methods retrieved successfully"
@@ -49,7 +49,7 @@ payment_methods:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -102,7 +102,7 @@ payment_methods:
                   type: object
                   properties:
                     payment_method:
-                      $ref: '../components/schemas.yaml#/PaymentMethod'
+                      $ref: './components/schemas.yaml#/PaymentMethod'
                 message:
                   type: string
                   example: "Payment method created successfully"
@@ -111,16 +111,16 @@ payment_methods:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-payment_method_by_id:
-  get:
+  payment_method_by_id:
+    get::
     tags:
       - Payment Methods
     summary: Get payment method by ID
@@ -150,7 +150,7 @@ payment_method_by_id:
                   type: object
                   properties:
                     payment_method:
-                      $ref: '../components/schemas.yaml#/PaymentMethod'
+                      $ref: './components/schemas.yaml#/PaymentMethod'
                 message:
                   type: string
                   example: "Payment method retrieved successfully"
@@ -159,7 +159,7 @@ payment_method_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -210,7 +210,7 @@ payment_method_by_id:
                   type: object
                   properties:
                     payment_method:
-                      $ref: '../components/schemas.yaml#/PaymentMethod'
+                      $ref: './components/schemas.yaml#/PaymentMethod'
                 message:
                   type: string
                   example: "Payment method updated successfully"
@@ -219,7 +219,7 @@ payment_method_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -255,10 +255,10 @@ payment_method_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-payment_method_stats:
-  get:
+  payment_method_stats:
+    get::
     tags:
       - Payment Methods
     summary: Get payment method statistics
@@ -307,10 +307,10 @@ payment_method_stats:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-validate_config:
-  post:
+  validate_config:
+    post::
     tags:
       - Payment Methods
     summary: Validate payment method configuration
@@ -363,10 +363,10 @@ validate_config:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-calculate_fees:
-  post:
+  calculate_fees:
+    post::
     tags:
       - Payment Methods
     summary: Calculate payment fees

@@ -1,155 +1,358 @@
-login:
-  post:
-    tags:
-      - Authentication
-    summary: User login
-    description: Authenticate user with email and password
-    security: []
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - email
-              - password
-            properties:
-              email:
-                type: string
-                format: email
-                example: "user@example.com"
-              password:
-                type: string
-                format: password
-                example: "password123"
-    responses:
-      '200':
-        description: Login successful
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/AuthResponse'
-      '401':
-        description: Invalid credentials
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
-            example:
-              success: false
-              error: "Invalid email or password"
-              status: "unauthorized"
-
-register:
-  post:
-    tags:
-      - Authentication
-    summary: User registration
-    description: Register a new user account
-    security: []
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - email
-              - password
-              - password_confirmation
-              - first_name
-              - last_name
-            properties:
-              email:
-                type: string
-                format: email
-                example: "user@example.com"
-              password:
-                type: string
-                format: password
-                minLength: 6
-                example: "password123"
-              password_confirmation:
-                type: string
-                format: password
-                example: "password123"
-              first_name:
-                type: string
-                example: "John"
-              last_name:
-                type: string
-                example: "Doe"
-              phone:
-                type: string
-                example: "+1234567890"
-    responses:
-      '201':
-        description: User registered successfully
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/AuthResponse'
-      '422':
-        description: Validation errors
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
-
-me:
-  get:
-    tags:
-      - Authentication
-    summary: Get current user
-    description: Get information about the currently authenticated user
-    security:
-      - bearerAuth: []
-    responses:
-      '200':
-        description: User information retrieved successfully
+auth:
+  login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user with email and password
+      security: []
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
               properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '../components/schemas.yaml#/User'
-      '401':
-        description: Unauthorized
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
-
-logout:
-  post:
-    tags:
-      - Authentication
-    summary: User logout
-    description: Logout the current user and invalidate the JWT token
-    security:
-      - bearerAuth: []
-    responses:
-      '200':
-        description: Logout successful
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                message:
+                email:
                   type: string
-                  example: "Logged out successfully"
-      '401':
-        description: Unauthorized
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+              example:
+                success: false
+                error: "Invalid email or password"
+                status: "unauthorized"
+
+  register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      security: []
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/AuthResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+
+  me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Get information about the currently authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: './components/schemas.yaml#/User'
+                  message:
+                    type: string
+                    example: "User information retrieved successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+
+  logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Logout the current user and invalidate the JWT token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+
+  refresh_token:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh JWT token
+      description: Refresh the JWT token using refresh token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiJ9..."
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/AuthResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+
+  verify_email:
+    get:
+      tags:
+        - Authentication
+      summary: Verify email address
+      description: Verify user email address using verification token
+      security: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          description: Email verification token
+          schema:
+            type: string
+            example: "abc123def456"
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: './components/schemas.yaml#/User'
+                  message:
+                    type: string
+                    example: "Email verified successfully"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '404':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '422':
+          description: Email already verified
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+
+  resend_verification:
+    post:
+      tags:
+        - Authentication
+      summary: Resend verification email
+      description: Resend email verification token to user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+      responses:
+        '200':
+          description: Verification email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Verification email sent successfully"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '422':
+          description: Email already verified
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+
+  revoke_all_tokens:
+    post:
+      tags:
+        - Authentication
+      summary: Revoke all tokens (Admin only)
+      description: Revoke all tokens for a specific user (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: All tokens revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "All tokens for user have been revoked"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '403':
+          description: Forbidden (Admin only)
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'

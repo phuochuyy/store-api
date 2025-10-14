@@ -49,9 +49,9 @@ Product:
       nullable: true
       example: "https://example.com/image.jpg"
     brand:
-      $ref: '#/Brand'
+      $ref: '#/components/schemas/Brand'
     category:
-      $ref: '#/Category'
+      $ref: '#/components/schemas/Category'
     created_at:
       type: string
       format: date-time
@@ -119,7 +119,7 @@ Cart:
     cart_items:
       type: array
       items:
-        $ref: '#/CartItem'
+        $ref: '#/components/schemas/CartItem'
     created_at:
       type: string
       format: date-time
@@ -149,7 +149,7 @@ CartItem:
       type: number
       example: 1999.98
     product:
-      $ref: '#/Product'
+      $ref: '#/components/schemas/Product'
     created_at:
       type: string
       format: date-time
@@ -193,7 +193,7 @@ Order:
     order_items:
       type: array
       items:
-        $ref: '#/OrderItem'
+        $ref: '#/components/schemas/OrderItem'
     created_at:
       type: string
       format: date-time
@@ -223,7 +223,7 @@ OrderItem:
       type: number
       example: 1999.98
     product:
-      $ref: '#/Product'
+      $ref: '#/components/schemas/Product'
     created_at:
       type: string
       format: date-time
@@ -368,7 +368,7 @@ StockAlert:
       format: date-time
       nullable: true
     product:
-      $ref: '#/Product'
+      $ref: '#/components/schemas/Product'
     created_at:
       type: string
       format: date-time
@@ -442,9 +442,9 @@ Payment:
       nullable: true
       example: "TXN_987654321"
     payment_method:
-      $ref: '#/PaymentMethod'
+      $ref: '#/components/schemas/PaymentMethod'
     order:
-      $ref: '#/Order'
+      $ref: '#/components/schemas/Order'
     created_at:
       type: string
       format: date-time
@@ -482,7 +482,7 @@ AuthResponse:
           type: string
           example: "eyJhbGciOiJIUzI1NiJ9..."
         user:
-          $ref: '#/User'
+          $ref: '#/components/schemas/User'
     message:
       type: string
       example: "Login successful"

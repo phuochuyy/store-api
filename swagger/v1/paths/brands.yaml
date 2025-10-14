@@ -38,9 +38,9 @@ brands:
                     brands:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Brand'
+                        $ref: './components/schemas.yaml#/Brand'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Brands retrieved successfully"
@@ -49,7 +49,7 @@ brands:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -88,7 +88,7 @@ brands:
                   type: object
                   properties:
                     brand:
-                      $ref: '../components/schemas.yaml#/Brand'
+                      $ref: './components/schemas.yaml#/Brand'
                 message:
                   type: string
                   example: "Brand created successfully"
@@ -97,16 +97,16 @@ brands:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-brand_by_id:
-  get:
+  brand_by_id:
+    get::
     tags:
       - Brands
     summary: Get brand by ID
@@ -136,7 +136,7 @@ brand_by_id:
                   type: object
                   properties:
                     brand:
-                      $ref: '../components/schemas.yaml#/Brand'
+                      $ref: './components/schemas.yaml#/Brand'
                   message:
                     type: string
                     example: "Brand retrieved successfully"
@@ -145,7 +145,7 @@ brand_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -190,7 +190,7 @@ brand_by_id:
                   type: object
                   properties:
                     brand:
-                      $ref: '../components/schemas.yaml#/Brand'
+                      $ref: './components/schemas.yaml#/Brand'
                 message:
                   type: string
                   example: "Brand updated successfully"
@@ -199,7 +199,7 @@ brand_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -235,4 +235,4 @@ brand_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'

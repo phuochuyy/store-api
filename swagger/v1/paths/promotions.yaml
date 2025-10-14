@@ -38,9 +38,9 @@ promotions:
                     promotions:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Promotion'
+                        $ref: './components/schemas.yaml#/Promotion'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Promotions retrieved successfully"
@@ -49,7 +49,7 @@ promotions:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   post:
     tags:
@@ -106,7 +106,7 @@ promotions:
                   type: object
                   properties:
                     promotion:
-                      $ref: '../components/schemas.yaml#/Promotion'
+                      $ref: './components/schemas.yaml#/Promotion'
                 message:
                   type: string
                   example: "Promotion created successfully"
@@ -115,16 +115,16 @@ promotions:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
       '403':
         description: Admin access required
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-promotion_by_id:
-  get:
+  promotion_by_id:
+    get::
     tags:
       - Promotions
     summary: Get promotion by ID
@@ -154,7 +154,7 @@ promotion_by_id:
                   type: object
                   properties:
                     promotion:
-                      $ref: '../components/schemas.yaml#/Promotion'
+                      $ref: './components/schemas.yaml#/Promotion'
                 message:
                   type: string
                   example: "Promotion retrieved successfully"
@@ -163,7 +163,7 @@ promotion_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -214,7 +214,7 @@ promotion_by_id:
                   type: object
                   properties:
                     promotion:
-                      $ref: '../components/schemas.yaml#/Promotion'
+                      $ref: './components/schemas.yaml#/Promotion'
                 message:
                   type: string
                   example: "Promotion updated successfully"
@@ -223,7 +223,7 @@ promotion_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -259,4 +259,185 @@ promotion_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  stats:
+    get::
+    tags:
+      - Promotions
+    summary: Get promotion statistics
+    description: Get usage statistics for a specific promotion
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Promotion ID
+        schema:
+          type: integer
+          example: 1
+    responses:
+      '200':
+        description: Promotion statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    promotion_id:
+                      type: integer
+                      example: 1
+                    total_applications:
+                      type: integer
+                      example: 75
+                    total_discount_amount:
+                      type: number
+                      example: 2250.00
+                    average_discount_per_order:
+                      type: number
+                      example: 30.00
+                    conversion_rate:
+                      type: number
+                      example: 15.5
+                message:
+                  type: string
+                  example: "Promotion statistics retrieved successfully"
+      '404':
+        description: Promotion not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  apply:
+    post::
+    tags:
+      - Promotions
+    summary: Apply promotion
+    description: Apply a promotion to an order or cart
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Promotion ID
+        schema:
+          type: integer
+          example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - order_id
+            properties:
+              order_id:
+                type: integer
+                example: 1
+                description: Order ID to apply promotion to
+              cart_id:
+                type: integer
+                example: 1
+                description: Cart ID (alternative to order_id)
+    responses:
+      '200':
+        description: Promotion applied successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    promotion:
+                      $ref: './components/schemas.yaml#/Promotion'
+                    discount_amount:
+                      type: number
+                      example: 25.00
+                    final_amount:
+                      type: number
+                      example: 125.00
+                message:
+                  type: string
+                  example: "Promotion applied successfully"
+      '400':
+        description: Promotion cannot be applied
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Promotion not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  applicable:
+    get::
+    tags:
+      - Promotions
+    summary: Get applicable promotions
+    description: Get promotions that can be applied to current cart or order
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: order_id
+        in: query
+        required: false
+        description: Order ID
+        schema:
+          type: integer
+          example: 1
+      - name: cart_id
+        in: query
+        required: false
+        description: Cart ID
+        schema:
+          type: integer
+          example: 1
+      - name: total_amount
+        in: query
+        required: false
+        description: Total amount for promotion eligibility
+        schema:
+          type: number
+          example: 150.00
+    responses:
+      '200':
+        description: Applicable promotions retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    promotions:
+                      type: array
+                      items:
+                        $ref: './components/schemas.yaml#/Promotion'
+                    total_count:
+                      type: integer
+                      example: 3
+                message:
+                  type: string
+                  example: "Applicable promotions retrieved successfully"

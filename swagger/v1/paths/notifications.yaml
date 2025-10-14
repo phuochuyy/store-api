@@ -38,9 +38,9 @@ notifications:
                     notifications:
                       type: array
                       items:
-                        $ref: '../components/schemas.yaml#/Notification'
+                        $ref: './components/schemas.yaml#/Notification'
                     pagination:
-                      $ref: '../components/schemas.yaml#/Pagination'
+                      $ref: './components/schemas.yaml#/Pagination'
                 message:
                   type: string
                   example: "Notifications retrieved successfully"
@@ -49,10 +49,10 @@ notifications:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-notification_by_id:
-  get:
+  notification_by_id:
+    get::
     tags:
       - Notifications
     summary: Get notification by ID
@@ -82,7 +82,7 @@ notification_by_id:
                   type: object
                   properties:
                     notification:
-                      $ref: '../components/schemas.yaml#/Notification'
+                      $ref: './components/schemas.yaml#/Notification'
                 message:
                   type: string
                   example: "Notification retrieved successfully"
@@ -91,7 +91,7 @@ notification_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   patch:
     tags:
@@ -139,7 +139,7 @@ notification_by_id:
                   type: object
                   properties:
                     notification:
-                      $ref: '../components/schemas.yaml#/Notification'
+                      $ref: './components/schemas.yaml#/Notification'
                 message:
                   type: string
                   example: "Notification updated successfully"
@@ -148,7 +148,7 @@ notification_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
   delete:
     tags:
@@ -184,10 +184,10 @@ notification_by_id:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
 
-mark_read:
-  post:
+  mark_read:
+    post::
     tags:
       - Notifications
     summary: Mark notification as read
@@ -221,4 +221,33 @@ mark_read:
         content:
           application/json:
             schema:
-              $ref: '../components/schemas.yaml#/ErrorResponse'
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  mark_all_read:
+    post::
+    tags:
+      - Notifications
+    summary: Mark all notifications as read
+    description: Mark all notifications for the current user as read
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: All notifications marked as read successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    updated_count:
+                      type: integer
+                      example: 5
+                message:
+                  type: string
+                  example: "All notifications marked as read successfully"
