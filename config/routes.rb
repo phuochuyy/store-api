@@ -5,11 +5,15 @@ Rails.application.routes.draw do
       # Health check
       get 'health', to: 'health#index'
 
-      # Authentication routes (simplified)
+      # Authentication routes
       post 'auth/login', to: 'auth#login'
       post 'auth/register', to: 'auth#register'
       post 'auth/logout', to: 'auth#logout'
       get 'auth/me', to: 'auth#me'
+      post 'auth/refresh_token', to: 'auth#refresh_token'
+      get 'auth/verify_email', to: 'auth#verify_email'
+      post 'auth/resend_verification', to: 'auth#resend_verification'
+      post 'auth/revoke_all_tokens', to: 'auth#revoke_all_tokens'
 
       # Main resources (simplified)
       resources :products do

@@ -31,5 +31,19 @@ module StoreApi
 
     # Set default URL options for general URL generation
     config.default_url_options = { host: 'localhost', port: 3000, protocol: 'http' }
+
+    # Database connection retry configuration
+    config.after_initialize do
+
+      ActiveRecord::Base.connection_pool.with_connection do |connection|
+        connection.execute('SELECT 1') if connection.active?
+      end
+      Rails.logger.info 'Database connection established successfully'
+    rescue ActiveRecord::ConnectionNotEstablished, PG::ConnectionBad => e
+      Rails.logger.warn "Database connection failed: #{e.message}. Retrying..."
+      sleep(2)
+      retry
+
+    end
   end
 end
