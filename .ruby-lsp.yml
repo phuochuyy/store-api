@@ -1,73 +1,37 @@
-# Ruby LSP Configuration for Docker Compose
-# Optimized for Rails API development with Docker
-
-# Enable essential features for development
-enabled_features:
-  - completion
+# Ruby LSP configuration
+enabledFeatures:
+  - codeActions
   - diagnostics
-  - document_symbols
-  - hover
-  - signature_help
-  - code_actions
+  - documentHighlights
+  - documentLink
+  - documentSymbols
+  - foldingRanges
   - formatting
-  - inlay_hint
-  - selection_ranges
+  - hover
+  - inlayHint
+  - onTypeFormatting
+  - selectionRanges
+  - semanticHighlighting
+  - completion
+  - codeLens
+  - definition
+  - workspaceSymbol
+  - signatureHelp
+  - typeHierarchy
 
-# Disable problematic features that might cause issues
-disabled_features:
-  - code_lens
-  - document_highlights
-  - document_link
-  - folding_ranges
-  - on_type_formatting
-  - semantic_highlighting
-  - type_hierarchy
-  - workspace_symbol
+# Disable test running completely
+disabledFeatures:
+  - test
 
-# Docker Compose configuration (RECOMMENDED)
-docker_compose:
-  enabled: true
-  service: "web"
-  configuration_file: "docker-compose.yml"
+# Test configuration - completely disable
+test:
+  enabled: false
+  framework: none
+  autoDetect: false
+  runners: []
+  reporters: []
 
-# Ruby configuration - force Docker usage
-ruby:
-  version: "3.4.5"
-  command: "./bin/ruby-docker"
-  # Force Docker environment
-  environment:
-    BUNDLE_GEMFILE: "/rails/Gemfile"
-    RAILS_ENV: "development"
-
-# Configure logging
-logging:
-  level: "warn"
-  file: "log/ruby-lsp.log"
-
-# Configure indexing
-indexing:
-  enabled: true
-  exclude:
-    - "tmp/**/*"
-    - "log/**/*"
-    - "storage/**/*"
-    - "node_modules/**/*"
-    - "vendor/**/*"
-    - ".git/**/*"
-    - "db/migrate/**/*"
-    - "spec/factories/**/*"
-    - "coverage/**/*"
-    - "public/**/*"
-    - "config/credentials.yml.enc"
-    - "*.log"
-
-# Additional configuration for better performance
-formatter:
-  enabled: true
-  command: "docker compose exec web bundle exec rubocop"
-
-# Linting configuration
-linter:
-  enabled: true
-  command: "docker compose exec web bundle exec rubocop"
-
+# Additional configuration to prevent test detection
+featuresConfiguration:
+  test:
+    enabled: false

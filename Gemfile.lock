@@ -119,8 +119,6 @@ GEM
     factory_bot_rails (6.5.1)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
-    faker (3.5.2)
-      i18n (>= 1.8.11, < 2)
     globalid (1.2.1)
       activesupport (>= 6.1)
     i18n (1.14.7)
@@ -193,7 +191,7 @@ GEM
     puma (7.0.3)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.2.1)
+    rack (3.2.3)
     rack-cors (3.0.0)
       logger
       rack (>= 3.0.14)
@@ -235,6 +233,8 @@ GEM
       zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.3.0)
+    rbs (3.9.5)
+      logger
     rdoc (6.14.2)
       erb
       psych (>= 4.0.0)
@@ -259,8 +259,6 @@ GEM
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
     rspec-support (3.13.6)
-    rspec_junit_formatter (0.6.0)
-      rspec-core (>= 2, < 4, != 2.12.0)
     rswag-api (2.16.0)
       activesupport (>= 5.2, < 8.1)
       railties (>= 5.2, < 8.1)
@@ -292,17 +290,19 @@ GEM
       rack (>= 1.1)
       rubocop (>= 1.75.0, < 2.0)
       rubocop-ast (>= 1.44.0, < 2.0)
-    rubocop-rspec (3.7.0)
-      lint_roller (~> 1.1)
-      rubocop (~> 1.72, >= 1.72.1)
+    ruby-lsp (0.26.1)
+      language_server-protocol (~> 3.17.0)
+      prism (>= 1.2, < 2.0)
+      rbs (>= 3, < 5)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
+    shoulda-matchers (6.5.0)
+      activesupport (>= 5.2.0)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.13.2)
-    simplecov-lcov (0.9.0)
     simplecov_json_formatter (0.1.4)
     stringio (3.1.7)
     thor (1.4.0)
@@ -312,7 +312,7 @@ GEM
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)
-    uri (1.0.3)
+    uri (1.0.4)
     useragent (0.16.11)
     websocket-driver (0.8.0)
       base64
@@ -333,7 +333,6 @@ DEPENDENCIES
   database_cleaner-active_record
   debug
   factory_bot_rails
-  faker
   jwt
   kaminari
   ostruct
@@ -342,15 +341,14 @@ DEPENDENCIES
   rack-cors
   rails (~> 8.0.2, >= 8.0.2.1)
   rspec-rails
-  rspec_junit_formatter
   rswag-api
   rswag-specs
   rswag-ui
   rubocop
   rubocop-rails
-  rubocop-rspec
+  ruby-lsp
+  shoulda-matchers
   simplecov
-  simplecov-lcov
   tzinfo-data
 
 BUNDLED WITH

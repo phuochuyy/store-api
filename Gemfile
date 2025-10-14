@@ -21,7 +21,14 @@ gem 'rswag-ui'
 # Pagination
 gem 'kaminari'
 
-group :development do
+group :development, :test do
+  # Testing
+  gem 'database_cleaner-active_record'
+  gem 'factory_bot_rails'
+  gem 'rspec-rails'
+  gem 'shoulda-matchers'
+  gem 'simplecov', require: false
+
   # Debugging
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
   # API Documentation
@@ -33,4 +40,5 @@ group :development do
   # Development Tools
   gem 'better_errors'               # Better error pages
   gem 'binding_of_caller'           # Better debugging
+  gem 'ruby-lsp'                    # Ruby Language Server Protocol
 end
