@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+# Test runner script for the Store API project
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/test [options] [files]"
+
+  opts.on("-a", "--all", "Run all tests") do
+    options[:all] = true
+  end
+
+  opts.on("-u", "--user", "Run user model tests only") do
+    options[:user] = true
+  end
+
+  opts.on("-v", "--verbose", "Run with verbose output") do
+    options[:verbose] = true
+  end
+
+  opts.on("-h", "--help", "Show this help message") do
+    puts opts
+    exit
+  end
+end.parse!
+
+# Build RSpec command
+rspec_cmd = "bundle exec rspec"
+
+if options[:verbose]
+  rspec_cmd += " --format documentation"
+end
+
+if options[:all]
+  rspec_cmd += " spec/"
+elsif options[:user]
+  rspec_cmd += " spec/models/user_working_spec.rb"
+elsif ARGV.any?
+  rspec_cmd += " #{ARGV.join(' ')}"
+else
+  rspec_cmd += " spec/"
+end
+
+puts "Running: #{rspec_cmd}"
+system(rspec_cmd)
