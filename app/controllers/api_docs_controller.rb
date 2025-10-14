@@ -1,6 +1,6 @@
 class ApiDocsController < ApplicationController
   def index
-    render html: swagger_ui_html.html_safe
+    render html: swagger_ui_html.html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def swagger_yaml
@@ -60,9 +60,17 @@ class ApiDocsController < ApplicationController
               layout: "StandaloneLayout",
               validatorUrl: null,
               tryItOutEnabled: true,
+              supportedSubmitMethods: ['get', 'post', 'put', 'patch', 'delete'],
+              onComplete: function() {
+                console.log('Swagger UI loaded successfully');
+              },
+              onFailure: function(data) {
+                console.error('Swagger UI failed to load:', data);
+              },
               requestInterceptor: function(request) {
                 // Add CORS headers if needed
                 request.headers['Content-Type'] = 'application/json';
+                request.headers['Accept'] = 'application/json';
                 return request;
               },
               responseInterceptor: function(response) {

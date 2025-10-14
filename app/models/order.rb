@@ -125,10 +125,17 @@ class Order < ApplicationRecord
 
   def payment_status
     return 'unpaid' if payments.empty?
-    return 'paid' if paid?
-    return 'payment_failed' if payment_failed?
-    return 'refunded' if refunded?
-    return 'partially_refunded' if partially_refunded?
+
+    status_mapping = {
+      paid: 'paid',
+      payment_failed: 'payment_failed',
+      refunded: 'refunded',
+      partially_refunded: 'partially_refunded'
+    }
+
+    status_mapping.each do |method, status|
+      return status if send(method)
+    end
 
     latest_payment&.status || 'pending'
   end
