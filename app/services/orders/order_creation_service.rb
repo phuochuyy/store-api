@@ -3,7 +3,6 @@
 module Orders
   class OrderCreationService
     class << self
-      # Create a new order with order items
       # @param order_params [Hash] Order parameters
       # @param order_items_params [Array<Hash>] Order items parameters
       # @return [Hash] Result with success status and order information

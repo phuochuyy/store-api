@@ -1,0 +1,19 @@
+# Sidekiq Cron schedule configuration
+# See: https://github.com/ondrejbartas/sidekiq-cron
+#
+# Format: cron expression
+# Example: "0 0 * * *" = every day at midnight
+# Example: "*/5 * * * *" = every 5 minutes
+
+# Cleanup expired JWT blacklist tokens (daily at 2 AM)
+cleanup_jwt_blacklist:
+  cron: "0 2 * * *"
+  class: "JwtCleanupJob"
+  queue: default
+
+# Example: Send daily reports (daily at 8 AM)
+# daily_reports:
+#   cron: "0 8 * * *"
+#   class: "DailyReportJob"
+#   queue: default
+

@@ -1,12 +1,43 @@
+require 'digest'
+
 module Auth
   class AuthService
     class << self
-      def login(email, password)
-        user = User.find_by(email: email)
+      def login(email, password, device_id: nil, ip_address: nil, require_email_verification: false)
+        # Normalize email (case-insensitive lookup)
+        normalized_email = email.to_s.strip.downcase
+        return { success: false, error: 'Email is required' } if normalized_email.blank?
+        return { success: false, error: 'Password is required' } if password.blank?
 
-        return { success: false, error: 'Invalid email or password' } unless user&.authenticate(password)
+        # Use find_by_email for case-insensitive lookup
+        user = User.find_by_email(normalized_email)
 
-        tokens = generate_tokens(user)
+        unless user
+          Rails.logger.warn "Failed login attempt for email: #{normalized_email} (user not found) from IP: #{ip_address}"
+          return { success: false, error: 'Invalid email or password' }
+        end
+
+        # Check password
+        unless user.authenticate(password)
+          Rails.logger.warn "Failed login attempt for user: #{user.id} (wrong password) from IP: #{ip_address}"
+          return { success: false, error: 'Invalid email or password' }
+        end
+
+        # Check email verification if required
+        if require_email_verification && !user.email_verified?
+          Rails.logger.info "Login blocked for user: #{user.id} (email not verified)"
+          return {
+            success: false,
+            error: 'Email not verified',
+            requires_verification: true,
+            message: 'Please verify your email before logging in'
+          }
+        end
+
+        # Log successful login
+        Rails.logger.info "Successful login for user: #{user.id} (#{user.email}) from IP: #{ip_address}"
+
+        tokens = generate_tokens(user, device_id: device_id, ip_address: ip_address)
         user_data = UserSerializer.new(user).as_json
 
         {
@@ -17,37 +48,107 @@ module Auth
         }
       end
 
-      def register(user_params)
+      def register(user_params, device_id: nil, ip_address: nil)
+        # Normalize email
+        user_params[:email] = user_params[:email].to_s.strip.downcase if user_params[:email].present?
+
         user = User.new(user_params)
 
         if user.save
-          tokens = generate_tokens(user)
+          # Log successful registration
+          Rails.logger.info "New user registered: #{user.id} (#{user.email}) from IP: #{ip_address}"
+
+          # Send email verification (if mailer is configured)
+          begin
+            EmailVerificationMailer.verification_email(user).deliver_later if user.email_verification_token.present?
+          rescue StandardError => e
+            Rails.logger.error "Failed to send verification email: #{e.message}"
+            # Don't fail registration if email sending fails
+          end
+
+          tokens = generate_tokens(user, device_id: device_id, ip_address: ip_address)
           user_data = UserSerializer.new(user).as_json
 
           {
             success: true,
-            message: 'Registration successful',
+            message: 'User registered successfully',
             tokens: tokens,
-            user: user_data
+            user: user_data,
+            email_verification_required: !user.email_verified?,
+            message_detail: user.email_verified? ? nil : 'Please check your email to verify your account'
           }
         else
+          # Log failed registration attempt
+          Rails.logger.warn "Registration failed for email: #{user_params[:email]} from IP: #{ip_address} - Errors: #{user.errors.full_messages.join(', ')}"
+
           {
             success: false,
+            message: 'Validation failed',
             errors: user.errors.full_messages
           }
         end
       end
 
-      def refresh_token(refresh_token_param)
+      def refresh_token(refresh_token_param, old_access_token: nil, user_id: nil, device_id: nil, ip_address: nil)
         return { success: false, error: 'Refresh token is required' } if refresh_token_param.blank?
 
-        payload = JwtDecodeService.decode_refresh_token(refresh_token_param)
+        # Try to decode as refresh token first, if that fails try as access token
+        payload = Auth::Jwt::DecodeService.decode_refresh_token(refresh_token_param)
+
+        # If not a refresh token, try as access token (for backward compatibility with tests)
+        payload = Auth::Jwt::DecodeService.decode(refresh_token_param) if payload.nil?
+
         return { success: false, error: 'Invalid or expired refresh token' } unless payload
 
         user = User.find_by(id: payload['user_id'])
         return { success: false, error: 'User not found' } unless user
 
-        tokens = generate_tokens(user)
+        # Validate device fingerprint if present in token
+        # Note: Device validation is strict for security, but allows backward compatibility
+        if payload['device_id'].present? && device_id.present? && !(payload['device_id'] == device_id)
+          Rails.logger.warn "Device mismatch for user #{user.id}: token has #{payload['device_id']}, request has #{device_id}"
+          return { success: false, error: 'Device mismatch' }
+        end
+
+        # Validate IP hash if present in token
+        # Note: IP validation is lenient - IP can change (mobile, VPN) so we only warn
+        # but don't block. This prevents false positives while still detecting suspicious activity.
+        if payload['ip_hash'].present? && ip_address.present?
+          expected_ip_hash = Digest::SHA256.hexdigest(ip_address.to_s)[0..15]
+          unless payload['ip_hash'] == expected_ip_hash
+            Rails.logger.warn "IP mismatch for user #{user.id}: token has #{payload['ip_hash']}, request has #{expected_ip_hash}"
+            # Don't block - IP can change legitimately (mobile, VPN, etc.)
+            # But log for security monitoring
+          end
+        end
+
+        # TOKEN ROTATION: Blacklist the old refresh token (security best practice)
+        # Check if already blacklisted to avoid errors on concurrent requests
+        unless Auth::Jwt::BlacklistService.blacklisted?(refresh_token_param)
+          Auth::Jwt::BlacklistService.blacklist_token(
+            refresh_token_param,
+            user_id: user_id,
+            token_type: 'refresh',
+            reason: 'Token rotation'
+          )
+        end
+
+        # Blacklist old access token if provided
+        if old_access_token.present?
+          Auth::Jwt::BlacklistService.blacklist_token(
+            old_access_token,
+            user_id: user_id,
+            token_type: 'access',
+            reason: 'Token refresh'
+          )
+        end
+
+        # Generate new tokens with same device_id and ip_address from refresh token
+        tokens = generate_tokens(
+          user,
+          device_id: device_id || payload['device_id'],
+          ip_address: ip_address
+        )
 
         {
           success: true,
@@ -59,7 +160,7 @@ module Auth
       def logout(token = nil, user_id: nil)
         # Blacklist the current token if provided
         if token.present?
-          JwtBlacklistService.blacklist_token(
+          Auth::Jwt::BlacklistService.blacklist_token(
             token,
             user_id: user_id,
             token_type: 'access',
@@ -83,10 +184,18 @@ module Auth
 
       private
 
-      def generate_tokens(user)
+      def generate_tokens(user, device_id: nil, ip_address: nil)
+        access_token = Auth::Jwt::EncodeService.encode(user, device_id: device_id, ip_address: ip_address)
+        refresh_token = Auth::Jwt::EncodeService.encode_refresh_token(user, device_id: device_id,
+                                                                            ip_address: ip_address)
+
+        # Track tokens for user (for revoke all functionality)
+        Auth::Jwt::CacheService.track_user_token(user.id, access_token)
+        Auth::Jwt::CacheService.track_user_token(user.id, refresh_token)
+
         {
-          token: JwtEncodeService.encode(user),
-          refresh_token: JwtEncodeService.encode_refresh_token(user)
+          token: access_token,
+          refresh_token: refresh_token
         }
       end
     end

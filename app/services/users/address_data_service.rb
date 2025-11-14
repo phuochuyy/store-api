@@ -3,7 +3,6 @@
 module Users
   class AddressDataService
     class << self
-      # Get user addresses with filters
       # @param user [User] User to get addresses for
       # @param filters [Hash] Filter parameters
       # @return [Hash] Result with addresses
@@ -25,7 +24,6 @@ module Users
         }
       end
 
-      # Get default address for user
       # @param user [User] User to get default address for
       # @param address_type [String] Type of address (shipping/billing)
       # @return [Hash] Result with default address
@@ -50,7 +48,6 @@ module Users
         end
       end
 
-      # Set default address
       # @param address [UserAddress] Address to set as default
       # @return [Hash] Result with success status
       def set_default_address(address)

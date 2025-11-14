@@ -1,10 +1,10 @@
 module Api
   module V1
     class OrdersController < Api::V1::BaseController
-      before_action :set_order, only: %i[show update destroy confirm cancel ship]
-      before_action :admin_only!, only: %i[index update destroy confirm cancel ship]
+      before_action :set_order, only: %i[show update destroy confirm cancel ship deliver]
+      before_action :admin_only!, only: %i[index update destroy confirm cancel ship deliver]
+      skip_before_action :authenticate_user!, only: [:track]
 
-      # GET /api/v1/orders (Admin only)
       def index
         @orders = Order.includes(:order_items, :products).recent
         @orders = @orders.page(params[:page]).per(params[:per_page] || 10)
@@ -20,7 +20,6 @@ module Api
         }
       end
 
-      # GET /api/v1/orders/:id
       def show
         render json: {
           order: order_serializer(@order),
@@ -28,7 +27,6 @@ module Api
         }
       end
 
-      # POST /api/v1/orders
       def create
         result = Orders::OrderCreationService.create_order(order_params, params[:order_items])
 
@@ -40,11 +38,10 @@ module Api
         else
           render json: {
             errors: result[:details]
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         end
       end
 
-      # PATCH/PUT /api/v1/orders/:id (Admin only)
       def update
         if @order.update(order_params)
           render json: {
@@ -54,17 +51,15 @@ module Api
         else
           render json: {
             errors: @order.errors.full_messages
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         end
       end
 
-      # DELETE /api/v1/orders/:id (Admin only)
       def destroy
         @order.destroy
         render json: { message: 'Order deleted successfully' }
       end
 
-      # POST /api/v1/orders/:id/confirm (Admin only)
       def confirm
         result = Orders::OrderConfirmationService.confirm_order(@order, current_user)
 
@@ -81,11 +76,10 @@ module Api
             success: false,
             error: result[:error],
             details: result[:details]
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         end
       end
 
-      # POST /api/v1/orders/:id/cancel (Admin only)
       def cancel
         result = Orders::OrderCancellationService.cancel_order(@order, current_user, params[:reason])
 
@@ -102,11 +96,10 @@ module Api
             success: false,
             error: result[:error],
             details: result[:details]
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         end
       end
 
-      # POST /api/v1/orders/:id/ship (Admin only)
       def ship
         result = ship_order_with_service
         render_ship_response(result)
@@ -135,11 +128,10 @@ module Api
             success: false,
             error: result[:error],
             details: result[:details]
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         end
       end
 
-      # POST /api/v1/orders/:id/deliver (Admin only)
       def deliver
         result = deliver_order_with_service
         render_deliver_response(result)
@@ -166,7 +158,7 @@ module Api
             success: false,
             error: result[:error],
             details: result[:details]
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         end
       end
 
@@ -186,10 +178,9 @@ module Api
         Orders::OrderSerializerService.serialize_order_item(item)
       end
 
-      # POST /api/v1/orders/:id/apply_discount
       def apply_discount
         discount_code = params[:discount_code]
-        return render_error('Discount code is required', :unprocessable_entity) if discount_code.blank?
+        return render_error('Discount code is required', :unprocessable_content) if discount_code.blank?
 
         result = @order.apply_discount(discount_code)
 
@@ -200,11 +191,10 @@ module Api
                            discount_amount: result[:discount_amount]
                          }, 'Discount applied successfully')
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # DELETE /api/v1/orders/:id/remove_discount
       def remove_discount
         result = @order.remove_discount
 
@@ -213,8 +203,32 @@ module Api
                            order: order_serializer(@order.reload)
                          }, 'Discount removed successfully')
         else
-          render_error('Failed to remove discount', :unprocessable_entity)
+          render_error('Failed to remove discount', :unprocessable_content)
         end
+      end
+
+      # Public order tracking (no authentication required)
+      def track
+        tracking_number = params[:tracking_number]
+        return render_error('Tracking number is required', :bad_request) if tracking_number.blank?
+
+        @order = Order.find_by(tracking_number: tracking_number)
+        return render_error('Order not found', :not_found) unless @order
+
+        render_success({
+                         order: {
+                           id: @order.id,
+                           status: @order.status,
+                           tracking_number: @order.tracking_number,
+                           carrier: @order.carrier,
+                           shipped_at: @order.shipped_at,
+                           delivered_at: @order.delivered_at,
+                           estimated_delivery_date: @order.estimated_delivery_date,
+                           shipping_status: @order.shipping_status,
+                           tracking_info: @order.tracking_info,
+                           delivery_info: @order.delivery_info
+                         }
+                       }, 'Order tracking information retrieved successfully')
       end
     end
   end

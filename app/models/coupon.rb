@@ -9,14 +9,12 @@ class Coupon < ApplicationRecord
   validates :status, inclusion: { in: %w[active used expired cancelled] }
   validates :discount_amount, numericality: { greater_than_or_equal_to: 0 }
 
-  # Scopes
   scope :active, -> { where(status: 'active') }
   scope :used, -> { where(status: 'used') }
   scope :expired, -> { where(status: 'expired') }
   scope :cancelled, -> { where(status: 'cancelled') }
   scope :available, -> { active.where(used_at: nil) }
 
-  # Callbacks
   before_validation :generate_code, on: :create
   before_validation :normalize_code
   before_save :set_used_at_if_used

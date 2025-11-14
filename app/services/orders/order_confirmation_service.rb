@@ -11,16 +11,13 @@ module Orders
         return { success: false, error: 'Order not found' } unless order
         return { success: false, error: 'User not found' } unless confirmed_by
 
-        # Validate order can be confirmed
         validation_result = validate_order_for_confirmation(order)
         return validation_result unless validation_result[:success]
 
         # Perform confirmation in transaction
         ActiveRecord::Base.transaction do
-          # Update order status
           order.update!(status: 'confirmed', confirmed_at: Time.current)
 
-          # Create confirmation notification
           create_confirmation_notification(order, confirmed_by)
 
           # Log the confirmation action
@@ -37,14 +34,11 @@ module Orders
 
       private
 
-      # Validate if order can be confirmed
       # @param order [Order] The order to validate
       # @return [Hash] Validation result
       def validate_order_for_confirmation(order)
-        # Check if order exists
         return { success: false, error: 'Order not found' } unless order
 
-        # Check if order is in pending status
         unless order.pending?
           return {
             success: false,
@@ -53,7 +47,6 @@ module Orders
           }
         end
 
-        # Check if order has items
         if order.order_items.empty?
           return {
             success: false,
@@ -62,7 +55,6 @@ module Orders
           }
         end
 
-        # Check if all items are still available
         unavailable_items = check_item_availability(order)
         unless unavailable_items.empty?
           return {
@@ -75,7 +67,6 @@ module Orders
         { success: true }
       end
 
-      # Check if all order items are still available
       # @param order [Order] The order to check
       # @return [Array] List of unavailable items
       def check_item_availability(order)
@@ -93,11 +84,9 @@ module Orders
         unavailable_items
       end
 
-      # Create notification for order confirmation
       # @param order [Order] The confirmed order
       # @param confirmed_by [User] The user who confirmed the order
       def create_confirmation_notification(order, confirmed_by)
-        # Create notification for customer if order has a user
         if order.user
           Notification.create!(
             user: order.user,
@@ -112,7 +101,6 @@ module Orders
           )
         end
 
-        # Create admin notification
         admin_users = User.where(role: 'admin')
         admin_users.each do |admin|
           next if admin.id == confirmed_by.id # Don't notify the person who confirmed

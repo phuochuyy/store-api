@@ -30,7 +30,6 @@ class StockAlert < ApplicationRecord
   validates :status, presence: true
   validates :triggered_at, presence: true
 
-  # Enums
   enum :alert_type, {
     low_stock: 'low_stock',
     out_of_stock: 'out_of_stock',
@@ -45,7 +44,6 @@ class StockAlert < ApplicationRecord
     expired: 'expired'
   }
 
-  # Scopes
   scope :recent, -> { order(triggered_at: :desc) }
   scope :active_alerts, -> { where(status: 'active') }
   scope :resolved_alerts, -> { where(status: 'resolved') }
@@ -55,7 +53,6 @@ class StockAlert < ApplicationRecord
   scope :notification_pending, -> { where(notification_sent: false) }
   scope :notification_sent, -> { where(notification_sent: true) }
 
-  # Callbacks
   before_validation :set_defaults
   after_create :update_product_alert_status
   after_create :send_notification_if_needed
@@ -218,7 +215,6 @@ class StockAlert < ApplicationRecord
 
   def self.resolve_alerts_for_product(product)
     active_alerts.where(product: product).find_each do |alert|
-      # Check if alert should be resolved based on current stock
       should_resolve = case alert.alert_type
                        when 'out_of_stock'
                          product.stock_quantity.positive?

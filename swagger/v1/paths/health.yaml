@@ -28,3 +28,7 @@ health:
                 environment:
                   type: string
                   example: "development"
+                database:
+                  type: string
+                  example: "connected"
+                  description: "Database connection status"

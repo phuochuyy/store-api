@@ -21,7 +21,27 @@ Rails.application.configure do
   # Show full error reports and disable caching.
   config.consider_all_requests_local = true
   config.action_controller.perform_caching = false
-  config.cache_store = :null_store
+  
+  # Use Redis for caching in test (for JWT cache tests)
+  # Fallback to memory store if Redis not available
+  # In Docker: redis://redis:6379/1, locally: redis://localhost:6379/1
+  begin
+    require 'redis'
+    redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/1')
+    # Test Redis connection
+    redis = Redis.new(url: redis_url)
+    redis.ping
+    
+    config.cache_store = :redis_cache_store, {
+      url: redis_url,
+      namespace: 'store_api_test',
+      expires_in: 1.hour
+    }
+  rescue LoadError, Redis::BaseError, Errno::ECONNREFUSED
+    # Fallback to memory store if Redis not available
+    config.cache_store = :memory_store
+    Rails.logger.warn 'Redis not available for test environment, using memory store' if defined?(Rails)
+  end
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable

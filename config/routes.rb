@@ -15,7 +15,12 @@ Rails.application.routes.draw do
       post 'auth/resend_verification', to: 'auth#resend_verification'
       post 'auth/revoke_all_tokens', to: 'auth#revoke_all_tokens'
 
-      # Main resources (simplified)
+      # Password reset
+      post 'auth/password/reset', to: 'auth#password_reset'
+      post 'auth/password/reset/confirm', to: 'auth#password_reset_confirm'
+      post 'auth/password/change', to: 'auth#password_change'
+
+      # Products
       resources :products do
         collection do
           get :search
@@ -23,6 +28,34 @@ Rails.application.routes.draw do
         member do
           post :upload_image
           delete :remove_image
+        end
+        # Product features
+        resources :reviews, only: %i[index create show update destroy], controller: 'product_reviews'
+        member do
+          post :add_to_wishlist
+          delete :remove_from_wishlist
+        end
+      end
+
+      # Product Reviews (standalone)
+      resources :product_reviews, only: %i[index show update destroy] do
+        member do
+          post :helpful
+          delete :helpful
+        end
+      end
+
+      # Product Wishlist
+      resources :wishlists, only: %i[index show create destroy], controller: 'product_wishlists' do
+        collection do
+          get :my_wishlist
+        end
+      end
+
+      # Product Comparison
+      resources :product_comparisons, only: %i[index show create update destroy] do
+        collection do
+          get :my_comparisons
         end
       end
 
@@ -37,11 +70,13 @@ Rails.application.routes.draw do
         resources :cart_items
       end
 
-      # Orders (simplified)
+      # Orders
       resources :orders do
         member do
           post :confirm
           post :cancel
+          post :ship
+          post :deliver
           post :apply_discount
           delete :remove_discount
         end
@@ -101,6 +136,25 @@ Rails.application.routes.draw do
         end
       end
 
+      # User Profile & Addresses
+      namespace :users do
+        get 'profile', to: 'profile#show'
+        put 'profile', to: 'profile#update'
+        patch 'profile', to: 'profile#update'
+        post 'profile/avatar', to: 'profile#upload_avatar'
+        delete 'profile/avatar', to: 'profile#remove_avatar'
+
+        # User Addresses
+        resources :addresses, only: %i[index show create update destroy] do
+          member do
+            post :set_default
+          end
+          collection do
+            get :default
+          end
+        end
+      end
+
       # Statistics
       namespace :statistics do
         get :dashboard
@@ -115,6 +169,12 @@ Rails.application.routes.draw do
   get '/api-docs/swagger.json', to: 'api_docs#swagger_json'
   get '/swagger/v1/swagger.yaml', to: 'api_docs#swagger_yaml'
   get '/swagger/v1/swagger.json', to: 'api_docs#swagger_json'
+
+  # Public Order Tracking (no authentication required)
+  get 'track/:tracking_number', to: 'api/v1/orders#track', as: :track_order
+
+  # Health checks (OkComputer)
+  mount OkComputer::Engine, at: '/health'
 
   # Root route - health check
   root 'api/v1/health#index'

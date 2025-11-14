@@ -4,18 +4,15 @@ module Api
       before_action :set_order_item, only: %i[show update destroy]
       before_action :set_order, only: %i[create index]
 
-      # GET /api/v1/orders/:order_id/order_items
       def index
         @order_items = @order.order_items.includes(:product)
         render json: @order_items, include: :product
       end
 
-      # GET /api/v1/order_items/:id
       def show
         render json: @order_item, include: :product
       end
 
-      # POST /api/v1/orders/:order_id/order_items
       def create
         @order_item = @order.order_items.build(order_item_params)
 
@@ -27,22 +24,20 @@ module Api
           @order.update_total_amount
           render json: @order_item, status: :created, include: :phone
         else
-          render json: { errors: @order_item.errors }, status: :unprocessable_entity
+          render json: { errors: @order_item.errors }, status: :unprocessable_content
         end
       end
 
-      # PATCH/PUT /api/v1/order_items/:id
       def update
         if @order_item.update(order_item_params)
           # Update order total
           @order_item.order.update_total_amount
           render json: @order_item, include: :phone
         else
-          render json: { errors: @order_item.errors }, status: :unprocessable_entity
+          render json: { errors: @order_item.errors }, status: :unprocessable_content
         end
       end
 
-      # DELETE /api/v1/order_items/:id
       def destroy
         order = @order_item.order
         @order_item.destroy

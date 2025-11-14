@@ -8,7 +8,6 @@ class Promotion < ApplicationRecord
   validates :used_count, numericality: { greater_than_or_equal_to: 0 }
   validates :priority, inclusion: { in: %w[high normal low] }
 
-  # Scopes
   scope :active, -> { where(is_active: true) }
   scope :current, lambda {
     where('start_date IS NULL OR start_date <= ?', Time.current)
@@ -20,7 +19,6 @@ class Promotion < ApplicationRecord
   scope :normal_priority, -> { where(priority: 'normal') }
   scope :low_priority, -> { where(priority: 'low') }
 
-  # Callbacks
   validate :valid_date_range
   validate :valid_conditions_and_benefits
 

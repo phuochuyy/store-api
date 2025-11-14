@@ -66,7 +66,6 @@ module Payments
         PaymentWebhookService.process_square_webhook(payload: payload, signature: signature)
       end
 
-      # Get payment processing statistics
       # @param period [String] Time period for statistics
       # @return [Hash] Processing statistics
       def get_processing_statistics(period = 'month')
@@ -88,7 +87,6 @@ module Payments
         }
       end
 
-      # Get payment method performance
       # @param period [String] Time period for analysis
       # @return [Hash] Payment method performance data
       def get_payment_method_performance(period = 'month')

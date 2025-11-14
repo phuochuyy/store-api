@@ -3,7 +3,6 @@
 module Payments
   class PaymentMethodCreationService
     class << self
-      # Create a new payment method
       # @param params [Hash] Payment method parameters
       # @return [Hash] Result with success status and payment method
       def create_payment_method(params)
@@ -31,7 +30,6 @@ module Payments
         }
       end
 
-      # Update a payment method
       # @param payment_method [PaymentMethod] The payment method to update
       # @param params [Hash] Update parameters
       # @return [Hash] Result with success status
@@ -60,7 +58,6 @@ module Payments
         }
       end
 
-      # Delete a payment method
       # @param payment_method [PaymentMethod] The payment method to delete
       # @return [Hash] Result with success status
       def delete_payment_method(payment_method)

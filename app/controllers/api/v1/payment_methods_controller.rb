@@ -6,7 +6,6 @@ module Api
       before_action :set_payment_method, only: %i[show update destroy stats]
       before_action :admin_only!, only: %i[create update destroy stats]
 
-      # GET /api/v1/payment_methods
       def index
         @payment_methods = Payments::PaymentMethodService.get_active_payment_methods
 
@@ -20,7 +19,6 @@ module Api
         render_success(data, 'Payment methods retrieved successfully')
       end
 
-      # GET /api/v1/payment_methods/:id
       def show
         data = {
           payment_method: payment_method_serializer(@payment_method)
@@ -29,7 +27,6 @@ module Api
         render_success(data, 'Payment method retrieved successfully')
       end
 
-      # POST /api/v1/payment_methods
       def create
         result = Payments::PaymentMethodService.create_payment_method(payment_method_params)
 
@@ -39,11 +36,10 @@ module Api
           }
           render_success(data, result[:message], :created)
         else
-          render_error(result[:message], :unprocessable_entity, result[:errors])
+          render_error(result[:message], :unprocessable_content, result[:errors])
         end
       end
 
-      # PATCH/PUT /api/v1/payment_methods/:id
       def update
         result = Payments::PaymentMethodService.update_payment_method(@payment_method, payment_method_params)
 
@@ -53,22 +49,20 @@ module Api
           }
           render_success(data, result[:message])
         else
-          render_error(result[:message], :unprocessable_entity, result[:errors])
+          render_error(result[:message], :unprocessable_content, result[:errors])
         end
       end
 
-      # DELETE /api/v1/payment_methods/:id
       def destroy
         result = Payments::PaymentMethodService.deactivate_payment_method(@payment_method)
 
         if result[:success]
           render_success(nil, result[:message])
         else
-          render_error(result[:message], :unprocessable_entity, result[:errors])
+          render_error(result[:message], :unprocessable_content, result[:errors])
         end
       end
 
-      # GET /api/v1/payment_methods/:id/stats
       def stats
         period = params[:period] || 'month'
         result = Payments::PaymentMethodService.get_payment_method_stats(@payment_method, period)
@@ -83,11 +77,10 @@ module Api
           }
           render_success(data, 'Payment method statistics retrieved successfully')
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # POST /api/v1/payment_methods/calculate_fees
       def calculate_fees
         amount = params[:amount]&.to_f
         payment_method_id = params[:payment_method_id]
@@ -110,11 +103,10 @@ module Api
           }
           render_success(data, 'Processing fees calculated successfully')
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # POST /api/v1/payment_methods/:id/validate_config
       def validate_config
         result = Payments::PaymentMethodService.validate_payment_method_config(@payment_method)
 
@@ -127,7 +119,7 @@ module Api
         if result[:success]
           render_success(data, result[:message])
         else
-          render_error(result[:message], :unprocessable_entity, result[:errors])
+          render_error(result[:message], :unprocessable_content, result[:errors])
         end
       end
 

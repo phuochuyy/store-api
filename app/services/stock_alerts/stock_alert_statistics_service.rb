@@ -3,7 +3,6 @@
 module StockAlerts
   class StockAlertStatisticsService
     class << self
-      # Get alert statistics for a period
       # @param period [String] Time period for statistics
       # @return [Hash] Alert statistics
       def get_statistics(period = 'month')

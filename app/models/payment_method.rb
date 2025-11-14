@@ -30,7 +30,6 @@ class PaymentMethod < ApplicationRecord
             presence: true,
             numericality: { greater_than_or_equal_to: 0 }
 
-  # Enums
   enum :gateway_type, {
     stripe: 'stripe',
     paypal: 'paypal',
@@ -39,11 +38,9 @@ class PaymentMethod < ApplicationRecord
     wallet: 'wallet'
   }
 
-  # Scopes
   scope :active, -> { where(is_active: true) }
   scope :by_gateway_type, ->(type) { where(gateway_type: type) }
 
-  # Callbacks
   before_validation :set_defaults
 
   # Methods

@@ -1,33 +1,27 @@
 module Api
   module V1
     class HealthController < ApplicationController
-      include Api::ErrorHandling
-      include Common::Pagination
-      include Common::Filtering
+      # Remove duplicate includes - ErrorHandling already in ApplicationController
+      # Remove duplicate set_default_response_format - already in ApplicationController
 
-      before_action :set_default_response_format
-
-      # GET /api/v1/health
       def index
         render json: {
           status: 'ok',
           message: 'Phone Store API is running',
-          version: '1.0.0',
+          version: 'v1',
           timestamp: Time.current.iso8601,
+          environment: Rails.env,
           database: database_status
         }
       end
 
       private
 
-      def set_default_response_format
-        request.format = :json
-        response.headers['Content-Type'] = 'application/json'
-      end
-
       def database_status
         # Try to execute a simple query to check database connectivity
-        ActiveRecord::Base.connection.execute('SELECT 1')
+        ActiveRecord::Base.connection_pool.with_connection do |conn|
+          conn.execute('SELECT 1')
+        end
         'connected'
       rescue StandardError => e
         Rails.logger.error "Database connection error: #{e.message}"

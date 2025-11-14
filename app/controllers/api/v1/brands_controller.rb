@@ -4,7 +4,6 @@ module Api
       before_action :set_brand, only: %i[show update destroy]
       before_action :authorize_brand, only: %i[create update destroy]
 
-      # GET /api/v1/brands
       def index
         pagination = extract_pagination
         result = Brands::BrandService.list_brands(pagination: pagination)
@@ -12,18 +11,16 @@ module Api
         render_success(result, 'Brands retrieved successfully')
       end
 
-      # GET /api/v1/brands/:id
       def show
         result = Brands::BrandService.find_brand(@brand.id)
         render_success(result, 'Brand retrieved successfully')
       end
 
-      # POST /api/v1/brands
       def create
         validator = BrandValidator.new(brand_params)
 
         unless validator.valid?
-          return render_error('Validation failed', :unprocessable_entity, validator.errors.full_messages)
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
         result = Brands::BrandService.create_brand(brand_params)
@@ -31,16 +28,15 @@ module Api
         if result[:success]
           render_success(result[:brand], 'Brand created successfully', :created)
         else
-          render_error('Brand could not be created', :unprocessable_entity, result[:errors])
+          render_error('Brand could not be created', :unprocessable_content, result[:errors])
         end
       end
 
-      # PATCH/PUT /api/v1/brands/:id
       def update
         validator = BrandValidator.new(brand_params)
 
         unless validator.valid?
-          return render_error('Validation failed', :unprocessable_entity, validator.errors.full_messages)
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
         result = Brands::BrandService.update_brand(@brand.id, brand_params)
@@ -48,11 +44,10 @@ module Api
         if result[:success]
           render_success(result[:brand], 'Brand updated successfully')
         else
-          render_error('Brand could not be updated', :unprocessable_entity, result[:errors])
+          render_error('Brand could not be updated', :unprocessable_content, result[:errors])
         end
       end
 
-      # DELETE /api/v1/brands/:id
       def destroy
         Brands::BrandService.delete_brand(@brand.id)
         render_success(nil, 'Brand deleted successfully')
@@ -67,7 +62,7 @@ module Api
 
       def authorize_brand
         action = action_name.to_sym
-        result = Auth::AuthenticationService.authorize(current_user, @brand || Brand.new, action)
+        result = Auth::TokenValidationService.authorize(current_user, @brand || Brand.new, action)
 
         return if result[:success]
 

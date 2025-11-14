@@ -3,7 +3,6 @@
 module StockAlerts
   class StockAlertService
     class << self
-      # Create a stock alert for a product
       # @param product [Product] The product to create alert for
       # @param alert_type [String] Type of alert to create
       # @param threshold [Integer] Stock threshold for the alert
@@ -18,7 +17,6 @@ module StockAlerts
         )
       end
 
-      # Update an existing stock alert
       # @param alert [StockAlert] Alert to update
       # @param params [Hash] Update parameters
       # @return [Hash] Result with success status
@@ -58,7 +56,6 @@ module StockAlerts
         end
       end
 
-      # Get stock alerts with filters and pagination
       # @param filters [Hash] Filter parameters
       # @param page [Integer] Page number
       # @param per_page [Integer] Items per page
@@ -67,7 +64,6 @@ module StockAlerts
         StockAlertQueryService.get_alerts(filters: filters, page: page, per_page: per_page)
       end
 
-      # Get alert statistics for a period
       # @param period [String] Time period for statistics
       # @return [Hash] Alert statistics
       def get_alert_statistics(period = 'month')

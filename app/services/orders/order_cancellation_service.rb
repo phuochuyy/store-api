@@ -12,7 +12,6 @@ module Orders
         return { success: false, error: 'Order not found' } unless order
         return { success: false, error: 'User not found' } unless cancelled_by
 
-        # Validate order can be cancelled
         validation_result = validate_order_for_cancellation(order)
         return validation_result unless validation_result[:success]
 
@@ -21,14 +20,12 @@ module Orders
           # Restore stock quantities
           restore_stock_quantities(order)
 
-          # Update order status
           order.update!(
             status: 'cancelled',
             cancelled_at: Time.current,
             cancellation_reason: reason
           )
 
-          # Create cancellation notification
           create_cancellation_notification(order, cancelled_by, reason)
 
           # Log the cancellation action
@@ -45,14 +42,11 @@ module Orders
 
       private
 
-      # Validate if order can be cancelled
       # @param order [Order] The order to validate
       # @return [Hash] Validation result
       def validate_order_for_cancellation(order)
-        # Check if order exists
         return { success: false, error: 'Order not found' } unless order
 
-        # Check if order can be cancelled (not already delivered or cancelled)
         unless order.can_be_cancelled?
           return {
             success: false,
@@ -78,12 +72,10 @@ module Orders
         end
       end
 
-      # Create notification for order cancellation
       # @param order [Order] The cancelled order
       # @param cancelled_by [User] The user who cancelled the order
       # @param reason [String] Reason for cancellation
       def create_cancellation_notification(order, cancelled_by, reason)
-        # Create notification for customer if order has a user
         if order.user
           Notification.create!(
             user: order.user,
@@ -99,7 +91,6 @@ module Orders
           )
         end
 
-        # Create admin notification
         admin_users = User.where(role: 'admin')
         admin_users.each do |admin|
           next if admin.id == cancelled_by.id # Don't notify the person who cancelled

@@ -4,7 +4,6 @@ module Api
       before_action :set_promotion, only: %i[show update destroy stats]
       before_action :admin_only!, only: %i[create update destroy stats]
 
-      # GET /api/v1/promotions
       def index
         filters = extract_filters
         pagination = extract_pagination
@@ -14,7 +13,6 @@ module Api
         render_success(result, 'Promotions retrieved successfully')
       end
 
-      # GET /api/v1/promotions/:id
       def show
         result = Discounts::PromotionService.find_promotion(@promotion.id)
 
@@ -25,12 +23,11 @@ module Api
         end
       end
 
-      # POST /api/v1/promotions
       def create
         validator = PromotionValidator.new(promotion_params)
 
         unless validator.valid?
-          return render_error('Validation failed', :unprocessable_entity, validator.errors.full_messages)
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
         result = Discounts::PromotionService.create_promotion(promotion_params)
@@ -38,16 +35,15 @@ module Api
         if result[:success]
           render_success(result[:promotion], 'Promotion created successfully', :created)
         else
-          render_error('Promotion could not be created', :unprocessable_entity, result[:errors])
+          render_error('Promotion could not be created', :unprocessable_content, result[:errors])
         end
       end
 
-      # PATCH/PUT /api/v1/promotions/:id
       def update
         validator = PromotionValidator.new(promotion_params)
 
         unless validator.valid?
-          return render_error('Validation failed', :unprocessable_entity, validator.errors.full_messages)
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
         result = Discounts::PromotionService.update_promotion(@promotion, promotion_params)
@@ -55,31 +51,28 @@ module Api
         if result[:success]
           render_success(result[:promotion], 'Promotion updated successfully')
         else
-          render_error('Promotion could not be updated', :unprocessable_entity, result[:errors])
+          render_error('Promotion could not be updated', :unprocessable_content, result[:errors])
         end
       end
 
-      # DELETE /api/v1/promotions/:id
       def destroy
         result = Discounts::PromotionService.delete_promotion(@promotion)
 
         if result[:success]
           render_success(nil, 'Promotion deleted successfully')
         else
-          render_error('Failed to delete promotion', :unprocessable_entity)
+          render_error('Failed to delete promotion', :unprocessable_content)
         end
       end
 
-      # GET /api/v1/promotions/:id/stats
       def stats
         stats = Discounts::PromotionService.get_promotion_stats(@promotion)
         render_success(stats, 'Promotion statistics retrieved successfully')
       end
 
-      # GET /api/v1/promotions/applicable
       def applicable
         order_id = params[:order_id]
-        return render_error('Order ID is required', :unprocessable_entity) if order_id.blank?
+        return render_error('Order ID is required', :unprocessable_content) if order_id.blank?
 
         order = Order.find(order_id)
         result = Discounts::PromotionService.get_applicable_promotions(order)
@@ -89,10 +82,9 @@ module Api
         render_error('Order not found', :not_found)
       end
 
-      # POST /api/v1/promotions/:id/apply
       def apply
         order_id = params[:order_id]
-        return render_error('Order ID is required', :unprocessable_entity) if order_id.blank?
+        return render_error('Order ID is required', :unprocessable_content) if order_id.blank?
 
         order = Order.find(order_id)
         result = Discounts::PromotionService.apply_promotion_to_order(order, @promotion.id)
@@ -100,7 +92,7 @@ module Api
         if result[:success]
           render_success(result, 'Promotion applied successfully')
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       rescue ActiveRecord::RecordNotFound
         render_error('Order not found', :not_found)

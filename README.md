@@ -75,6 +75,38 @@ docker compose exec web bundle exec rails console
 docker compose logs web
 ```
 
+## Testing
+
+```bash
+# Run all tests
+make test
+# or
+docker compose exec web bundle exec rspec
+
+# Run authentication tests only
+make test-auth
+
+# Run a specific test file
+make test-single FILE=spec/services/auth/auth_service_spec.rb
+
+# Setup test database
+make db-test-setup
+
+# Run tests with coverage
+make test-coverage
+```
+
+### Test Environment Setup
+
+Tests require:
+- PostgreSQL (test database)
+- Redis (for JWT caching tests)
+
+Both services are available in Docker Compose. The test environment will:
+- Use Redis for caching if available
+- Fallback to memory store if Redis is not available
+- Automatically clean up Redis cache between tests
+
 ## Default Users
 
 - **Admin**: admin@example.com / password

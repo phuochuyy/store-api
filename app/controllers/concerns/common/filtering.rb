@@ -2,6 +2,10 @@ module Common
   module Filtering
     extend ActiveSupport::Concern
 
+    included do
+
+    end
+
     private
 
     def apply_filters(collection, allowed_filters)

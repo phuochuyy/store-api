@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,7 +69,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
     t.decimal "total_amount", precision: 10, scale: 2, default: "0.0"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_carts_on_created_at"
     t.index ["session_id"], name: "index_carts_on_session_id"
+    t.index ["status", "created_at"], name: "index_carts_on_status_and_created_at"
     t.index ["status"], name: "index_carts_on_status"
     t.index ["user_id", "status"], name: "index_carts_on_user_id_and_status"
     t.index ["user_id"], name: "index_carts_on_user_id"
@@ -129,7 +131,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
   create_table "jwt_blacklist_tokens", force: :cascade do |t|
     t.string "token", null: false
     t.datetime "expires_at", null: false
-    t.string "user_id"
+    t.bigint "user_id"
     t.string "token_type", default: "access"
     t.text "reason"
     t.datetime "created_at", null: false
@@ -190,8 +192,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
     t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0"
     t.string "discount_code"
     t.bigint "discount_id"
+    t.index ["created_at"], name: "index_orders_on_created_at"
     t.index ["discount_code"], name: "index_orders_on_discount_code"
     t.index ["discount_id"], name: "index_orders_on_discount_id"
+    t.index ["status", "created_at"], name: "index_orders_on_status_and_created_at"
+    t.index ["status"], name: "index_orders_on_status"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
@@ -263,12 +268,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
     t.string "currency", default: "USD", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_payments_on_created_at"
     t.index ["order_id", "status"], name: "index_payments_on_order_id_and_status"
     t.index ["order_id"], name: "index_payments_on_order_id"
     t.index ["payment_method_id"], name: "index_payments_on_payment_method_id"
     t.index ["processed_at"], name: "index_payments_on_processed_at"
     t.index ["status"], name: "index_payments_on_status"
     t.index ["transaction_id"], name: "index_payments_on_transaction_id", unique: true
+  end
+
+  create_table "product_comparison_items", force: :cascade do |t|
+    t.bigint "product_comparison_id", null: false
+    t.bigint "product_id", null: false
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["position"], name: "index_product_comparison_items_on_position"
+    t.index ["product_comparison_id", "product_id"], name: "index_pci_on_comparison_and_product", unique: true
+    t.index ["product_comparison_id"], name: "index_product_comparison_items_on_product_comparison_id"
+    t.index ["product_id"], name: "index_product_comparison_items_on_product_id"
   end
 
   create_table "product_comparisons", force: :cascade do |t|
@@ -332,6 +350,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
     t.datetime "updated_at", null: false
     t.index ["brand_id"], name: "index_products_on_brand_id"
     t.index ["category_id"], name: "index_products_on_category_id"
+    t.index ["price", "stock_quantity"], name: "index_products_on_price_and_stock_quantity"
+    t.index ["price"], name: "index_products_on_price"
+    t.index ["stock_quantity"], name: "index_products_on_stock_quantity"
   end
 
   create_table "promotions", force: :cascade do |t|
@@ -392,6 +413,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_stock_movements_on_created_at"
     t.index ["movement_type", "created_at"], name: "index_stock_movements_on_movement_type_and_created_at"
+    t.index ["movement_type"], name: "index_stock_movements_on_movement_type"
     t.index ["product_id", "created_at"], name: "index_stock_movements_on_product_id_and_created_at"
     t.index ["product_id"], name: "index_stock_movements_on_product_id"
     t.index ["reference_type", "reference_id"], name: "index_stock_movements_on_reference_type_and_reference_id"
@@ -450,6 +472,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
   add_foreign_key "coupons", "discounts"
   add_foreign_key "coupons", "orders"
   add_foreign_key "coupons", "users"
+  add_foreign_key "jwt_blacklist_tokens", "users", on_delete: :nullify
   add_foreign_key "notifications", "users"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
@@ -459,6 +482,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_12_102401) do
   add_foreign_key "payment_histories", "payments"
   add_foreign_key "payments", "orders"
   add_foreign_key "payments", "payment_methods"
+  add_foreign_key "product_comparison_items", "product_comparisons", on_delete: :cascade
+  add_foreign_key "product_comparison_items", "products", on_delete: :cascade
   add_foreign_key "product_comparisons", "users"
   add_foreign_key "product_reviews", "products"
   add_foreign_key "product_reviews", "users"

@@ -15,6 +15,5 @@ class Category < ApplicationRecord
   validates :name, presence: true, uniqueness: true, length: { minimum: 2, maximum: 50 }
   validates :description, presence: true, length: { minimum: 10, maximum: 500 }
 
-  # Scope for categories with products
   scope :with_products, -> { joins(:products).distinct }
 end

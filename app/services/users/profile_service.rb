@@ -3,7 +3,6 @@
 module Users
   class ProfileService
     class << self
-      # Get user profile
       # @param user [User] User to get profile for
       # @return [Hash] Result with profile data
       def get_profile(user)
@@ -16,7 +15,6 @@ module Users
         }
       end
 
-      # Update user profile
       # @param user [User] User to update
       # @param profile_params [Hash] Profile parameters
       # @return [Hash] Result with success status
@@ -24,7 +22,6 @@ module Users
         ProfileUpdateService.update_profile(user: user, **profile_params)
       end
 
-      # Update user preferences
       # @param user [User] User to update
       # @param preferences [Hash] Preference parameters
       # @return [Hash] Result with success status
@@ -40,7 +37,6 @@ module Users
         ProfileAvatarService.upload_avatar(user: user, avatar_file: avatar_file)
       end
 
-      # Delete user avatar
       # @param user [User] User to delete avatar for
       # @return [Hash] Result with success status
       delegate :delete_avatar, to: :ProfileAvatarService
@@ -63,7 +59,6 @@ module Users
         }
       end
 
-      # Get user statistics
       # @param user [User] User to get statistics for
       # @return [Hash] Result with statistics
       def get_user_statistics(user)
@@ -76,7 +71,6 @@ module Users
         }
       end
 
-      # Get public profile
       # @param user [User] User to get public profile for
       # @return [Hash] Result with public profile data
       def get_public_profile(user)

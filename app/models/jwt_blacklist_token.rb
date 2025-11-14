@@ -27,7 +27,6 @@ class JwtBlacklistToken < ApplicationRecord
     expired.delete_all
   end
 
-  # Check if token is blacklisted
   def self.blacklisted?(token)
     return false if token.blank?
 
@@ -78,11 +77,7 @@ class JwtBlacklistToken < ApplicationRecord
     )
   end
 
-  # Blacklist all tokens for a user
   def self.blacklist_user_tokens(user_id, reason: 'User logout')
-    # This is a simplified implementation
-    # In a real scenario, you might want to store user-specific token identifiers
-    # and blacklist them individually
     Rails.logger.info "Blacklisting all tokens for user #{user_id}: #{reason}"
     true
   end
@@ -100,12 +95,10 @@ class JwtBlacklistToken < ApplicationRecord
 
   private_class_method :update_existing_token, :create_new_blacklisted_token
 
-  # Check if token is expired
   def expired?
     expires_at <= Time.current
   end
 
-  # Check if token is active
   def active?
     !expired?
   end

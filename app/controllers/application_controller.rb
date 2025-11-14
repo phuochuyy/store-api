@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::API
-  include ErrorHandler
+  include ErrorHandling
 
   # Set default response format
   before_action :set_default_response_format
@@ -8,6 +8,7 @@ class ApplicationController < ActionController::API
 
   def set_default_response_format
     request.format = :json
+    response.headers['Content-Type'] = 'application/json'
   end
 
   def render_success(data = nil, message = nil, status = :ok)
@@ -20,8 +21,7 @@ class ApplicationController < ActionController::API
   def render_error(message, status = :bad_request, errors = nil)
     response_data = {
       success: false,
-      error: message,
-      status: status
+      message: message
     }
     response_data[:errors] = errors if errors
     render json: response_data, status: status

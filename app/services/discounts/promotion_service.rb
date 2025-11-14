@@ -1,7 +1,6 @@
 module Discounts
   class PromotionService
     class << self
-      # Create a new promotion
       def create_promotion(params)
         promotion = Promotion.new(params)
 
@@ -12,7 +11,6 @@ module Discounts
         end
       end
 
-      # Update an existing promotion
       def update_promotion(promotion, params)
         if promotion.update(params)
           { success: true, promotion: promotion }
@@ -21,7 +19,6 @@ module Discounts
         end
       end
 
-      # Delete a promotion
       def delete_promotion(promotion)
         promotion.destroy
         { success: true }
@@ -47,7 +44,6 @@ module Discounts
         { error: 'Promotion not found' }
       end
 
-      # Get applicable promotions for an order
       def get_applicable_promotions(order)
         applicable_promotions = []
 
@@ -88,7 +84,6 @@ module Discounts
         result
       end
 
-      # Get promotion statistics
       def get_promotion_stats(promotion)
         {
           total_usage: promotion.used_count,

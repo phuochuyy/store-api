@@ -3,7 +3,6 @@
 module Users
   class AddressCreationService
     class << self
-      # Create user address
       # @param user [User] User to create address for
       # @param address_params [Hash] Address parameters
       # @return [Hash] Result with success status
@@ -27,7 +26,6 @@ module Users
         }
       end
 
-      # Update user address
       # @param address [UserAddress] Address to update
       # @param address_params [Hash] Update parameters
       # @return [Hash] Result with success status
@@ -51,7 +49,6 @@ module Users
         }
       end
 
-      # Delete user address
       # @param address [UserAddress] Address to delete
       # @return [Hash] Result with success status
       def delete_address(address)

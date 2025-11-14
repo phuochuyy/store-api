@@ -3,7 +3,6 @@
 module StockAlerts
   class StockAlertQueryService
     class << self
-      # Get stock alerts with filters and pagination
       # @param filters [Hash] Filter parameters
       # @param page [Integer] Page number
       # @param per_page [Integer] Items per page

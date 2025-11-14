@@ -13,7 +13,6 @@ module StockAlerts
         adjust_for_seasonality(product, base_quantity)
       end
 
-      # Get reorder recommendations
       # @param limit [Integer] Maximum number of recommendations
       # @return [Array<Hash>] Reorder recommendations
       def get_reorder_recommendations(limit = 50)
@@ -39,7 +38,6 @@ module StockAlerts
         recommendations.sort_by { |rec| -rec[:urgency] }.first(limit)
       end
 
-      # Get stock level recommendations
       # @param product [Product] Product to analyze
       # @return [Hash] Stock level recommendations
       def get_stock_level_recommendations(product)

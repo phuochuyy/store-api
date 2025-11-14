@@ -4,10 +4,6 @@ module Api
       before_action :authenticate_user!
       before_action :admin_only!
 
-      rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
-      rescue_from ActiveRecord::RecordInvalid, with: :record_invalid
-
-      # GET /api/v1/statistics/dashboard
       def dashboard
         stats = {
           total_orders: Order.count,
@@ -19,7 +15,6 @@ module Api
         render_success(stats, 'Dashboard statistics retrieved successfully')
       end
 
-      # GET /api/v1/statistics/inventory
       def inventory
         inventory_stats = {
           low_stock_products: Product.where(stock_quantity: ...10),
@@ -32,7 +27,6 @@ module Api
         render_success(inventory_stats, 'Inventory statistics retrieved successfully')
       end
 
-      # GET /api/v1/statistics/sales
       def sales
         date_range = if params[:start_date] && params[:end_date]
                        Date.parse(params[:start_date])..Date.parse(params[:end_date])
@@ -56,16 +50,6 @@ module Api
         }
 
         render json: sales_stats
-      end
-
-      private
-
-      def record_not_found
-        render json: { error: 'Record not found' }, status: :not_found
-      end
-
-      def record_invalid(exception)
-        render json: { error: exception.message }, status: :unprocessable_entity
       end
     end
   end

@@ -3,7 +3,6 @@
 module Users
   class ProfileUpdateService
     class << self
-      # Update user profile
       # @param user [User] User to update
       # @param profile_params [Hash] Profile parameters
       # @return [Hash] Result with success status

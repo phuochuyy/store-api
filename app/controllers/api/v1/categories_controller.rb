@@ -3,7 +3,6 @@ module Api
     class CategoriesController < Api::V1::BaseController
       before_action :set_category, only: %i[show update destroy]
 
-      # GET /api/v1/categories
       def index
         @categories = Category.includes(:products)
         @categories = @categories.page(params[:page]).per(params[:per_page] || 10)
@@ -21,7 +20,6 @@ module Api
         render_success(data, 'Categories retrieved successfully')
       end
 
-      # GET /api/v1/categories/:id
       def show
         data = {
           category: category_serializer(@category),
@@ -31,7 +29,6 @@ module Api
         render_success(data, 'Category retrieved successfully')
       end
 
-      # POST /api/v1/categories
       def create
         return unless ensure_admin!
 
@@ -41,11 +38,10 @@ module Api
           data = { category: category_serializer(@category) }
           render_success(data, 'Category created successfully', :created)
         else
-          render_error('Category could not be created', :unprocessable_entity, @category.errors.full_messages)
+          render_error('Category could not be created', :unprocessable_content, @category.errors.full_messages)
         end
       end
 
-      # PATCH/PUT /api/v1/categories/:id
       def update
         return unless ensure_admin!
 
@@ -53,11 +49,10 @@ module Api
           data = { category: category_serializer(@category) }
           render_success(data, 'Category updated successfully')
         else
-          render_error('Category could not be updated', :unprocessable_entity, @category.errors.full_messages)
+          render_error('Category could not be updated', :unprocessable_content, @category.errors.full_messages)
         end
       end
 
-      # DELETE /api/v1/categories/:id
       def destroy
         return unless ensure_admin!
 

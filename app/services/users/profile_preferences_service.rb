@@ -3,7 +3,6 @@
 module Users
   class ProfilePreferencesService
     class << self
-      # Update user preferences
       # @param user [User] User to update
       # @param preferences [Hash] Preference parameters
       # @return [Hash] Result with success status
@@ -38,30 +37,25 @@ module Users
       def validate_preferences(preferences)
         return { success: true } if preferences.empty?
 
-        # Validate language
         if preferences[:language].present?
           valid_languages = %w[en vi]
           return { success: false, error: 'Invalid language' } unless valid_languages.include?(preferences[:language])
         end
 
-        # Validate timezone
         if preferences[:timezone].present? && !ActiveSupport::TimeZone[preferences[:timezone]]
           return { success: false, error: 'Invalid timezone' }
         end
 
-        # Validate currency
         if preferences[:currency].present?
           valid_currencies = %w[USD VND EUR]
           return { success: false, error: 'Invalid currency' } unless valid_currencies.include?(preferences[:currency])
         end
 
-        # Validate theme
         if preferences[:theme].present?
           valid_themes = %w[light dark auto]
           return { success: false, error: 'Invalid theme' } unless valid_themes.include?(preferences[:theme])
         end
 
-        # Validate privacy level
         if preferences[:privacy_level].present?
           valid_privacy_levels = %w[public friends private]
           unless valid_privacy_levels.include?(preferences[:privacy_level])

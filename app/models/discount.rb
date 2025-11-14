@@ -14,7 +14,6 @@ class Discount < ApplicationRecord
   validates :used_count, numericality: { greater_than_or_equal_to: 0 }
   validates :applies_to, inclusion: { in: %w[all products categories brands] }
 
-  # Scopes
   scope :active, -> { where(is_active: true) }
   scope :current, lambda {
     where('start_date IS NULL OR start_date <= ?', Time.current)
@@ -25,7 +24,6 @@ class Discount < ApplicationRecord
   scope :fixed_amount, -> { where(discount_type: 'fixed_amount') }
   scope :free_shipping, -> { where(discount_type: 'free_shipping') }
 
-  # Callbacks
   before_validation :generate_code, on: :create
   before_validation :normalize_code
   validate :valid_discount_value

@@ -3,7 +3,6 @@
 module StockAlerts
   class StockAlertCreationService
     class << self
-      # Create a stock alert for a product
       # @param product [Product] The product to create alert for
       # @param alert_type [String] Type of alert to create
       # @param threshold [Integer] Stock threshold for the alert

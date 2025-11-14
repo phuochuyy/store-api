@@ -13,13 +13,11 @@ module Orders
         return { success: false, error: 'Order not found' } unless order
         return { success: false, error: 'User not found' } unless shipped_by
 
-        # Validate order can be shipped
         validation_result = validate_order_for_shipping(order)
         return validation_result unless validation_result[:success]
 
         # Perform shipping in transaction
         ActiveRecord::Base.transaction do
-          # Update order status and shipping details
           order.update!(
             status: 'shipped',
             shipped_at: Time.current,
@@ -27,7 +25,6 @@ module Orders
             carrier: carrier
           )
 
-          # Create shipping notification
           create_shipping_notification(order, shipped_by, tracking_number, carrier)
 
           # Log the shipping action
@@ -45,13 +42,11 @@ module Orders
 
       private
 
-      # Validate if order can be shipped
       # @param order [Order] The order to validate
       # @return [Hash] Validation result
       def validate_order_for_shipping(order)
         return { success: false, error: 'Order not found' } unless order
 
-        # Check if order is in confirmed status
         unless order.can_be_shipped?
           return {
             success: false,
@@ -60,7 +55,6 @@ module Orders
           }
         end
 
-        # Check if order has items
         if order.order_items.empty?
           return {
             success: false,
@@ -72,13 +66,11 @@ module Orders
         { success: true }
       end
 
-      # Create notification for order shipping
       # @param order [Order] The shipped order
       # @param shipped_by [User] The user who shipped the order
       # @param tracking_number [String] Tracking number
       # @param carrier [String] Carrier name
       def create_shipping_notification(order, shipped_by, tracking_number, carrier)
-        # Create notification for customer
         if order.user
           Notification.create!(
             user: order.user,
@@ -97,7 +89,6 @@ module Orders
           )
         end
 
-        # Create notification for other admins
         User.admin.where.not(id: shipped_by.id).find_each do |admin|
           Notification.create!(
             user: admin,

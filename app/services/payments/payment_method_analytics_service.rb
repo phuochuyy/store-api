@@ -3,7 +3,6 @@
 module Payments
   class PaymentMethodAnalyticsService
     class << self
-      # Get payment method statistics
       # @param payment_method [PaymentMethod] Payment method to analyze
       # @param period [String] Time period for statistics
       # @return [Hash] Payment method statistics
@@ -28,7 +27,6 @@ module Payments
         }
       end
 
-      # Get payment method performance comparison
       # @param period [String] Time period for comparison
       # @return [Hash] Performance comparison data
       def get_payment_method_performance(period = 'month')
@@ -52,7 +50,6 @@ module Payments
         performance_data.sort_by { |data| -data[:total_amount] }
       end
 
-      # Get payment method trends
       # @param payment_method [PaymentMethod] Payment method to analyze
       # @param days [Integer] Number of days to analyze
       # @return [Hash] Trend data

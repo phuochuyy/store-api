@@ -3,7 +3,6 @@
 module Users
   class ProfileDataService
     class << self
-      # Get user profile data
       # @param user [User] User to get profile for
       # @return [Hash] Profile data
       def profile_data(user)
@@ -19,7 +18,7 @@ module Users
           date_of_birth: user.date_of_birth,
           gender: user.gender,
           bio: user.bio,
-          avatar_url: user.avatar_url,
+          avatar_url: user.avatar.present? ? (user.avatar.attached? ? Rails.application.routes.url_helpers.url_for(user.avatar) : nil) : nil,
           preferences: extract_preferences(user),
           addresses: extract_addresses(user),
           created_at: user.created_at,
@@ -27,7 +26,6 @@ module Users
         }
       end
 
-      # Get user profile for public view
       # @param user [User] User to get profile for
       # @return [Hash] Public profile data
       def public_profile_data(user)
@@ -37,28 +35,17 @@ module Users
           id: user.id,
           display_name: user.display_name,
           bio: user.bio,
-          avatar_url: user.avatar_url
+          avatar_url: user.avatar.present? ? (user.avatar.attached? ? Rails.application.routes.url_helpers.url_for(user.avatar) : nil) : nil
         }
 
-        # Add additional data based on privacy level
-        case user.privacy_level
-        when 'public'
-          base_data.merge(
-            first_name: user.first_name,
-            last_name: user.last_name,
-            created_at: user.created_at
-          )
-        when 'friends'
-          base_data.merge(
-            first_name: user.first_name,
-            last_name: user.last_name
-          )
-        else # private
-          base_data
-        end
+        # Add additional data (simplified - no privacy level in current schema)
+        base_data.merge(
+          first_name: user.first_name,
+          last_name: user.last_name,
+          created_at: user.created_at
+        )
       end
 
-      # Get user statistics
       # @param user [User] User to get statistics for
       # @return [Hash] User statistics
       def user_statistics(user)
@@ -77,14 +64,10 @@ module Users
 
       def extract_preferences(user)
         {
-          email_notifications_enabled: user.email_notifications_enabled,
-          sms_notifications_enabled: user.sms_notifications_enabled,
-          marketing_emails_enabled: user.marketing_emails_enabled,
-          language: user.language,
-          timezone: user.timezone,
-          currency: user.currency,
-          theme: user.theme,
-          privacy_level: user.privacy_level
+          email_notifications_enabled: user.email_notifications_enabled?,
+          sms_notifications_enabled: user.sms_notifications_enabled?,
+          push_notifications_enabled: user.push_notifications_enabled?,
+          preferences: user.preferences || {}
         }
       end
 
@@ -93,11 +76,14 @@ module Users
           {
             id: address.id,
             address_type: address.address_type,
-            street: address.street,
+            full_name: address.full_name,
+            address_line1: address.address_line1,
+            address_line2: address.address_line2,
             city: address.city,
             state: address.state,
             postal_code: address.postal_code,
             country: address.country,
+            phone: address.phone,
             is_default: address.is_default
           }
         end

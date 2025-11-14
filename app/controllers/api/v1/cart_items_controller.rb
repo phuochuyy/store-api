@@ -4,7 +4,6 @@ module Api
       before_action :set_cart
       before_action :set_cart_item, only: %i[show update destroy]
 
-      # GET /api/v1/carts/:cart_id/cart_items
       def index
         cart_items = @cart.cart_items.includes(:product)
 
@@ -15,7 +14,6 @@ module Api
                        }, 'Cart items retrieved successfully')
       end
 
-      # GET /api/v1/carts/:cart_id/cart_items/:id
       def show
         render_success({
                          cart_item: @cart_item,
@@ -23,7 +21,6 @@ module Api
                        }, 'Cart item retrieved successfully')
       end
 
-      # POST /api/v1/carts/:cart_id/cart_items
       def create
         result = Carts::CartService.add_to_cart(
           @cart,
@@ -37,11 +34,10 @@ module Api
                            cart_items: result[:cart_items]
                          }, result[:message], :created)
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # PUT /api/v1/carts/:cart_id/cart_items/:id
       def update
         result = Carts::CartService.update_cart_item_quantity(
           @cart,
@@ -55,11 +51,10 @@ module Api
                            cart_items: result[:cart_items]
                          }, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # DELETE /api/v1/carts/:cart_id/cart_items/:id
       def destroy
         result = Carts::CartService.remove_from_cart(
           @cart,
@@ -72,7 +67,7 @@ module Api
                            cart_items: result[:cart_items]
                          }, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 

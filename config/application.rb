@@ -29,6 +29,9 @@ module StoreApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
+    # Add Rack::Attack middleware for rate limiting
+    config.middleware.use Rack::Attack
+
     # Set default URL options for general URL generation
     config.default_url_options = { host: 'localhost', port: 3000, protocol: 'http' }
 

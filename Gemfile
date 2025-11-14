@@ -12,6 +12,31 @@ gem 'tzinfo-data', platforms: %i[windows jruby]
 gem 'bcrypt', '~> 3.1.7'
 gem 'jwt'
 
+# Redis (for caching and background jobs)
+gem 'hiredis-client'
+gem 'redis', '~> 5.0'
+
+# Rate Limiting
+gem 'rack-attack'
+
+# Environment Variables
+gem 'figaro'
+
+# Background Jobs
+gem 'sidekiq'
+gem 'sidekiq-cron'
+
+# Logging & Monitoring
+gem 'lograge'
+gem 'sentry-rails'
+gem 'sentry-ruby'
+
+# Health Checks
+gem 'okcomputer'
+
+# Request Tracking
+gem 'request_store'
+
 # API
 gem 'active_model_serializers'
 gem 'rack-cors'
@@ -40,5 +65,6 @@ group :development, :test do
   # Development Tools
   gem 'better_errors'               # Better error pages
   gem 'binding_of_caller'           # Better debugging
+  gem 'letter_opener'               # View emails in browser
   gem 'ruby-lsp'                    # Ruby Language Server Protocol
 end

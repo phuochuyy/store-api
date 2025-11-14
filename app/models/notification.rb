@@ -34,7 +34,6 @@ class Notification < ApplicationRecord
   validates :message, presence: true, length: { maximum: 1000 }
   validates :read, inclusion: { in: [true, false] }
 
-  # Enums
   enum :notification_type, {
     stock_alert: 'stock_alert',
     order_update: 'order_update',
@@ -59,7 +58,6 @@ class Notification < ApplicationRecord
     order_reminder: 'order_reminder'
   }
 
-  # Scopes
   scope :unread, -> { where(read: false) }
   scope :read, -> { where(read: true) }
   scope :recent, -> { order(created_at: :desc) }
@@ -67,7 +65,6 @@ class Notification < ApplicationRecord
   scope :sent, -> { where.not(sent_at: nil) }
   scope :pending, -> { where(sent_at: nil) }
 
-  # Callbacks
   before_validation :set_defaults
   after_create :set_sent_at
 

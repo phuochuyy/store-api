@@ -91,3 +91,4 @@ docs/
 # Makefile
 
 my_cv.tex
+MISSING_TESTS.md

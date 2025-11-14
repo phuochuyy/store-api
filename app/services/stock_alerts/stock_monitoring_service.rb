@@ -17,23 +17,18 @@ module StockAlerts
       # @return [Hash] Summary of monitoring results
       delegate :monitor_products_by_category, to: :StockMonitoringCoreService
 
-      # Get alert summary for dashboard
       # @return [Hash] Alert summary data
       delegate :alert_summary, to: :StockMonitoringAnalyticsService
 
-      # Get critical alerts
       # @return [Array<StockAlert>] Critical stock alerts
       delegate :critical_alerts, to: :StockMonitoringAnalyticsService
 
-      # Get low stock alerts
       # @return [Array<StockAlert>] Low stock alerts
       delegate :low_stock_alerts, to: :StockMonitoringAnalyticsService
 
-      # Get alerts pending notification
       # @return [Array<StockAlert>] Alerts that haven't been notified
       delegate :alerts_pending_notification, to: :StockMonitoringAnalyticsService
 
-      # Get alerts by severity
       # @param severity [String] Severity level
       # @return [Array<StockAlert>] Alerts of specified severity
       delegate :alerts_by_severity, to: :StockMonitoringAnalyticsService
@@ -48,14 +43,12 @@ module StockAlerts
       # @return [Integer] Recommended quantity
       delegate :calculate_recommended_quantity, to: :StockMonitoringRecommendationService
 
-      # Get reorder recommendations
       # @param limit [Integer] Maximum number of recommendations
       # @return [Array<Hash>] Reorder recommendations
       def get_reorder_recommendations(limit = 50)
         StockMonitoringRecommendationService.get_reorder_recommendations(limit)
       end
 
-      # Get stock level recommendations
       # @param product [Product] Product to analyze
       # @return [Hash] Stock level recommendations
       delegate :get_stock_level_recommendations, to: :StockMonitoringRecommendationService

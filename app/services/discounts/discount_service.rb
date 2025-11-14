@@ -1,7 +1,6 @@
 module Discounts
   class DiscountService
     class << self
-      # Create a new discount
       def create_discount(params)
         discount = Discount.new(params)
 
@@ -12,7 +11,6 @@ module Discounts
         end
       end
 
-      # Update an existing discount
       def update_discount(discount, params)
         if discount.update(params)
           { success: true, discount: discount }
@@ -21,7 +19,6 @@ module Discounts
         end
       end
 
-      # Delete a discount
       def delete_discount(discount)
         if discount.orders.exists?
           { success: false, error: 'Cannot delete discount with existing orders' }
@@ -51,7 +48,6 @@ module Discounts
         { error: 'Discount not found' }
       end
 
-      # Validate discount code
       def validate_discount_code(code, order_amount = 0, order_items = [])
         discount = Discount.available.find_by(code: code.upcase)
         return { valid: false, error: 'Invalid discount code' } unless discount
@@ -64,7 +60,6 @@ module Discounts
           }
         end
 
-        # Check if applies to items
         unless discount.applies_to_items?(order_items)
           return { valid: false, error: 'Discount does not apply to items in your order' }
         end
@@ -99,7 +94,6 @@ module Discounts
         { success: false, error: e.message }
       end
 
-      # Get discount statistics
       def get_discount_stats(discount)
         {
           total_usage: discount.used_count,

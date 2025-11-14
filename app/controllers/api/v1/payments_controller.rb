@@ -7,7 +7,6 @@ module Api
       before_action :set_order, only: %i[create]
       before_action :admin_only!, only: %i[index update destroy refund]
 
-      # GET /api/v1/payments
       def index
         @payments = build_payments_query
         data = build_payments_response
@@ -50,7 +49,6 @@ module Api
         }
       end
 
-      # GET /api/v1/payments/:id
       def show
         data = {
           payment: payment_serializer(@payment),
@@ -61,10 +59,9 @@ module Api
         render_success(data, 'Payment retrieved successfully')
       end
 
-      # POST /api/v1/payments
       def create
         return render_error('Order not found', :not_found) unless @order
-        return render_error('Order cannot be paid', :unprocessable_entity) unless @order.can_be_paid?
+        return render_error('Order cannot be paid', :unprocessable_content) unless @order.can_be_paid?
 
         payment_method = PaymentMethod.find_by(id: payment_params[:payment_method_id])
         return render_error('Payment method not found', :not_found) unless payment_method
@@ -83,33 +80,30 @@ module Api
           }
           render_success(data, result[:message] || 'Payment processed successfully', :created)
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # PATCH/PUT /api/v1/payments/:id
       def update
         if @payment.update(payment_update_params)
           data = { payment: payment_serializer(@payment) }
           render_success(data, 'Payment updated successfully')
         else
-          render_error('Payment could not be updated', :unprocessable_entity, @payment.errors.full_messages)
+          render_error('Payment could not be updated', :unprocessable_content, @payment.errors.full_messages)
         end
       end
 
-      # DELETE /api/v1/payments/:id
       def destroy
         if @payment.pending?
           @payment.destroy
           render_success(nil, 'Payment deleted successfully')
         else
-          render_error('Only pending payments can be deleted', :unprocessable_entity)
+          render_error('Only pending payments can be deleted', :unprocessable_content)
         end
       end
 
-      # POST /api/v1/payments/:id/refund
       def refund
-        return render_error('Payment cannot be refunded', :unprocessable_entity) unless @payment.can_be_refunded?
+        return render_error('Payment cannot be refunded', :unprocessable_content) unless @payment.can_be_refunded?
 
         refund_amount = refund_params[:amount]&.to_f
         refund_reason = refund_params[:reason]
@@ -125,7 +119,7 @@ module Api
           data = { payment: payment_serializer(@payment) }
           render_success(data, result[:message] || 'Refund processed successfully')
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 

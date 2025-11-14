@@ -3,31 +3,26 @@
 module Payments
   class PaymentMethodService
     class << self
-      # Get all active payment methods
       # @return [Array<PaymentMethod>] Active payment methods
       def active_payment_methods
         PaymentMethod.active.includes(:payments)
       end
 
-      # Get payment methods by gateway type
       # @param gateway_type [String] The gateway type to filter by
       # @return [Array<PaymentMethod>] Payment methods for the gateway
       def get_payment_methods_by_gateway(gateway_type)
         PaymentMethod.active.by_gateway_type(gateway_type)
       end
 
-      # Create a new payment method
       # @param params [Hash] Payment method parameters
       # @return [Hash] Result with success status and payment method
       delegate :create_payment_method, to: :PaymentMethodCreationService
 
-      # Update a payment method
       # @param payment_method [PaymentMethod] The payment method to update
       # @param params [Hash] Update parameters
       # @return [Hash] Result with success status
       delegate :update_payment_method, to: :PaymentMethodCreationService
 
-      # Delete a payment method
       # @param payment_method [PaymentMethod] The payment method to delete
       # @return [Hash] Result with success status
       delegate :delete_payment_method, to: :PaymentMethodCreationService
@@ -51,7 +46,6 @@ module Payments
         }
       end
 
-      # Get payment method statistics
       # @param payment_method [PaymentMethod] Payment method to analyze
       # @param period [String] Time period for statistics
       # @return [Hash] Payment method statistics
@@ -59,14 +53,12 @@ module Payments
         PaymentMethodAnalyticsService.get_payment_method_stats(payment_method, period)
       end
 
-      # Get payment method performance comparison
       # @param period [String] Time period for comparison
       # @return [Hash] Performance comparison data
       def get_payment_method_performance(period = 'month')
         PaymentMethodAnalyticsService.get_payment_method_performance(period)
       end
 
-      # Get payment method trends
       # @param payment_method [PaymentMethod] Payment method to analyze
       # @param days [Integer] Number of days to analyze
       # @return [Hash] Trend data
@@ -74,7 +66,6 @@ module Payments
         PaymentMethodAnalyticsService.get_payment_method_trends(payment_method, days)
       end
 
-      # Validate payment method configuration
       # @param payment_method [PaymentMethod] Payment method to validate
       # @return [Hash] Validation result
       delegate :validate_payment_method_config, to: :PaymentMethodValidationService

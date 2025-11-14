@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module Authorization
     extend ActiveSupport::Concern
@@ -5,25 +7,19 @@ module Api
     private
 
     def authorize!(resource, action)
-      result = Auth::AuthenticationService.authorize(current_user, resource, action)
-
+      result = Auth::TokenValidationService.authorize(current_user, resource, action)
       return if result[:success]
 
-      render json: {
-        success: false,
-        error: result[:error],
-        status: :forbidden
-      }, status: :forbidden
+      render_error(result[:error], :forbidden)
+    rescue StandardError => e
+      Rails.logger.error "Authorization error: #{e.message}"
+      render_error('Authorization failed', :forbidden)
     end
 
     def admin_only!
       return if current_user&.admin?
 
-      render json: {
-        success: false,
-        error: 'Admin access required',
-        status: :forbidden
-      }, status: :forbidden
+      render_error('Admin access required', :forbidden)
     end
   end
 end

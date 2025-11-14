@@ -4,7 +4,7 @@ namespace :jwt do
     puts 'Cleaning up expired JWT blacklist tokens...'
 
     JwtBlacklistToken.count
-    cleaned_count = JwtBlacklistService.cleanup_expired_tokens
+    cleaned_count = Auth::Jwt::BlacklistService.cleanup_expired_tokens
 
     puts "Cleaned up #{cleaned_count} expired tokens"
     puts "Remaining tokens: #{JwtBlacklistToken.count}"
@@ -21,7 +21,7 @@ namespace :jwt do
     puts 'JWT Blacklist Statistics:'
     puts '=' * 40
 
-    stats = JwtBlacklistService.blacklist_stats
+    stats = Auth::Jwt::BlacklistService.blacklist_stats
 
     puts "Total tokens: #{stats[:total]}"
     puts "Active tokens: #{stats[:active]}"
@@ -45,7 +45,7 @@ namespace :jwt do
 
     confirmation = $stdin.gets.chomp
     if confirmation == 'yes'
-      count = JwtBlacklistService.clear_all_blacklisted_tokens
+      count = Auth::Jwt::BlacklistService.clear_all_blacklisted_tokens
       puts "✅ Cleared #{count} tokens"
     else
       puts '❌ Operation cancelled'
@@ -64,23 +64,23 @@ namespace :jwt do
     end
 
     # Generate a token
-    token = JwtEncodeService.encode(user)
+    token = Auth::Jwt::EncodeService.encode(user)
     puts "Generated token: #{token.first(50)}..."
 
     # Test blacklisting
     puts 'Blacklisting token...'
-    JwtBlacklistService.blacklist_token(token, user_id: user.id.to_s, reason: 'Test')
+    Auth::Jwt::BlacklistService.blacklist_token(token, user_id: user.id.to_s, reason: 'Test')
 
     # Test if blacklisted
-    is_blacklisted = JwtBlacklistService.blacklisted?(token)
+    is_blacklisted = Auth::Jwt::BlacklistService.blacklisted?(token)
     puts "Token is blacklisted: #{is_blacklisted}"
 
     # Test whitelisting
     puts 'Whitelisting token...'
-    JwtBlacklistService.whitelist_token(token)
+    Auth::Jwt::BlacklistService.whitelist_token(token)
 
     # Test if still blacklisted
-    is_blacklisted = JwtBlacklistService.blacklisted?(token)
+    is_blacklisted = Auth::Jwt::BlacklistService.blacklisted?(token)
     puts "Token is blacklisted after whitelist: #{is_blacklisted}"
 
     # Cleanup

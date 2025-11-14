@@ -3,7 +3,6 @@
 module StockAlerts
   class StockMonitoringAnalyticsService
     class << self
-      # Get alert summary for dashboard
       # @return [Hash] Alert summary data
       def alert_summary
         {
@@ -16,7 +15,6 @@ module StockAlerts
         }
       end
 
-      # Get critical alerts
       # @return [Array<StockAlert>] Critical stock alerts
       def critical_alerts
         StockAlert.active.where(alert_type: %w[out_of_stock critical_stock])
@@ -24,7 +22,6 @@ module StockAlerts
                   .order(triggered_at: :desc)
       end
 
-      # Get low stock alerts
       # @return [Array<StockAlert>] Low stock alerts
       def low_stock_alerts
         StockAlert.active.where(alert_type: %w[low_stock reorder_point])
@@ -32,7 +29,6 @@ module StockAlerts
                   .order(triggered_at: :desc)
       end
 
-      # Get alerts pending notification
       # @return [Array<StockAlert>] Alerts that haven't been notified
       def alerts_pending_notification
         StockAlert.active.where(notification_sent: false)
@@ -40,7 +36,6 @@ module StockAlerts
                   .order(triggered_at: :desc)
       end
 
-      # Get alerts by severity
       # @param severity [String] Severity level
       # @return [Array<StockAlert>] Alerts of specified severity
       def alerts_by_severity(severity)

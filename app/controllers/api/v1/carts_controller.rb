@@ -3,7 +3,6 @@ module Api
     class CartsController < Api::V1::BaseController
       before_action :set_cart, only: %i[show update destroy clear]
 
-      # GET /api/v1/carts
       def index
         result = Carts::CartService.get_or_create_cart(
           user: current_user,
@@ -18,11 +17,10 @@ module Api
                            total_amount: result[:cart].total_amount
                          }, 'Cart retrieved successfully')
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # GET /api/v1/carts/:id
       def show
         result = Carts::CartService.get_cart_details(@cart)
 
@@ -38,7 +36,6 @@ module Api
         end
       end
 
-      # POST /api/v1/carts
       def create
         result = Carts::CartService.get_or_create_cart(
           user: current_user,
@@ -51,11 +48,10 @@ module Api
                            cart_items: result[:cart_items]
                          }, 'Cart created successfully', :created)
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # PUT /api/v1/carts/:id
       def update
         if @cart.update(cart_params)
           result = Carts::CartService.get_cart_details(@cart)
@@ -64,17 +60,15 @@ module Api
                            cart_items: result[:cart_items]
                          }, 'Cart updated successfully')
         else
-          render_error('Cart update failed', :unprocessable_entity, @cart.errors.full_messages)
+          render_error('Cart update failed', :unprocessable_content, @cart.errors.full_messages)
         end
       end
 
-      # DELETE /api/v1/carts/:id
       def destroy
         @cart.destroy
         render_success(nil, 'Cart deleted successfully')
       end
 
-      # DELETE /api/v1/carts/:id/clear
       def clear
         result = Carts::CartService.clear_cart(@cart)
 
@@ -84,11 +78,10 @@ module Api
                            cart_items: result[:cart_items]
                          }, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # POST /api/v1/carts/merge
       def merge
         guest_session_id = params[:guest_session_id]
 
@@ -107,7 +100,7 @@ module Api
                            cart_items: result[:cart_items]
                          }, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 

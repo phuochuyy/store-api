@@ -10,7 +10,6 @@ module StockAlerts
         return { success: false, error: 'Stock alert not found' } unless stock_alert
         return { success: false, error: 'Stock alert already has notification sent' } if stock_alert.notification_sent?
 
-        # Get admin users who should receive stock alerts
         admin_users = User.admin.where.not(id: nil)
         return { success: false, error: 'No admin users found' } if admin_users.empty?
 
@@ -138,7 +137,6 @@ module StockAlerts
         send_bulk_stock_alert_notifications(pending_alerts)
       end
 
-      # Get notification statistics
       # @param period [String] Time period for statistics
       # @return [Hash] Notification statistics
       def get_notification_statistics(period = 'week')

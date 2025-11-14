@@ -25,7 +25,6 @@ module Users
         }
       end
 
-      # Delete user avatar
       # @param user [User] User to delete avatar for
       # @return [Hash] Result with success status
       def delete_avatar(user)
@@ -73,9 +72,10 @@ module Users
 
       def build_avatar_response(user, success)
         if success
+          avatar_url = user.avatar.attached? ? Rails.application.routes.url_helpers.url_for(user.avatar) : nil
           {
             success: true,
-            avatar_url: user.avatar_url,
+            avatar_url: avatar_url,
             message: 'Avatar uploaded successfully'
           }
         else

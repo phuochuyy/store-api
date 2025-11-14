@@ -13,13 +13,11 @@ module Orders
         return { success: false, error: 'Order not found' } unless order
         return { success: false, error: 'User not found' } unless delivered_by
 
-        # Validate order can be delivered
         validation_result = validate_order_for_delivery(order)
         return validation_result unless validation_result[:success]
 
         # Perform delivery in transaction
         ActiveRecord::Base.transaction do
-          # Update order status and delivery details
           order.update!(
             status: 'delivered',
             delivered_at: Time.current,
@@ -27,7 +25,6 @@ module Orders
             delivery_signature: delivery_signature
           )
 
-          # Create delivery notification
           create_delivery_notification(order, delivered_by, delivery_notes)
 
           # Log the delivery action
@@ -44,13 +41,11 @@ module Orders
 
       private
 
-      # Validate if order can be delivered
       # @param order [Order] The order to validate
       # @return [Hash] Validation result
       def validate_order_for_delivery(order)
         return { success: false, error: 'Order not found' } unless order
 
-        # Check if order is in shipped status
         unless order.can_be_delivered?
           return {
             success: false,
@@ -59,7 +54,6 @@ module Orders
           }
         end
 
-        # Check if order has items
         if order.order_items.empty?
           return {
             success: false,
@@ -71,12 +65,10 @@ module Orders
         { success: true }
       end
 
-      # Create notification for order delivery
       # @param order [Order] The delivered order
       # @param delivered_by [User] The user who delivered the order
       # @param delivery_notes [String] Delivery notes
       def create_delivery_notification(order, delivered_by, delivery_notes)
-        # Create notification for customer
         if order.user
           Notification.create!(
             user: order.user,
@@ -92,7 +84,6 @@ module Orders
           )
         end
 
-        # Create notification for other admins
         User.admin.where.not(id: delivered_by.id).find_each do |admin|
           Notification.create!(
             user: admin,

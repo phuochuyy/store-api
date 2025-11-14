@@ -86,7 +86,7 @@ RSpec.describe Api::Authentication, type: :controller do
 
     context 'with blacklisted token' do
       before do
-        JwtBlacklistService.blacklist_token(valid_token)
+        Auth::Jwt::BlacklistService.blacklist_token(valid_token)
         request.headers['Authorization'] = "Bearer #{valid_token}"
       end
 

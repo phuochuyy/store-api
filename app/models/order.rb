@@ -27,6 +27,22 @@ class Order < ApplicationRecord
   validates :status, presence: true, inclusion: {
     in: %w[pending confirmed shipped delivered cancelled paid payment_failed refunded partially_refunded]
   }
+  
+  # Validate discount consistency
+  validate :discount_code_matches_discount_id, if: -> { discount_id.present? && discount_code.present? }
+  
+  private
+  
+  def discount_code_matches_discount_id
+    return unless discount_id.present? && discount_code.present?
+    
+    discount = Discount.find_by(id: discount_id)
+    if discount.nil?
+      errors.add(:discount_id, 'does not exist')
+    elsif discount.code.upcase != discount_code.upcase
+      errors.add(:discount_code, 'does not match the selected discount')
+    end
+  end
 
   enum :status, {
     pending: 'pending',
@@ -40,7 +56,6 @@ class Order < ApplicationRecord
     partially_refunded: 'partially_refunded'
   }
 
-  # Scope for recent orders
   scope :recent, -> { order(created_at: :desc) }
 
   # Default ordering
@@ -68,13 +83,11 @@ class Order < ApplicationRecord
     discount = Discount.available.find_by(code: discount_code.upcase)
     return { success: false, error: 'Invalid discount code' } unless discount
 
-    # Check if discount applies to this order
     unless discount.meets_minimum_amount?(subtotal_amount)
       return { success: false,
                error: 'Discount does not meet minimum amount requirement' }
     end
 
-    # Check if discount applies to order items
     unless discount.applies_to_items?(order_items)
       return { success: false,
                error: 'Discount does not apply to items in this order' }

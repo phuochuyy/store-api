@@ -1,10 +1,10 @@
 module Api
   module V1
     class ProductsController < Api::V1::BaseController
-      before_action :set_product, only: %i[show update destroy upload_image remove_image]
+      before_action :set_product, only: %i[show update destroy upload_image remove_image add_to_wishlist remove_from_wishlist]
       before_action :authorize_product, only: %i[create update destroy upload_image remove_image]
+      before_action :authenticate_user!, only: %i[add_to_wishlist remove_from_wishlist]
 
-      # GET /api/v1/products
       def index
         filters = extract_filters
         pagination = extract_pagination
@@ -14,13 +14,11 @@ module Api
         render_success(result, 'Products retrieved successfully')
       end
 
-      # GET /api/v1/products/:id
       def show
         result = Products::ProductService.find_product(@product.id)
         render_success(result, 'Product retrieved successfully')
       end
 
-      # GET /api/v1/products/search
       def search
         filters = extract_filters
         pagination = extract_pagination
@@ -30,12 +28,11 @@ module Api
         render_success(result, 'Products search completed successfully')
       end
 
-      # POST /api/v1/products
       def create
         validator = ProductValidator.new(product_params)
 
         unless validator.valid?
-          return render_error('Validation failed', :unprocessable_entity, validator.errors.full_messages)
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
         result = Products::ProductService.create_product(product_params)
@@ -43,16 +40,15 @@ module Api
         if result[:success]
           render_success(result, 'Product created successfully', :created)
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # PUT /api/v1/products/:id
       def update
         validator = ProductValidator.new(product_params)
 
         unless validator.valid?
-          return render_error('Validation failed', :unprocessable_entity, validator.errors.full_messages)
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
         result = Products::ProductService.update_product(@product.id, product_params)
@@ -60,37 +56,57 @@ module Api
         if result[:success]
           render_success(result, 'Product updated successfully')
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # DELETE /api/v1/products/:id
       def destroy
         result = Products::ProductService.delete_product(@product.id)
 
         if result[:success]
           render_success({}, 'Product deleted successfully')
         else
-          render_error(result[:error], :unprocessable_entity)
+          render_error(result[:error], :unprocessable_content)
         end
       end
 
-      # POST /api/v1/products/:id/upload_image
       def upload_image
         if @product.image.attached?
-          return render_error('Product already has an image. Remove existing image first.', :unprocessable_entity)
+          return render_error('Product already has an image. Remove existing image first.', :unprocessable_content)
         end
 
         @product.image.attach(params[:image])
         render_success({}, 'Image uploaded successfully')
       end
 
-      # DELETE /api/v1/products/:id/remove_image
       def remove_image
-        return render_error('Product has no image to remove.', :unprocessable_entity) unless @product.image.attached?
+        return render_error('Product has no image to remove.', :unprocessable_content) unless @product.image.attached?
 
         @product.image.purge
         render_success({}, 'Image removed successfully')
+      end
+
+      def add_to_wishlist
+        existing_wishlist = current_user.product_wishlists.find_by(product: @product)
+        if existing_wishlist
+          return render_error('Product already in wishlist', :unprocessable_content)
+        end
+
+        wishlist = current_user.product_wishlists.build(product: @product)
+
+        if wishlist.save
+          render_success({ wishlist: { id: wishlist.id, product_id: @product.id } }, 'Product added to wishlist successfully')
+        else
+          render_error('Failed to add product to wishlist', :unprocessable_content, wishlist.errors.full_messages)
+        end
+      end
+
+      def remove_from_wishlist
+        wishlist = current_user.product_wishlists.find_by(product: @product)
+        return render_error('Product not in wishlist', :not_found) unless wishlist
+
+        wishlist.destroy
+        render_success(nil, 'Product removed from wishlist successfully')
       end
 
       private
@@ -127,7 +143,6 @@ module Api
         }
       end
 
-      # GET /api/v1/products/:id/stock_movements
       def stock_movements
         filters = {
           movement_type: params[:movement_type],
@@ -147,7 +162,7 @@ module Api
         if result[:success]
           render_success(result, 'Product stock movements retrieved successfully')
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
     end

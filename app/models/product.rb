@@ -27,6 +27,12 @@ class Product < ApplicationRecord
   has_many :carts, through: :cart_items
   has_many :stock_alerts, dependent: :destroy
 
+  has_many :product_reviews, dependent: :destroy
+  has_many :product_wishlists, dependent: :destroy
+  # Note: product_comparisons uses product_ids (text) not product_id, so no direct association
+  # has_many :product_comparisons, dependent: :destroy
+  has_many :stock_movements, dependent: :destroy
+
   # Active Storage for image uploads
   has_one_attached :image
 
@@ -35,22 +41,16 @@ class Product < ApplicationRecord
   validates :price, presence: true, numericality: { greater_than: 0, less_than: 100_000 }
   validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 10_000 }
 
-  # Scope for available products (in stock)
   scope :available, -> { where('stock_quantity > 0') }
 
-  # Scope for expensive products (price > 1000)
   scope :expensive, -> { where('price > 1000') }
 
-  # Scope for products with stock alerts
   scope :with_alerts, -> { joins(:stock_alerts).where(stock_alerts: { status: 'active' }) }
 
-  # Scope for low stock products
   scope :low_stock, -> { where('stock_quantity <= 10') }
 
-  # Scope for out of stock products
   scope :out_of_stock, -> { where(stock_quantity: 0) }
 
-  # Callbacks
   after_update :check_stock_alerts, if: :saved_change_to_stock_quantity?
 
   def in_stock?
@@ -61,27 +61,71 @@ class Product < ApplicationRecord
     return false if quantity <= 0
     return false if stock_quantity < quantity
 
-    StockTracking::StockTrackingService.track_stock_movement(
-      product: self,
-      movement_type: 'order_created',
-      quantity: -quantity,
-      reason: reason,
-      user: user,
-      reference: reference
-    )
+    previous_quantity = stock_quantity
+    new_quantity = stock_quantity - quantity
+
+    ActiveRecord::Base.transaction do
+      # Update stock quantity
+      update!(stock_quantity: new_quantity)
+
+      # Create stock movement record
+      movement_params = {
+        movement_type: 'order_created',
+        quantity: -quantity,
+        previous_quantity: previous_quantity,
+        new_quantity: new_quantity,
+        reason: reason,
+        user: user
+      }
+
+      # Handle polymorphic reference if provided
+      if reference.present?
+        movement_params[:reference_type] = reference.class.name
+        movement_params[:reference_id] = reference.id
+      end
+
+      stock_movements.create!(movement_params)
+    end
+
+    true
+  rescue StandardError => e
+    Rails.logger.error "Error reducing stock for product #{id}: #{e.message}"
+    false
   end
 
   def add_stock(quantity, reason: nil, user: nil, reference: nil)
     return false if quantity <= 0
 
-    StockTracking::StockTrackingService.track_stock_movement(
-      product: self,
-      movement_type: 'order_cancelled',
-      quantity: quantity,
-      reason: reason,
-      user: user,
-      reference: reference
-    )
+    previous_quantity = stock_quantity
+    new_quantity = stock_quantity + quantity
+
+    ActiveRecord::Base.transaction do
+      # Update stock quantity
+      update!(stock_quantity: new_quantity)
+
+      # Create stock movement record
+      movement_params = {
+        movement_type: 'order_cancelled',
+        quantity: quantity,
+        previous_quantity: previous_quantity,
+        new_quantity: new_quantity,
+        reason: reason,
+        user: user
+      }
+
+      # Handle polymorphic reference if provided
+      if reference.present?
+        movement_params[:reference_type] = reference.class.name
+        movement_params[:reference_id] = reference.id
+      end
+
+      stock_movements.create!(movement_params)
+    end
+
+    true
+  rescue StandardError => e
+    Rails.logger.error "Error adding stock for product #{id}: #{e.message}"
+    false
   end
 
   # Stock alert methods

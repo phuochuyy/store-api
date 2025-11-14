@@ -68,7 +68,6 @@ class DiscountValidator
   def valid_applies_to_ids
     return if applies_to == 'all' || applies_to_ids.blank?
 
-    # Check if applies_to_ids contains valid comma-separated integers
     ids = applies_to_ids.split(',').map(&:strip)
 
     ids.each do |id|

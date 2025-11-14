@@ -3,7 +3,6 @@
 module Users
   class AddressService
     class << self
-      # Create user address
       # @param user [User] User to create address for
       # @param address_params [Hash] Address parameters
       # @return [Hash] Result with success status
@@ -11,7 +10,6 @@ module Users
         AddressCreationService.create_address(user: user, **address_params)
       end
 
-      # Get user addresses with filters
       # @param user [User] User to get addresses for
       # @param filters [Hash] Filter parameters
       # @return [Hash] Result with addresses
@@ -19,7 +17,6 @@ module Users
         AddressDataService.get_user_addresses(user: user, **filters)
       end
 
-      # Get default address for user
       # @param user [User] User to get default address for
       # @param address_type [String] Type of address (shipping/billing)
       # @return [Hash] Result with default address
@@ -27,7 +24,6 @@ module Users
         AddressDataService.get_default_address(user, address_type)
       end
 
-      # Set default address
       # @param address [UserAddress] Address to set as default
       # @return [Hash] Result with success status
       def default_address=(address)
@@ -39,7 +35,6 @@ module Users
         raise e
       end
 
-      # Update user address
       # @param address [UserAddress] Address to update
       # @param address_params [Hash] Update parameters
       # @return [Hash] Result with success status
@@ -47,7 +42,6 @@ module Users
         AddressCreationService.update_address(address: address, **address_params)
       end
 
-      # Delete user address
       # @param address [UserAddress] Address to delete
       # @return [Hash] Result with success status
       delegate :delete_address, to: :AddressCreationService
@@ -60,7 +54,6 @@ module Users
         AddressDataService.bulk_import_addresses(user: user, addresses_data: addresses_data)
       end
 
-      # Validate address format
       # @param address_data [Hash] Address data to validate
       # @return [Hash] Validation result
       def validate_address_format(address_data)
@@ -84,7 +77,6 @@ module Users
         end
       end
 
-      # Get address statistics for user
       # @param user [User] User to get statistics for
       # @return [Hash] Address statistics
       def get_address_statistics(user)
@@ -120,13 +112,11 @@ module Users
       def validate_address_format_fields(address_data)
         errors = []
 
-        # Validate postal code format
         if address_data[:postal_code].present?
           postal_code = address_data[:postal_code].to_s.strip
           errors << 'Invalid postal code format' unless postal_code.match?(/\A\d{5}(-\d{4})?\z/) # US ZIP code format
         end
 
-        # Validate phone format
         if address_data[:phone].present?
           phone = address_data[:phone].to_s.strip
           errors << 'Invalid phone number format' unless phone.match?(/\A\+?[\d\s\-()]+\z/)

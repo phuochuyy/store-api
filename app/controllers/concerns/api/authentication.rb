@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module Authentication
     extend ActiveSupport::Concern
@@ -10,10 +12,10 @@ module Api
 
     def authenticate_user!
       token = extract_token
-      return render_unauthorized('Token missing') unless token
+      return render_error('Token not provided', :unauthorized) unless token
 
-      result = Auth::AuthenticationService.authenticate(token)
-      return render_unauthorized(result[:error]) unless result[:success]
+      result = Auth::TokenValidationService.authenticate(token)
+      return render_error(result[:error], :unauthorized) unless result[:success]
 
       @current_user = result[:user]
     end
@@ -23,15 +25,14 @@ module Api
     end
 
     def extract_token
-      request.headers['Authorization']&.split&.last
-    end
+      auth_header = request.headers['Authorization']
+      return nil unless auth_header
 
-    def render_unauthorized(message)
-      render json: {
-        success: false,
-        error: message,
-        status: :unauthorized
-      }, status: :unauthorized
+      parts = auth_header.split
+      return nil unless parts.length == 2
+      return nil unless parts.first.downcase == 'bearer'
+
+      parts.last
     end
   end
 end

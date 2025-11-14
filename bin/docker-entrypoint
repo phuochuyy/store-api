@@ -6,6 +6,27 @@ if [ -z "${LD_PRELOAD+x}" ]; then
     export LD_PRELOAD
 fi
 
+# Ensure store_api database exists (for processes that may connect to it)
+# This runs before Rails initialization to prevent connection errors
+if command -v psql >/dev/null 2>&1 && [ -n "${DATABASE_HOST}" ]; then
+  # Wait for database to be ready
+  until PGPASSWORD="${DATABASE_PASSWORD:-userpw}" psql -h "${DATABASE_HOST}" -U "${DATABASE_USERNAME:-store_api}" -d postgres -c "SELECT 1" >/dev/null 2>&1; do
+    echo "Waiting for database to be ready..."
+    sleep 1
+  done
+  
+  # Create store_api database if it doesn't exist
+  PGPASSWORD="${DATABASE_PASSWORD:-userpw}" psql -h "${DATABASE_HOST}" -U "${DATABASE_USERNAME:-store_api}" -d postgres <<-EOSQL 2>/dev/null || true
+    DO \$\$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'store_api') THEN
+            CREATE DATABASE store_api;
+        END IF;
+    END
+    \$\$;
+EOSQL
+fi
+
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare

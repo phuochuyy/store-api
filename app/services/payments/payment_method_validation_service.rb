@@ -3,7 +3,6 @@
 module Payments
   class PaymentMethodValidationService
     class << self
-      # Validate payment method configuration
       # @param payment_method [PaymentMethod] Payment method to validate
       # @return [Hash] Validation result
       def validate_payment_method_config(payment_method)

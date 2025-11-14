@@ -6,7 +6,6 @@ module Api
       before_action :set_stock_alert, only: %i[show update destroy resolve dismiss]
       before_action :admin_only!, only: %i[index show update destroy resolve dismiss bulk_operation statistics]
 
-      # GET /api/v1/stock_alerts
       def index
         filters = {
           status: params[:status],
@@ -27,11 +26,10 @@ module Api
         if result[:success]
           render_success(result, 'Stock alerts retrieved successfully')
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # GET /api/v1/stock_alerts/:id
       def show
         data = {
           alert: alert_serializer(@stock_alert),
@@ -41,7 +39,6 @@ module Api
         render_success(data, 'Stock alert retrieved successfully')
       end
 
-      # PATCH/PUT /api/v1/stock_alerts/:id
       def update
         update_params = stock_alert_params.except(:resolved_by, :resolution_notes, :dismissed_by, :dismissal_reason)
 
@@ -51,20 +48,18 @@ module Api
           data = { alert: alert_serializer(result[:alert]) }
           render_success(data, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # DELETE /api/v1/stock_alerts/:id
       def destroy
         if @stock_alert.destroy
           render_success(nil, 'Stock alert deleted successfully')
         else
-          render_error('Failed to delete stock alert', :unprocessable_entity, @stock_alert.errors.full_messages)
+          render_error('Failed to delete stock alert', :unprocessable_content, @stock_alert.errors.full_messages)
         end
       end
 
-      # POST /api/v1/stock_alerts/:id/resolve
       def resolve
         result = StockAlerts::StockAlertService.resolve_alert(
           @stock_alert,
@@ -76,11 +71,10 @@ module Api
           data = { alert: alert_serializer(result[:alert]) }
           render_success(data, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # POST /api/v1/stock_alerts/:id/dismiss
       def dismiss
         result = StockAlerts::StockAlertService.dismiss_alert(
           @stock_alert,
@@ -92,11 +86,10 @@ module Api
           data = { alert: alert_serializer(result[:alert]) }
           render_success(data, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # POST /api/v1/stock_alerts/bulk_operation
       def bulk_operation
         alert_ids = params[:alert_ids]
         action = params[:action]
@@ -107,11 +100,10 @@ module Api
         if result[:success]
           render_success({ count: result[:count] }, result[:message])
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # GET /api/v1/stock_alerts/statistics
       def statistics
         period = params[:period] || 'month'
         result = StockAlerts::StockAlertService.get_alert_statistics(period)
@@ -119,11 +111,10 @@ module Api
         if result[:success]
           render_success(result, 'Stock alert statistics retrieved successfully')
         else
-          render_error(result[:error], :unprocessable_entity, result[:details])
+          render_error(result[:error], :unprocessable_content, result[:details])
         end
       end
 
-      # GET /api/v1/stock_alerts/critical
       def critical
         alerts = StockAlerts::StockMonitoringService.get_critical_alerts
         data = {
@@ -134,7 +125,6 @@ module Api
         render_success(data, 'Critical stock alerts retrieved successfully')
       end
 
-      # GET /api/v1/stock_alerts/low_stock
       def low_stock
         alerts = StockAlerts::StockMonitoringService.get_low_stock_alerts
         data = {
@@ -145,7 +135,6 @@ module Api
         render_success(data, 'Low stock alerts retrieved successfully')
       end
 
-      # GET /api/v1/stock_alerts/pending_notifications
       def pending_notifications
         alerts = StockAlerts::StockMonitoringService.get_alerts_pending_notification
         data = {
@@ -156,7 +145,6 @@ module Api
         render_success(data, 'Alerts pending notification retrieved successfully')
       end
 
-      # POST /api/v1/stock_alerts/mark_notifications_sent
       def mark_notifications_sent
         alert_ids = params[:alert_ids]
         return render_error('Alert IDs are required', :bad_request) if alert_ids.blank?
@@ -169,7 +157,6 @@ module Api
         )
       end
 
-      # GET /api/v1/stock_alerts/summary
       def summary
         summary_data = StockAlerts::StockMonitoringService.get_alert_summary
         render_success(summary_data, 'Stock alert summary retrieved successfully')

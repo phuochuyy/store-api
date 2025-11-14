@@ -31,7 +31,6 @@ class Payment < ApplicationRecord
   validates :currency, presence: true
   validates :transaction_id, uniqueness: true, allow_nil: true
 
-  # Enums
   enum :status, {
     pending: 'pending',
     processing: 'processing',
@@ -42,7 +41,6 @@ class Payment < ApplicationRecord
     partially_refunded: 'partially_refunded'
   }
 
-  # Scopes
   scope :recent, -> { order(created_at: :desc) }
   scope :successful, -> { where(status: 'completed') }
   scope :failed, -> { where(status: %w[failed cancelled]) }
@@ -50,7 +48,6 @@ class Payment < ApplicationRecord
   scope :by_status, ->(status) { where(status: status) }
   scope :by_payment_method, ->(method) { where(payment_method: method) }
 
-  # Callbacks
   before_validation :set_defaults
   after_create :track_creation
   after_update :update_order_status, if: :saved_change_to_status?
