@@ -5,6 +5,8 @@ Rails.logger.debug 'Creating additional sample data...'
 additional_users = [
   {
     name: 'Sarah Johnson',
+    first_name: 'Sarah',
+    last_name: 'Johnson',
     email: 'sarah.johnson@example.com',
     password: 'password123',
     password_confirmation: 'password123',
@@ -12,6 +14,8 @@ additional_users = [
   },
   {
     name: 'Mike Chen',
+    first_name: 'Mike',
+    last_name: 'Chen',
     email: 'mike.chen@example.com',
     password: 'password123',
     password_confirmation: 'password123',
@@ -19,6 +23,8 @@ additional_users = [
   },
   {
     name: 'Emily Davis',
+    first_name: 'Emily',
+    last_name: 'Davis',
     email: 'emily.davis@example.com',
     password: 'password123',
     password_confirmation: 'password123',
@@ -26,6 +32,8 @@ additional_users = [
   },
   {
     name: 'Alex Rodriguez',
+    first_name: 'Alex',
+    last_name: 'Rodriguez',
     email: 'alex.rodriguez@example.com',
     password: 'password123',
     password_confirmation: 'password123',
@@ -33,6 +41,8 @@ additional_users = [
   },
   {
     name: 'Lisa Wang',
+    first_name: 'Lisa',
+    last_name: 'Wang',
     email: 'lisa.wang@example.com',
     password: 'password123',
     password_confirmation: 'password123',
@@ -40,6 +50,8 @@ additional_users = [
   },
   {
     name: 'Store Manager',
+    first_name: 'Store',
+    last_name: 'Manager',
     email: 'manager@example.com',
     password: 'password123',
     password_confirmation: 'password123',
@@ -301,7 +313,11 @@ order_scenarios.each do |scenario|
     )
   end
 
-  order.update_total_amount
+  begin
+    order.update_total_amount
+  rescue StandardError => e
+    Rails.logger.warn { "Could not update total for order #{order.id}: #{e.message}" }
+  end
   Rails.logger.debug { "Created order for #{scenario[:customer_name]} with status: #{scenario[:status]}" }
 end
 

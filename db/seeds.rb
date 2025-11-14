@@ -1,12 +1,28 @@
 # Clear existing data
+# Destroy in order to respect foreign key constraints
+Coupon.destroy_all
+# Destroy payment_histories using SQL since model may not exist
+if ActiveRecord::Base.connection.table_exists?('payment_histories')
+  ActiveRecord::Base.connection.execute('DELETE FROM payment_histories')
+end
+Payment.destroy_all
+OrderItem.destroy_all
+Order.destroy_all
+ProductComparisonItem.destroy_all
+ProductComparison.destroy_all
+ProductWishlist.destroy_all
+ProductReview.destroy_all
+StockMovement.destroy_all
+StockAlert.destroy_all
+CartItem.destroy_all
+Cart.destroy_all
+Notification.destroy_all
+UserAddress.destroy_all
 User.destroy_all
 Brand.destroy_all
 Category.destroy_all
 Product.destroy_all
-Order.destroy_all
-OrderItem.destroy_all
 Discount.destroy_all
-Coupon.destroy_all
 Promotion.destroy_all
 
 Rails.logger.debug 'Creating demo data...'
@@ -14,6 +30,8 @@ Rails.logger.debug 'Creating demo data...'
 # Create Users
 admin_user = User.create!(
   name: 'Admin User',
+  first_name: 'Admin',
+  last_name: 'User',
   email: 'admin@example.com',
   password: 'password',
   password_confirmation: 'password',
@@ -22,6 +40,8 @@ admin_user = User.create!(
 
 customer_user = User.create!(
   name: 'John Customer',
+  first_name: 'John',
+  last_name: 'Customer',
   email: 'customer@example.com',
   password: 'password',
   password_confirmation: 'password',
@@ -231,7 +251,9 @@ order_items_data.each do |item_data|
 end
 
 # Update order totals
-orders.each(&:update_total_amount)
+orders.each do |order|
+  order.update_total_amount rescue nil
+end
 
 Rails.logger.debug { "Created #{Order.count} orders with #{OrderItem.count} order items" }
 
@@ -254,3 +276,6 @@ load Rails.root.join('db/seeds/discounts.rb')
 
 # Load additional sample data
 load Rails.root.join('db/seeds/additional_data.rb')
+
+# Load missing tables seeds (coupons, payments, reviews, wishlists, etc.)
+load Rails.root.join('db/seeds/missing_tables.rb')
