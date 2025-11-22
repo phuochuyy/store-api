@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Order, type: :model do
   let(:user) { create(:user) }
   let(:order) { create(:order, user: user) }
@@ -184,4 +185,4 @@ RSpec.describe Order, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

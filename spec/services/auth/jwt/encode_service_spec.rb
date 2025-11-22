@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::Jwt::EncodeService, type: :service do
   let(:user) { create(:user, email: 'test@example.com', role: 'admin') }
 
@@ -33,8 +34,8 @@ RSpec.describe Auth::Jwt::EncodeService, type: :service do
       decoded_token = JWT.decode(token, Auth::Jwt::Config::SECRET_KEY, true, { algorithm: 'HS256' })
       payload = decoded_token[0]
 
-      exp_time = Time.at(payload['exp'])
-      iat_time = Time.at(payload['iat'])
+      exp_time = Time.zone.at(payload['exp'])
+      iat_time = Time.zone.at(payload['iat'])
 
       # Access token should expire in 30 minutes
       expect(exp_time - iat_time).to be_within(60).of(30.minutes.to_i)
@@ -101,8 +102,8 @@ RSpec.describe Auth::Jwt::EncodeService, type: :service do
       decoded_token = JWT.decode(token, Auth::Jwt::Config::SECRET_KEY, true, { algorithm: 'HS256' })
       payload = decoded_token[0]
 
-      exp_time = Time.at(payload['exp'])
-      iat_time = Time.at(payload['iat'])
+      exp_time = Time.zone.at(payload['exp'])
+      iat_time = Time.zone.at(payload['iat'])
 
       # Refresh token should expire in 7 days
       expect(exp_time - iat_time).to be_within(60).of(7.days.to_i)
@@ -135,8 +136,8 @@ RSpec.describe Auth::Jwt::EncodeService, type: :service do
       decoded_token = JWT.decode(token, Auth::Jwt::Config::SECRET_KEY, true, { algorithm: 'HS256' })
       payload = decoded_token[0]
 
-      exp_time = Time.at(payload['exp'])
-      iat_time = Time.at(payload['iat'])
+      exp_time = Time.zone.at(payload['exp'])
+      iat_time = Time.zone.at(payload['iat'])
 
       # Password reset token should expire in 1 hour
       expect(exp_time - iat_time).to be_within(60).of(1.hour.to_i)
@@ -155,4 +156,4 @@ RSpec.describe Auth::Jwt::EncodeService, type: :service do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

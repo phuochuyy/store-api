@@ -38,16 +38,15 @@ module Api
 
         # Check if user already reviewed this product
         existing_review = @product.product_reviews.find_by(user: current_user)
-        if existing_review
-          return render_error('You have already reviewed this product', :unprocessable_content)
-        end
+        return render_error('You have already reviewed this product', :unprocessable_content) if existing_review
 
         @review = @product.product_reviews.build(review_params)
         @review.user = current_user
         @review.status = 'pending' # Admin approval required
 
         if @review.save
-          render_success({ review: review_serializer(@review) }, 'Review created successfully. Pending admin approval.', :created)
+          render_success({ review: review_serializer(@review) },
+                         'Review created successfully. Pending admin approval.', :created)
         else
           render_error('Review could not be created', :unprocessable_content, @review.errors.full_messages)
         end
@@ -65,7 +64,10 @@ module Api
       end
 
       def destroy
-        return render_error('You can only delete your own reviews', :forbidden) unless @review.user == current_user || current_user.admin?
+        unless @review.user == current_user || current_user.admin?
+          return render_error('You can only delete your own reviews',
+                              :forbidden)
+        end
 
         @review.destroy
         render_success(nil, 'Review deleted successfully')
@@ -75,11 +77,10 @@ module Api
         # Toggle helpful vote
         if @review.helpful_count.nil?
           @review.update(helpful_count: 1)
-          message = 'Marked as helpful'
         else
           @review.update(helpful_count: @review.helpful_count + 1)
-          message = 'Marked as helpful'
         end
+        message = 'Marked as helpful'
 
         render_success({ review: review_serializer(@review.reload) }, message)
       end
@@ -107,10 +108,12 @@ module Api
             name: review.user.name,
             email: review.user.email
           },
-          product: review.product ? {
-            id: review.product.id,
-            name: review.product.name
-          } : nil,
+          product: if review.product
+                     {
+                       id: review.product.id,
+                       name: review.product.name
+                     }
+                   end,
           rating: review.rating,
           title: review.title,
           content: review.content,
@@ -124,4 +127,3 @@ module Api
     end
   end
 end
-

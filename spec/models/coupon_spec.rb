@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Coupon, type: :model do
   let(:discount) { create(:discount) }
   let(:user) { create(:user) }
@@ -83,7 +84,7 @@ RSpec.describe Coupon, type: :model do
     it 'calculates discount_amount from order total' do
       order.update!(total_amount: 100.00)
       discount.update!(discount_type: 'percentage', value: 10)
-      result = coupon.use!(order)
+      coupon.use!(order)
       expect(coupon.reload.discount_amount).to eq(10.0)
     end
 
@@ -138,4 +139,4 @@ RSpec.describe Coupon, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

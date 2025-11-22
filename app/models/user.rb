@@ -143,7 +143,7 @@ class User < ApplicationRecord
     @notification_preferences ||= preferences['notifications'] || {}
   end
 
-  def update_notification_preferences(new_preferences)
+  def update_notification_preferences?(new_preferences)
     return false unless new_preferences.is_a?(Hash)
 
     current_preferences = preferences || {}
@@ -189,7 +189,7 @@ class User < ApplicationRecord
 
   def generate_email_verification_token
     self.email_verification_token = SecureRandom.urlsafe_base64(32)
-    update_column(:email_verification_token, email_verification_token)
+    update!(email_verification_token: email_verification_token)
   rescue StandardError => e
     Rails.logger.error "Failed to generate email verification token: #{e.message}"
   end

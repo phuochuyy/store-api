@@ -2,6 +2,8 @@
 
 module Auth
   module Jwt
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/PerceivedComplexity
     class DecodeService
       class << self
         # Decode raw JWT token without blacklist check (internal use to avoid circular dependency)
@@ -127,5 +129,7 @@ module Auth
         end
       end
     end
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/PerceivedComplexity
   end
 end

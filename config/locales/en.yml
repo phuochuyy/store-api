@@ -7,3 +7,11 @@ en:
   validators:
     discount:
       code_format_message: "can only contain uppercase letters, numbers, and underscores"
+  
+  activerecord:
+    errors:
+      models:
+        product_comparison_item:
+          attributes:
+            product_comparison_id:
+              taken: "Product already in this comparison"

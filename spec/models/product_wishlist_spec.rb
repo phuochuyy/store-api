@@ -14,4 +14,3 @@ RSpec.describe ProductWishlist, type: :model do
     it { should validate_uniqueness_of(:user_id).scoped_to(:product_id) }
   end
 end
-

@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::Jwt::BlacklistService, type: :service do
   let(:user) { create(:user) }
   let(:valid_token) do
@@ -18,7 +19,7 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
       result = described_class.blacklist_token(valid_token, user_id: user.id.to_s)
 
       expect(result).to be true
-      expect(JwtBlacklistToken.where(token: valid_token).exists?).to be true
+      expect(JwtBlacklistToken.exists?(token: valid_token)).to be true
     end
 
     it 'blacklists token with custom parameters' do
@@ -154,7 +155,7 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
       active_token = create(:jwt_blacklist_token)
       expired_token = create(:jwt_blacklist_token, :expired)
 
-      result = described_class.cleanup_expired_tokens
+      described_class.cleanup_expired_tokens
 
       expect(JwtBlacklistToken.exists?(active_token.id)).to be true
       expect(JwtBlacklistToken.exists?(expired_token.id)).to be false
@@ -223,4 +224,4 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

@@ -10,9 +10,9 @@ namespace :jwt do
     puts "Remaining tokens: #{JwtBlacklistToken.count}"
 
     if cleaned_count.positive?
-      puts '✅ Cleanup completed successfully'
+      puts 'Cleanup completed successfully'
     else
-      puts 'ℹ️  No expired tokens found'
+      puts 'No expired tokens found'
     end
   end
 
@@ -40,15 +40,15 @@ namespace :jwt do
 
   desc 'Clear all JWT blacklist tokens (use with caution)'
   task clear_all: :environment do
-    puts '⚠️  WARNING: This will clear ALL JWT blacklist tokens!'
+    puts 'WARNING: This will clear ALL JWT blacklist tokens!'
     print "Are you sure? Type 'yes' to continue: "
 
     confirmation = $stdin.gets.chomp
     if confirmation == 'yes'
       count = Auth::Jwt::BlacklistService.clear_all_blacklisted_tokens
-      puts "✅ Cleared #{count} tokens"
+      puts "Cleared #{count} tokens"
     else
-      puts '❌ Operation cancelled'
+      puts 'Operation cancelled'
     end
   end
 
@@ -85,6 +85,6 @@ namespace :jwt do
 
     # Cleanup
     user.destroy
-    puts '✅ Test completed successfully'
+    puts 'Test completed successfully'
   end
 end

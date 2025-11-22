@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe PasswordResetToken, type: :model do
   let(:user) { create(:user) }
   let(:token) { create(:password_reset_token, user: user) }
@@ -71,4 +72,4 @@ RSpec.describe PasswordResetToken, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Category, type: :model do
   describe 'associations' do
     it { should have_many(:products).dependent(:destroy) }
@@ -43,7 +44,8 @@ RSpec.describe Category, type: :model do
 
     context 'description validation' do
       it 'accepts valid description length' do
-        category = build(:category, description: 'This is a valid description that meets the minimum length requirement')
+        category = build(:category,
+                         description: 'This is a valid description that meets the minimum length requirement')
         expect(category).to be_valid
       end
 
@@ -100,4 +102,4 @@ RSpec.describe Category, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

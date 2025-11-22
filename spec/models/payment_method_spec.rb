@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe PaymentMethod, type: :model do
   describe 'associations' do
     it { should have_many(:payments).dependent(:restrict_with_exception) }
@@ -12,14 +13,19 @@ RSpec.describe PaymentMethod, type: :model do
     it { should validate_uniqueness_of(:name) }
     it { should validate_presence_of(:gateway_type) }
     it { should validate_presence_of(:processing_fee_percentage) }
-    it { should validate_numericality_of(:processing_fee_percentage).is_greater_than_or_equal_to(0).is_less_than_or_equal_to(100) }
+    it do
+      should validate_numericality_of(:processing_fee_percentage)
+        .is_greater_than_or_equal_to(0)
+        .is_less_than_or_equal_to(100)
+    end
     it { should validate_presence_of(:processing_fee_fixed) }
     it { should validate_numericality_of(:processing_fee_fixed).is_greater_than_or_equal_to(0) }
   end
 
   describe 'enums' do
     it 'defines gateway_type enum' do
-      expect(PaymentMethod.gateway_types.keys).to include('stripe', 'paypal', 'bank_transfer', 'cash_on_delivery', 'wallet')
+      expect(PaymentMethod.gateway_types.keys).to include('stripe', 'paypal', 'bank_transfer', 'cash_on_delivery',
+                                                          'wallet')
     end
   end
 
@@ -98,4 +104,4 @@ RSpec.describe PaymentMethod, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

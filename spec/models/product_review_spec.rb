@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe ProductReview, type: :model do
   let(:user) { create(:user) }
   let(:product) { create(:product) }
@@ -38,10 +39,10 @@ RSpec.describe ProductReview, type: :model do
     describe '.most_helpful' do
       it 'orders by helpful_count desc' do
         review1 = create(:product_review, helpful_count: 10)
-        review2 = create(:product_review, helpful_count: 5)
+        create(:product_review, helpful_count: 5)
         expect(ProductReview.most_helpful.first).to eq(review1)
       end
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

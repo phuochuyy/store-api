@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Discount, type: :model do
   describe 'associations' do
     it { should have_many(:coupons).dependent(:destroy) }
@@ -185,4 +186,4 @@ RSpec.describe Discount, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

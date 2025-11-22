@@ -94,7 +94,7 @@ module Payments
         if result[:success]
           payment.update!(
             status: 'completed',
-            gateway_transaction_id: result[:transaction_id],
+            transaction_id: result[:transaction_id],
             gateway_response: result[:gateway_response],
             processed_at: Time.current
           )
@@ -109,11 +109,15 @@ module Payments
 
       def update_refund_status(payment, result, refund_amount, reason)
         if result[:success]
+          # Update payment status to refunded or partially_refunded
+          new_status = refund_amount == payment.amount ? 'refunded' : 'partially_refunded'
           payment.update!(
-            status: 'refunded',
-            refund_amount: refund_amount,
-            refund_reason: reason,
-            refunded_at: Time.current
+            status: new_status,
+            metadata: (payment.metadata || {}).merge(
+              refund_amount: refund_amount,
+              refund_reason: reason,
+              refunded_at: Time.current.iso8601
+            )
           )
         else
           payment.update!(

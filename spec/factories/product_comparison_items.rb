@@ -5,4 +5,3 @@ FactoryBot.define do
     position { 0 }
   end
 end
-

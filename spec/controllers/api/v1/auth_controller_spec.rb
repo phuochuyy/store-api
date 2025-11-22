@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Api::V1::AuthController, type: :controller do
   let(:secret_key) { Rails.application.credentials.secret_key_base || 'fallback_secret_key' }
   let(:user) { create(:user, email: 'test@example.com', password: 'password123') }
@@ -17,18 +18,18 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :login, params: valid_credentials
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Login successful'
         )
-        expect(JSON.parse(response.body)['data']).to include('token', 'user')
+        expect(response.parsed_body['data']).to include('token', 'user')
       end
 
       it 'returns user information' do
         user # create user first
         post :login, params: valid_credentials
 
-        user_data = JSON.parse(response.body)['data']['user']
+        user_data = response.parsed_body['data']['user']
         expect(user_data).to include(
           'id' => user.id,
           'email' => user.email,
@@ -42,7 +43,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         user # create user first
         post :login, params: valid_credentials
 
-        token = JSON.parse(response.body)['data']['token']
+        token = response.parsed_body['data']['token']
         decoded_token = JWT.decode(token, secret_key, true, { algorithm: 'HS256' })
 
         expect(decoded_token[0]['user_id']).to eq(user.id)
@@ -53,8 +54,8 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         user # create user first
         post :login, params: valid_credentials
 
-        expect(JSON.parse(response.body)['data']).to include('refresh_token')
-        refresh_token = JSON.parse(response.body)['data']['refresh_token']
+        expect(response.parsed_body['data']).to include('refresh_token')
+        refresh_token = response.parsed_body['data']['refresh_token']
         expect(refresh_token).to be_present
       end
 
@@ -63,7 +64,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         request.headers['X-Device-ID'] = 'test-device-123'
         post :login, params: valid_credentials
 
-        token = JSON.parse(response.body)['data']['token']
+        token = response.parsed_body['data']['token']
         decoded_token = JWT.decode(token, secret_key, true, { algorithm: 'HS256' })
         expect(decoded_token[0]['device_id']).to eq('test-device-123')
       end
@@ -73,7 +74,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         request.headers['User-Agent'] = 'TestAgent/1.0'
         post :login, params: valid_credentials
 
-        token = JSON.parse(response.body)['data']['token']
+        token = response.parsed_body['data']['token']
         decoded_token = JWT.decode(token, secret_key, true, { algorithm: 'HS256' })
         expect(decoded_token[0]['device_id']).to be_present
       end
@@ -85,7 +86,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         allow_any_instance_of(ActionDispatch::Request).to receive(:remote_ip).and_return(test_ip)
         post :login, params: valid_credentials
 
-        token = JSON.parse(response.body)['data']['token']
+        token = response.parsed_body['data']['token']
         decoded_token = JWT.decode(token, secret_key, true, { algorithm: 'HS256' })
         # IP hash is first 16 chars of SHA256 hash
         expected_hash = Digest::SHA256.hexdigest(test_ip)[0..15]
@@ -114,7 +115,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :login, params: invalid_credentials
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Invalid email or password'
         )
@@ -124,7 +125,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :login, params: { email: 'nonexistent@example.com', password: 'password123' }
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Invalid email or password'
         )
@@ -134,7 +135,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :login, params: { password: 'password123' }
 
         expect(response).to have_http_status(:bad_request)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Email and password are required'
         )
@@ -144,7 +145,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :login, params: { email: 'test@example.com' }
 
         expect(response).to have_http_status(:bad_request)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Email and password are required'
         )
@@ -154,7 +155,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :login, params: { email: 'invalid-email', password: 'password123' }
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Invalid email or password'
         )
@@ -205,7 +206,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end.to change(User, :count).by(1)
 
         expect(response).to have_http_status(:created)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'User registered successfully'
         )
@@ -214,7 +215,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
       it 'returns user data without password' do
         post :register, params: valid_registration
 
-        user_data = JSON.parse(response.body)['data']['user']
+        user_data = response.parsed_body['data']['user']
         expect(user_data).to include(
           'name' => 'New User',
           'email' => 'newuser@example.com',
@@ -243,7 +244,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :register, params: valid_registration.merge(email: user.email)
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -253,7 +254,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :register, params: valid_registration.merge(password_confirmation: 'different')
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -263,7 +264,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :register, params: { email: 'test@example.com' }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -273,7 +274,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :register, params: valid_registration.merge(email: 'invalid-email')
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -283,7 +284,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :register, params: valid_registration.merge(password: '12345', password_confirmation: '12345')
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -293,7 +294,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :register, params: valid_registration.merge(name: 'A')
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -304,7 +305,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :register, params: valid_registration.merge(name: long_name)
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -313,7 +314,12 @@ RSpec.describe Api::V1::AuthController, type: :controller do
       it 'prevents non-admin from setting role' do
         customer_user = create(:user, :customer)
         token = JWT.encode(
-          { user_id: customer_user.id, email: customer_user.email, iat: Time.current.to_i, exp: 24.hours.from_now.to_i },
+          {
+            user_id: customer_user.id,
+            email: customer_user.email,
+            iat: Time.current.to_i,
+            exp: 24.hours.from_now.to_i
+          },
           secret_key, 'HS256'
         )
         request.headers['Authorization'] = "Bearer #{token}"
@@ -357,7 +363,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         end.to change(JwtBlacklistToken, :count).by(1)
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Logged out successfully'
         )
@@ -391,7 +397,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :logout
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Token not provided'
         )
@@ -415,7 +421,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         get :me
 
         expect(response).to have_http_status(:ok)
-        response_body = JSON.parse(response.body)
+        response_body = response.parsed_body
         user_data = response_body['data']
         expect(user_data).to include(
           'id' => user.id,
@@ -433,7 +439,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         get :me
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Invalid token'
         )
@@ -481,7 +487,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         # Should return other user's data, not current user
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)['data']['id']).to eq(other_user.id)
+        expect(response.parsed_body['data']['id']).to eq(other_user.id)
       end
     end
 
@@ -491,7 +497,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         get :me
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Token not provided'
         )
@@ -525,11 +531,11 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Token refreshed successfully'
         )
-        expect(JSON.parse(response.body)['data']).to include('token', 'refresh_token')
+        expect(response.parsed_body['data']).to include('token', 'refresh_token')
       end
 
       it 'blacklists old token' do
@@ -542,10 +548,11 @@ RSpec.describe Api::V1::AuthController, type: :controller do
       it 'returns different tokens on each refresh' do
         user # create user first
         # First refresh using refresh_token param
-        first_refresh_token = Auth::Jwt::EncodeService.encode_refresh_token(user, device_id: device_id, ip_address: ip_address)
+        first_refresh_token = Auth::Jwt::EncodeService.encode_refresh_token(user, device_id: device_id,
+                                                                                  ip_address: ip_address)
         post :refresh_token, params: { refresh_token: first_refresh_token }
         expect(response).to have_http_status(:ok)
-        first_response = JSON.parse(response.body)['data']
+        first_response = response.parsed_body['data']
         first_token = first_response['token']
         first_new_refresh_token = first_response['refresh_token']
 
@@ -555,7 +562,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         # Second refresh using new refresh_token from first response
         post :refresh_token, params: { refresh_token: first_new_refresh_token }
         expect(response).to have_http_status(:ok)
-        second_response = JSON.parse(response.body)['data']
+        second_response = response.parsed_body['data']
         second_token = second_response['token']
         second_new_refresh_token = second_response['refresh_token']
 
@@ -571,11 +578,11 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token, params: { refresh_token: refresh_token }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Token refreshed successfully'
         )
-        expect(JSON.parse(response.body)['data']).to include('token', 'refresh_token')
+        expect(response.parsed_body['data']).to include('token', 'refresh_token')
       end
 
       it 'blacklists old refresh token (token rotation)' do
@@ -592,7 +599,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token, params: { refresh_token: refresh_token }
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)['message']).to include('Device mismatch')
+        expect(response.parsed_body['message']).to include('Device mismatch')
       end
 
       it 'allows refresh with same device_id' do
@@ -600,7 +607,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token, params: { refresh_token: refresh_token }
 
         expect(response).to have_http_status(:ok)
-        new_token = JSON.parse(response.body)['data']['token']
+        new_token = response.parsed_body['data']['token']
         decoded = JWT.decode(new_token, secret_key, true, { algorithm: 'HS256' })
         expect(decoded[0]['device_id']).to eq(device_id)
       end
@@ -622,11 +629,11 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token, params: { refresh_token: refresh_token }
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false
         )
         # Blacklisted token returns "Invalid or expired refresh token" (decode returns nil)
-        expect(JSON.parse(response.body)['message']).to be_present
+        expect(response.parsed_body['message']).to be_present
       end
 
       it 'returns error for refresh token from different user' do
@@ -639,7 +646,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         # Should work but return other user's tokens
         expect(response).to have_http_status(:ok)
-        new_token = JSON.parse(response.body)['data']['token']
+        new_token = response.parsed_body['data']['token']
         decoded = JWT.decode(new_token, secret_key, true, { algorithm: 'HS256' })
         expect(decoded[0]['user_id']).to eq(other_user.id)
       end
@@ -650,7 +657,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token, params: { refresh_token: '' }
 
         expect(response).to have_http_status(:bad_request)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Refresh token is required'
         )
@@ -660,11 +667,11 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token, params: { refresh_token: 'invalid-token' }
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false
         )
         # Error message can vary
-        expect(JSON.parse(response.body)['message']).to be_present
+        expect(response.parsed_body['message']).to be_present
       end
 
       it 'returns error for expired token' do
@@ -675,11 +682,11 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :refresh_token, params: { refresh_token: expired_token }
 
         expect(response).to have_http_status(:unauthorized)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false
         )
         # Error message can vary
-        expect(JSON.parse(response.body)['message']).to be_present
+        expect(response.parsed_body['message']).to be_present
       end
 
       it 'returns error for tampered token' do
@@ -687,7 +694,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
           { user_id: user.id, type: 'refresh', iat: Time.current.to_i, exp: 7.days.from_now.to_i },
           secret_key, 'HS256'
         )
-        tampered_token = valid_token[0..-5] + 'XXXX'
+        tampered_token = "#{valid_token[0..-5]}XXXX"
         post :refresh_token, params: { refresh_token: tampered_token }
 
         expect(response).to have_http_status(:unauthorized)
@@ -701,7 +708,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
 
         # refresh_token skip authentication, so it returns bad_request for missing token
         expect(response).to have_http_status(:bad_request)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Refresh token is required'
         )
@@ -718,7 +725,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         get :verify_email, params: { token: token }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Email verified successfully'
         )
@@ -739,7 +746,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         get :verify_email, params: { token: '' }
 
         expect(response).to have_http_status(:bad_request)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Verification token is required'
         )
@@ -749,7 +756,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         get :verify_email, params: { token: 'invalid-token' }
 
         expect(response).to have_http_status(:not_found)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Invalid or expired verification token'
         )
@@ -770,7 +777,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         get :verify_email, params: { token: token }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Email has already been verified'
         )
@@ -786,7 +793,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :resend_verification, params: { email: unverified_user.email }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Verification email sent successfully'
         )
@@ -801,7 +808,9 @@ RSpec.describe Api::V1::AuthController, type: :controller do
       end
 
       it 'sends email via mailer' do
-        expect(EmailVerificationMailer).to receive(:resend_verification_email).with(unverified_user).and_return(double(deliver_now: true))
+        expect(EmailVerificationMailer).to receive(:resend_verification_email)
+          .with(unverified_user)
+          .and_return(double(deliver_now: true))
         post :resend_verification, params: { email: unverified_user.email }
       end
 
@@ -823,7 +832,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :resend_verification, params: { email: '' }
 
         expect(response).to have_http_status(:bad_request)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Email is required'
         )
@@ -833,7 +842,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :resend_verification, params: { email: 'nonexistent@example.com' }
 
         expect(response).to have_http_status(:not_found)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'User not found'
         )
@@ -859,7 +868,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :resend_verification, params: { email: verified_user.email }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Email has already been verified'
         )
@@ -872,7 +881,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :resend_verification, params: { email: unverified_user.email }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Verification email sent successfully'
         )
@@ -883,8 +892,15 @@ RSpec.describe Api::V1::AuthController, type: :controller do
   describe 'POST #revoke_all_tokens' do
     let(:admin_user) { create(:user, :admin, email: 'admin@example.com', password: 'password123') }
     let(:token) do
-      JWT.encode({ user_id: admin_user.id, email: admin_user.email, iat: Time.current.to_i, exp: 24.hours.from_now.to_i },
-                 secret_key, 'HS256')
+      JWT.encode(
+        {
+          user_id: admin_user.id,
+          email: admin_user.email,
+          iat: Time.current.to_i,
+          exp: 24.hours.from_now.to_i
+        },
+        secret_key, 'HS256'
+      )
     end
 
     before do
@@ -897,7 +913,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :revoke_all_tokens, params: { user_id: user.id }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'All tokens for user have been revoked'
         )
@@ -907,7 +923,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :revoke_all_tokens, params: {}
 
         expect(response).to have_http_status(:bad_request)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'User ID is required'
         )
@@ -917,7 +933,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :revoke_all_tokens, params: { user_id: 99_999 }
 
         expect(response).to have_http_status(:not_found)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'User not found'
         )
@@ -950,7 +966,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         post :revoke_all_tokens, params: { user_id: user.id }
 
         expect(response).to have_http_status(:forbidden)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Admin access required'
         )
@@ -967,3 +983,4 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

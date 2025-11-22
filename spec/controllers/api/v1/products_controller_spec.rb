@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Api::V1::ProductsController, type: :controller do
   let(:user) { create(:user) }
   let(:admin_user) { create(:user, :admin) }
@@ -42,18 +43,18 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         get :index
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Products retrieved successfully'
         )
-        expect(JSON.parse(response.body)['data']).to include('products', 'pagination')
+        expect(response.parsed_body['data']).to include('products', 'pagination')
       end
 
       it 'returns paginated products' do
         create_list(:product, 15, brand: brand, category: category)
         get :index, params: { page: 1, per_page: 10 }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].length).to eq(10)
         expect(response_data['pagination']).to include(
           'current_page' => 1,
@@ -68,7 +69,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
         get :index, params: { brand_id: brand.id }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].all? { |p| p['brand']['id'] == brand.id }).to be true
       end
 
@@ -79,7 +80,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
         get :index, params: { category_id: category.id }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].all? { |p| p['category']['id'] == category.id }).to be true
       end
 
@@ -89,7 +90,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
         get :index, params: { min_price: 100.00 }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].all? { |p| p['price'].to_f >= 100.00 }).to be true
       end
 
@@ -99,7 +100,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
         get :index, params: { max_price: 100.00 }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].all? { |p| p['price'].to_f <= 100.00 }).to be true
       end
 
@@ -109,7 +110,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
         get :index, params: { in_stock: true }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].all? { |p| p['stock_quantity'] > 0 }).to be true
       end
 
@@ -119,7 +120,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
         get :index, params: { search: 'iPhone' }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].any? { |p| p['name'].include?('iPhone') }).to be true
       end
     end
@@ -142,17 +143,17 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         get :show, params: { id: product.id }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Product retrieved successfully'
         )
-        expect(JSON.parse(response.body)['data']).to include('product', 'related_products')
+        expect(response.parsed_body['data']).to include('product', 'related_products')
       end
 
       it 'returns product with correct attributes' do
         get :show, params: { id: product.id }
 
-        product_data = JSON.parse(response.body)['data']['product']
+        product_data = response.parsed_body['data']['product']
         expect(product_data).to include(
           'id' => product.id,
           'name' => product.name,
@@ -165,7 +166,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         get :show, params: { id: 99_999 }
 
         expect(response).to have_http_status(:not_found)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Product not found'
         )
@@ -193,11 +194,11 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         get :search, params: { search: 'iPhone' }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Products search completed successfully'
         )
-        expect(JSON.parse(response.body)['data']).to include('products', 'pagination', 'search_query')
+        expect(response.parsed_body['data']).to include('products', 'pagination', 'search_query')
       end
 
       it 'searches in product name, description, brand, and category' do
@@ -206,14 +207,14 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
 
         get :search, params: { search: 'Apple' }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products'].length).to be > 0
       end
 
       it 'returns empty results for no matches' do
         get :search, params: { search: 'NonExistentProduct123' }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products']).to be_empty
       end
     end
@@ -250,7 +251,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         post :create, params: valid_product_params
 
         expect(response).to have_http_status(:created)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Product created successfully'
         )
@@ -260,7 +261,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
       it 'returns created product data' do
         post :create, params: valid_product_params
 
-        product_data = JSON.parse(response.body)['data']['product']
+        product_data = response.parsed_body['data']['product']
         expect(product_data).to include(
           'name' => 'New Product',
           'price' => '199.99'
@@ -282,7 +283,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         post :create, params: invalid_params
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -371,7 +372,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         patch :update, params: update_params
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Product updated successfully'
         )
@@ -383,7 +384,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
       it 'returns updated product data' do
         patch :update, params: update_params
 
-        product_data = JSON.parse(response.body)['data']['product']
+        product_data = response.parsed_body['data']['product']
         expect(product_data['name']).to eq('Updated Product Name')
       end
 
@@ -437,7 +438,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         delete :destroy, params: { id: product_id }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Product deleted successfully'
         )
@@ -452,7 +453,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         delete :destroy, params: { id: product_with_orders.id }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)['message']).to include('Cannot delete product')
+        expect(response.parsed_body['message']).to include('Cannot delete product')
       end
 
       it 'returns not found for non-existent product' do
@@ -502,7 +503,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         post :upload_image, params: { id: product_without_image.id, image: image_file }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Image uploaded successfully'
         )
@@ -516,7 +517,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         post :upload_image, params: { id: product_with_image.id, image: image_file }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)['message']).to include('already has an image')
+        expect(response.parsed_body['message']).to include('already has an image')
       end
 
       it 'returns not found for non-existent product' do
@@ -558,7 +559,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         delete :remove_image, params: { id: product_with_image.id }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Image removed successfully'
         )
@@ -572,7 +573,7 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
         delete :remove_image, params: { id: product_without_image.id }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)['message']).to include('no image to remove')
+        expect(response.parsed_body['message']).to include('no image to remove')
       end
 
       it 'returns not found for non-existent product' do
@@ -602,3 +603,4 @@ RSpec.describe Api::V1::ProductsController, type: :controller do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

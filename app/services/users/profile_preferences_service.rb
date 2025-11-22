@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 module Users
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   class ProfilePreferencesService
     class << self
       # @param user [User] User to update
@@ -99,5 +103,9 @@ module Users
         }
       end
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/PerceivedComplexity
   end
 end

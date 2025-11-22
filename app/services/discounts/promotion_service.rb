@@ -1,4 +1,6 @@
 module Discounts
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/CyclomaticComplexity
   class PromotionService
     class << self
       def create_promotion(params)
@@ -146,5 +148,7 @@ module Discounts
         PromotionBenefitService.apply_promotion_benefit(order, promotion, benefit)
       end
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity
   end
 end

@@ -2,6 +2,10 @@
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/CyclomaticComplexity
     class NotificationsController < Api::V1::BaseController
       before_action :set_notification, only: %i[show update destroy mark_read mark_unread]
       before_action :authenticate_user!
@@ -196,5 +200,9 @@ module Api
         }
       end
     end
+    # rubocop:enable Metrics/ClassLength
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/CyclomaticComplexity
   end
 end

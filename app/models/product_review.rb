@@ -10,4 +10,3 @@ class ProductReview < ApplicationRecord
   scope :verified_purchases, -> { where(verified_purchase: true) }
   scope :most_helpful, -> { order(helpful_count: :desc) }
 end
-

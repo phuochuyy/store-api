@@ -4,4 +4,3 @@ FactoryBot.define do
     description { 'A test category description' }
   end
 end
-

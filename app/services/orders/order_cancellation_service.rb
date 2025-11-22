@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Orders
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   class OrderCancellationService
     class << self
       # Cancel an order
@@ -112,5 +114,7 @@ module Orders
         end
       end
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
   end
 end

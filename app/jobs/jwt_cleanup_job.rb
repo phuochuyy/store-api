@@ -56,4 +56,3 @@ class JwtCleanupJob < ApplicationJob
     0
   end
 end
-

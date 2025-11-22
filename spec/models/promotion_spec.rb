@@ -1,12 +1,15 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Promotion, type: :model do
   describe 'validations' do
     subject { build(:promotion) }
 
     it { should validate_presence_of(:name) }
     it { should validate_presence_of(:promotion_type) }
-    it { should validate_inclusion_of(:promotion_type).in_array(%w[bulk_pricing buy_x_get_y free_gift shipping_discount]) }
+    it {
+      should validate_inclusion_of(:promotion_type).in_array(%w[bulk_pricing buy_x_get_y free_gift shipping_discount])
+    }
     it { should validate_inclusion_of(:priority).in_array(%w[high normal low]) }
   end
 
@@ -49,4 +52,4 @@ RSpec.describe Promotion, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

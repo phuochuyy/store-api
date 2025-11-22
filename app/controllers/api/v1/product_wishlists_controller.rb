@@ -33,21 +33,23 @@ module Api
 
         # Check if already in wishlist
         existing_wishlist = current_user.product_wishlists.find_by(product: @product)
-        if existing_wishlist
-          return render_error('Product already in wishlist', :unprocessable_content)
-        end
+        return render_error('Product already in wishlist', :unprocessable_content) if existing_wishlist
 
         @wishlist = current_user.product_wishlists.build(product: @product)
 
         if @wishlist.save
-          render_success({ wishlist: wishlist_serializer(@wishlist) }, 'Product added to wishlist successfully', :created)
+          render_success({ wishlist: wishlist_serializer(@wishlist) }, 'Product added to wishlist successfully',
+                         :created)
         else
           render_error('Failed to add product to wishlist', :unprocessable_content, @wishlist.errors.full_messages)
         end
       end
 
       def destroy
-        return render_error('You can only remove your own wishlist items', :forbidden) unless @wishlist.user == current_user
+        unless @wishlist.user == current_user
+          return render_error('You can only remove your own wishlist items',
+                              :forbidden)
+        end
 
         @wishlist.destroy
         render_success(nil, 'Product removed from wishlist successfully')
@@ -93,4 +95,3 @@ module Api
     end
   end
 end
-

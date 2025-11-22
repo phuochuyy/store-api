@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Users
+  # rubocop:disable Metrics/AbcSize
   class ProfileDataService
     class << self
       # @param user [User] User to get profile for
@@ -18,7 +19,9 @@ module Users
           date_of_birth: user.date_of_birth,
           gender: user.gender,
           bio: user.bio,
-          avatar_url: user.avatar.present? ? (user.avatar.attached? ? Rails.application.routes.url_helpers.url_for(user.avatar) : nil) : nil,
+          avatar_url: if user.avatar.present?
+                        user.avatar.attached? ? Rails.application.routes.url_helpers.url_for(user.avatar) : nil
+                      end,
           preferences: extract_preferences(user),
           addresses: extract_addresses(user),
           created_at: user.created_at,
@@ -35,7 +38,9 @@ module Users
           id: user.id,
           display_name: user.display_name,
           bio: user.bio,
-          avatar_url: user.avatar.present? ? (user.avatar.attached? ? Rails.application.routes.url_helpers.url_for(user.avatar) : nil) : nil
+          avatar_url: if user.avatar.present?
+                        user.avatar.attached? ? Rails.application.routes.url_helpers.url_for(user.avatar) : nil
+                      end
         }
 
         # Add additional data (simplified - no privacy level in current schema)
@@ -115,5 +120,6 @@ module Users
         }
       end
     end
+    # rubocop:enable Metrics/AbcSize
   end
 end

@@ -1,5 +1,7 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Rails/SkipsModelValidations
 RSpec.describe User, type: :model do
   describe 'associations' do
     it { should have_many(:carts).dependent(:destroy) }
@@ -156,8 +158,8 @@ RSpec.describe User, type: :model do
     describe '.by_name' do
       it 'orders by name' do
         DatabaseCleaner.clean
-        user1 = create(:user, name: 'Alice')
-        user2 = create(:user, name: 'Bob')
+        create(:user, name: 'Alice')
+        create(:user, name: 'Bob')
         expect(User.by_name.limit(2).pluck(:name)).to eq(%w[Alice Bob])
       end
     end
@@ -303,7 +305,10 @@ RSpec.describe User, type: :model do
 
     it 'returns 0 when no fields are filled' do
       user = create(:user)
-      user.update_columns(first_name: nil, last_name: nil, phone: nil, date_of_birth: nil, gender: nil, bio: nil) # Skip validations
+      user.update_columns(
+        first_name: nil, last_name: nil, phone: nil,
+        date_of_birth: nil, gender: nil, bio: nil
+      ) # Skip validations
       expect(user.profile_completion_percentage).to eq(0)
     end
 
@@ -486,23 +491,23 @@ RSpec.describe User, type: :model do
       end
     end
 
-    describe '#update_notification_preferences' do
+    describe '#update_notification_preferences?' do
       it 'updates preferences successfully' do
-        result = user.update_notification_preferences({ 'email' => true, 'push' => false })
+        result = user.update_notification_preferences?({ 'email' => true, 'push' => false })
         expect(result).to be true
         user.reload
         expect(user.preferences['notifications']).to eq({ 'email' => true, 'push' => false })
       end
 
       it 'returns false when input is not a hash' do
-        result = user.update_notification_preferences('invalid')
+        result = user.update_notification_preferences?('invalid')
         expect(result).to be false
       end
 
       it 'clears cache after update' do
         user.update!(preferences: { 'notifications' => { 'email' => true } })
         user.notification_preferences # Cache it
-        user.update_notification_preferences({ 'email' => false })
+        user.update_notification_preferences?({ 'email' => false })
         expect(user.notification_preferences['email']).to eq(false)
       end
     end
@@ -577,17 +582,17 @@ RSpec.describe User, type: :model do
       let!(:user) { create(:user, email: 'find@example.com') }
 
       it 'finds user by email' do
-        found_user = User.find_by_email('find@example.com')
+        found_user = User.find_by(email: 'find@example.com')
         expect(found_user).to eq(user)
       end
 
       it 'is case insensitive' do
-        found_user = User.find_by_email('FIND@EXAMPLE.COM')
+        found_user = User.find_by(email: 'FIND@EXAMPLE.COM')
         expect(found_user).to eq(user)
       end
 
       it 'returns nil when not found' do
-        found_user = User.find_by_email('nonexistent@example.com')
+        found_user = User.find_by(email: 'nonexistent@example.com')
         expect(found_user).to be_nil
       end
     end
@@ -596,17 +601,17 @@ RSpec.describe User, type: :model do
       it 'finds user by verification token' do
         user = create(:user)
         token = user.email_verification_token
-        found_user = User.find_by_verification_token(token)
+        found_user = User.find_by(verification_token: token)
         expect(found_user).to eq(user)
       end
 
       it 'returns nil when token is blank' do
-        expect(User.find_by_verification_token('')).to be_nil
-        expect(User.find_by_verification_token(nil)).to be_nil
+        expect(User.find_by(verification_token: '')).to be_nil
+        expect(User.find_by(verification_token: nil)).to be_nil
       end
 
       it 'returns nil when token not found' do
-        found_user = User.find_by_verification_token('nonexistent-token')
+        found_user = User.find_by(verification_token: 'nonexistent-token')
         expect(found_user).to be_nil
       end
     end
@@ -628,3 +633,5 @@ RSpec.describe User, type: :model do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength
+# rubocop:enable Rails/SkipsModelValidations

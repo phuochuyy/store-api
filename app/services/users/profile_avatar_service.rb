@@ -14,7 +14,7 @@ module Users
         validation_result = validate_avatar_file(avatar_file)
         return validation_result unless validation_result[:success]
 
-        upload_result = perform_avatar_upload(user, avatar_file)
+        upload_result = perform_avatar_upload?(user, avatar_file)
         build_avatar_response(user, upload_result)
       rescue StandardError => e
         Rails.logger.error "Avatar upload error: #{e.message}"
@@ -65,7 +65,7 @@ module Users
         { success: true }
       end
 
-      def perform_avatar_upload(user, avatar_file)
+      def perform_avatar_upload?(user, avatar_file)
         user.avatar.attach(avatar_file)
         user.avatar.attached?
       end

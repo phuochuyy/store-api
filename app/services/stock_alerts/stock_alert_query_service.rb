@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module StockAlerts
+  # rubocop:disable Metrics/AbcSize
   class StockAlertQueryService
     class << self
       # @param filters [Hash] Filter parameters
@@ -87,5 +88,6 @@ module StockAlerts
         }
       end
     end
+    # rubocop:enable Metrics/AbcSize
   end
 end

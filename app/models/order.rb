@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength
 # == Schema Information
 #
 # Table name: orders
@@ -27,7 +28,7 @@ class Order < ApplicationRecord
   validates :status, presence: true, inclusion: {
     in: %w[pending confirmed shipped delivered cancelled paid payment_failed refunded partially_refunded]
   }
-  
+
   # Validate discount consistency
   validate :discount_code_matches_discount_id, if: -> { discount_id.present? && discount_code.present? }
 
@@ -66,11 +67,64 @@ class Order < ApplicationRecord
     discount_amount.present? && discount_amount.positive?
   end
 
+  # Order status validation methods (public)
+  def can_be_confirmed?
+    pending?
+  end
+
+  def can_be_cancelled?
+    %w[pending confirmed shipped].include?(status)
+  end
+
+  def can_be_shipped?
+    status == 'confirmed'
+  end
+
+  def can_be_delivered?
+    status == 'shipped'
+  end
+
+  # Shipping and delivery methods (public)
+  def shipping_status
+    return 'not_shipped' unless shipped?
+    return 'delivered' if delivered?
+    return 'in_transit' if shipped?
+
+    'unknown'
+  end
+
+  def tracking_info?
+    tracking_number.present? || carrier.present?
+  end
+
+  def tracking_info
+    {
+      tracking_number: tracking_number,
+      carrier: carrier,
+      shipped_at: shipped_at
+    }
+  end
+
+  def delivery_info
+    {
+      delivered_at: delivered_at,
+      delivery_notes: delivery_notes,
+      delivery_signature: delivery_signature
+    }
+  end
+
+  def estimated_delivery_date
+    return nil unless shipped_at
+
+    # Simple estimation: 3-5 business days after shipping
+    shipped_at + 4.days
+  end
+
   private
 
   def discount_code_matches_discount_id
     return unless discount_id.present? && discount_code.present?
-    
+
     discount = Discount.find_by(id: discount_id)
     if discount.nil?
       errors.add(:discount_id, 'does not exist')
@@ -165,28 +219,6 @@ class Order < ApplicationRecord
     payments.joins(:payment_method).pluck('payment_methods.name').uniq
   end
 
-  # Order status validation methods
-  def can_be_confirmed?
-    pending?
-  end
-
-  def can_be_cancelled?
-    %w[pending confirmed shipped].include?(status)
-  end
-
-  def can_be_shipped?
-    confirmed?
-  end
-
-  def can_be_delivered?
-    shipped?
-  end
-
-  # Order confirmation methods
-  def confirmed?
-    status == 'confirmed'
-  end
-
   def cancelled?
     status == 'cancelled'
   end
@@ -198,39 +230,5 @@ class Order < ApplicationRecord
   def delivered?
     status == 'delivered'
   end
-
-  # Shipping and delivery methods
-  def tracking_info?
-    tracking_number.present? || carrier.present?
-  end
-
-  def tracking_info
-    {
-      tracking_number: tracking_number,
-      carrier: carrier,
-      shipped_at: shipped_at
-    }
-  end
-
-  def delivery_info
-    {
-      delivered_at: delivered_at,
-      delivery_notes: delivery_notes,
-      delivery_signature: delivery_signature
-    }
-  end
-
-  def shipping_status
-    return 'not_shipped' unless shipped?
-    return 'delivered' if delivered?
-
-    'in_transit'
-  end
-
-  def estimated_delivery_date
-    return nil unless shipped_at
-
-    # Simple estimation: 3-5 business days after shipping
-    shipped_at + 4.days
-  end
 end
+# rubocop:enable Metrics/ClassLength

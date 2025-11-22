@@ -6,4 +6,3 @@ FactoryBot.define do
     priority { 0 }
   end
 end
-

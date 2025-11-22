@@ -15,7 +15,7 @@ class UserAddress < ApplicationRecord
       user.user_addresses
           .where(address_type: address_type)
           .where.not(id: id)
-          .update_all(is_default: false)
+          .find_each { |addr| addr.update!(is_default: false) }
 
       # Set this address as default
       update!(is_default: true)

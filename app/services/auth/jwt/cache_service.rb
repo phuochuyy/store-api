@@ -4,6 +4,7 @@ require 'digest'
 
 module Auth
   module Jwt
+    # rubocop:disable Metrics/ClassLength
     class CacheService
       class << self
         # Cache namespace for JWT tokens
@@ -152,7 +153,7 @@ module Auth
 
         # Get cached validation result
         def get_cached_validation(token)
-          return nil unless token.present?
+          return nil if token.blank?
 
           cache_key = validation_key(token)
           cached = redis.get(cache_key)
@@ -174,7 +175,7 @@ module Auth
 
         # Invalidate validation cache for a token
         def invalidate_validation(token)
-          return false unless token.present?
+          return false if token.blank?
 
           cache_key = validation_key(token)
           redis.del(cache_key)
@@ -237,21 +238,19 @@ module Auth
           pattern = "#{CACHE_NAMESPACE}:*"
           keys = redis.keys(pattern)
 
-          stats = {
+          {
             total_keys: keys.count,
             blacklist_keys: keys.count { |k| k.include?(':blacklist:') },
             user_keys: keys.count { |k| k.include?(':user:') },
             validation_keys: keys.count { |k| k.include?(':validation:') },
             user_tokens_keys: keys.count { |k| k.include?(':user_tokens:') }
           }
-
-          stats
         rescue Redis::BaseError => e
           Rails.logger.error "Redis error in stats: #{e.message}"
           { total_keys: 0, blacklist_keys: 0, user_keys: 0, validation_keys: 0, user_tokens_keys: 0 }
         end
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
-

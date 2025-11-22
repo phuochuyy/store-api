@@ -102,4 +102,3 @@ RSpec.describe CartItem, type: :model do
     end
   end
 end
-

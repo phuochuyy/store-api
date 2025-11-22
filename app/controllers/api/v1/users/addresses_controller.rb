@@ -16,7 +16,8 @@ module Api
           result = Users::AddressDataService.get_user_addresses(user: current_user, **filters)
 
           if result[:success]
-            render_success({ addresses: result[:addresses], total_count: result[:total_count] }, 'Addresses retrieved successfully')
+            render_success({ addresses: result[:addresses], total_count: result[:total_count] },
+                           'Addresses retrieved successfully')
           else
             render_error(result[:error], :unprocessable_content)
           end
@@ -61,9 +62,12 @@ module Api
         end
 
         def set_default
-          return render_error('You can only set your own addresses as default', :forbidden) unless @address.user == current_user
+          unless @address.user == current_user
+            return render_error('You can only set your own addresses as default',
+                                :forbidden)
+          end
 
-          result = Users::AddressDataService.set_default_address(@address)
+          result = Users::AddressDataService.update_default_address(@address)
 
           if result[:success]
             render_success({ address: address_serializer(@address.reload) }, 'Default address updated successfully')
@@ -91,7 +95,8 @@ module Api
         end
 
         def address_params
-          params.expect(address: %i[full_name address_line1 address_line2 city state postal_code country phone address_type is_default])
+          params.expect(address: %i[full_name address_line1 address_line2 city state postal_code country phone
+                                    address_type is_default])
         end
 
         def address_serializer(address)
@@ -115,4 +120,3 @@ module Api
     end
   end
 end
-

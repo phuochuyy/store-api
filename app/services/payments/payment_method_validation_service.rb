@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Payments
+  # rubocop:disable Metrics/MethodLength
   class PaymentMethodValidationService
     class << self
       # @param payment_method [PaymentMethod] Payment method to validate
@@ -92,7 +93,8 @@ module Payments
       def validate_fee_config(payment_method)
         errors = []
 
-        if payment_method.fee_percentage.present? && (payment_method.fee_percentage.negative? || payment_method.fee_percentage > 100)
+        if payment_method.fee_percentage.present? &&
+           (payment_method.fee_percentage.negative? || payment_method.fee_percentage > 100)
           errors << 'Fee percentage must be between 0 and 100'
         end
 
@@ -148,5 +150,6 @@ module Payments
         }
       end
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end

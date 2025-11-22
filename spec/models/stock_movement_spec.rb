@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe StockMovement, type: :model do
   let(:product) { create(:product) }
   let(:user) { create(:user) }
@@ -21,7 +22,7 @@ RSpec.describe StockMovement, type: :model do
   describe 'scopes' do
     describe '.recent' do
       it 'orders by created_at desc' do
-        old_movement = create(:stock_movement, product: product, created_at: 2.days.ago)
+        create(:stock_movement, product: product, created_at: 2.days.ago)
         new_movement = create(:stock_movement, product: product, created_at: 1.day.ago)
         expect(StockMovement.recent.first).to eq(new_movement)
       end
@@ -51,4 +52,4 @@ RSpec.describe StockMovement, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

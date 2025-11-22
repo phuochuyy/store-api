@@ -1,5 +1,7 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Rails/SkipsModelValidations
 RSpec.describe User, type: :model do
   describe 'basic functionality' do
     it 'creates a valid user' do
@@ -198,5 +200,6 @@ RSpec.describe User, type: :model do
       expect(user.password_digest).not_to eq('password123')
     end
   end
-
 end
+# rubocop:enable Metrics/BlockLength
+# rubocop:enable Rails/SkipsModelValidations

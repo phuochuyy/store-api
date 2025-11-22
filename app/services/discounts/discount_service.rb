@@ -1,4 +1,5 @@
 module Discounts
+  # rubocop:disable Metrics/AbcSize
   class DiscountService
     class << self
       def create_discount(params)
@@ -160,5 +161,6 @@ module Discounts
         end
       end
     end
+    # rubocop:enable Metrics/AbcSize
   end
 end

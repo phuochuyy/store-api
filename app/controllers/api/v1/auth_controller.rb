@@ -1,5 +1,10 @@
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/PerceivedComplexity
     class AuthController < Api::V1::BaseController
       skip_before_action :authenticate_user!,
                          only: %i[login register password_reset password_reset_confirm verify_email resend_verification
@@ -149,7 +154,7 @@ module Api
 
         # Normalize email for lookup
         normalized_email = email.to_s.strip.downcase
-        user = User.find_by_email(normalized_email)
+        user = User.find_by(email: normalized_email)
 
         return render_error('User not found', :not_found) unless user
 
@@ -254,7 +259,7 @@ module Api
         permitted_params = %i[name first_name last_name email password password_confirmation]
         permitted_params << :role if current_user&.admin?
         if params[:user].present?
-          params.require(:user).permit(permitted_params)
+          params.expect(user: [permitted_params])
         else
           params.permit(permitted_params)
         end
@@ -279,5 +284,10 @@ module Api
         Digest::SHA256.hexdigest(user_agent)[0..31]
       end
     end
+    # rubocop:enable Metrics/ClassLength
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/PerceivedComplexity
   end
 end

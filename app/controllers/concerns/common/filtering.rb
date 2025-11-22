@@ -3,7 +3,7 @@ module Common
     extend ActiveSupport::Concern
 
     included do
-
+      # Module inclusion hook - can be used for class-level configuration
     end
 
     private

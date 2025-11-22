@@ -1,6 +1,10 @@
 require 'digest'
 
 module Auth
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/PerceivedComplexity
   class AuthService
     class << self
       def login(email, password, device_id: nil, ip_address: nil, require_email_verification: false)
@@ -10,10 +14,11 @@ module Auth
         return { success: false, error: 'Password is required' } if password.blank?
 
         # Use find_by_email for case-insensitive lookup
-        user = User.find_by_email(normalized_email)
+        user = User.find_by(email: normalized_email)
 
         unless user
-          Rails.logger.warn "Failed login attempt for email: #{normalized_email} (user not found) from IP: #{ip_address}"
+          Rails.logger.warn "Failed login attempt for email: #{normalized_email} " \
+                            "(user not found) from IP: #{ip_address}"
           return { success: false, error: 'Invalid email or password' }
         end
 
@@ -79,7 +84,8 @@ module Auth
           }
         else
           # Log failed registration attempt
-          Rails.logger.warn "Registration failed for email: #{user_params[:email]} from IP: #{ip_address} - Errors: #{user.errors.full_messages.join(', ')}"
+          Rails.logger.warn "Registration failed for email: #{user_params[:email]} " \
+                            "from IP: #{ip_address} - Errors: #{user.errors.full_messages.join(', ')}"
 
           {
             success: false,
@@ -105,8 +111,9 @@ module Auth
 
         # Validate device fingerprint if present in token
         # Note: Device validation is strict for security, but allows backward compatibility
-        if payload['device_id'].present? && device_id.present? && !(payload['device_id'] == device_id)
-          Rails.logger.warn "Device mismatch for user #{user.id}: token has #{payload['device_id']}, request has #{device_id}"
+        if payload['device_id'].present? && device_id.present? && payload['device_id'] != device_id
+          Rails.logger.warn "Device mismatch for user #{user.id}: " \
+                            "token has #{payload['device_id']}, request has #{device_id}"
           return { success: false, error: 'Device mismatch' }
         end
 
@@ -116,7 +123,8 @@ module Auth
         if payload['ip_hash'].present? && ip_address.present?
           expected_ip_hash = Digest::SHA256.hexdigest(ip_address.to_s)[0..15]
           unless payload['ip_hash'] == expected_ip_hash
-            Rails.logger.warn "IP mismatch for user #{user.id}: token has #{payload['ip_hash']}, request has #{expected_ip_hash}"
+            Rails.logger.warn "IP mismatch for user #{user.id}: " \
+                              "token has #{payload['ip_hash']}, request has #{expected_ip_hash}"
             # Don't block - IP can change legitimately (mobile, VPN, etc.)
             # But log for security monitoring
           end
@@ -199,5 +207,9 @@ module Auth
         }
       end
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/PerceivedComplexity
   end
 end

@@ -252,7 +252,11 @@ end
 
 # Update order totals
 orders.each do |order|
-  order.update_total_amount rescue nil
+
+  order.update_total_amount
+rescue StandardError
+  nil
+
 end
 
 Rails.logger.debug { "Created #{Order.count} orders with #{OrderItem.count} order items" }

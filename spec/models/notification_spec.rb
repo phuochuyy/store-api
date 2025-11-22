@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Notification, type: :model do
   let(:user) { create(:user) }
   let(:notification) { create(:notification, user: user) }
@@ -60,4 +61,4 @@ RSpec.describe Notification, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

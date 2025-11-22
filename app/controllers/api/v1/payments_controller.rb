@@ -13,42 +13,6 @@ module Api
         render_success(data, 'Payments retrieved successfully')
       end
 
-      private
-
-      def build_payments_query
-        payments = Payment.includes(:order, :payment_method)
-                          .recent
-                          .page(params[:page])
-                          .per(params[:per_page] || 20)
-
-        apply_payment_filters(payments)
-      end
-
-      def apply_payment_filters(payments)
-        payments = payments.by_status(params[:status]) if params[:status].present?
-        payments = payments.by_payment_method(params[:payment_method_id]) if params[:payment_method_id].present?
-
-        if params[:start_date].present? && params[:end_date].present?
-          start_date = Date.parse(params[:start_date])
-          end_date = Date.parse(params[:end_date])
-          payments = payments.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-        end
-
-        payments
-      end
-
-      def build_payments_response
-        {
-          payments: @payments.map { |payment| payment_serializer(payment) },
-          pagination: {
-            current_page: @payments.current_page,
-            total_pages: @payments.total_pages,
-            total_count: @payments.total_count,
-            per_page: @payments.limit_value
-          }
-        }
-      end
-
       def show
         data = {
           payment: payment_serializer(@payment),
@@ -121,6 +85,42 @@ module Api
         else
           render_error(result[:error], :unprocessable_content, result[:details])
         end
+      end
+
+      private
+
+      def build_payments_query
+        payments = Payment.includes(:order, :payment_method)
+                          .recent
+                          .page(params[:page])
+                          .per(params[:per_page] || 20)
+
+        apply_payment_filters(payments)
+      end
+
+      def apply_payment_filters(payments)
+        payments = payments.by_status(params[:status]) if params[:status].present?
+        payments = payments.by_payment_method(params[:payment_method_id]) if params[:payment_method_id].present?
+
+        if params[:start_date].present? && params[:end_date].present?
+          start_date = Date.parse(params[:start_date])
+          end_date = Date.parse(params[:end_date])
+          payments = payments.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+        end
+
+        payments
+      end
+
+      def build_payments_response
+        {
+          payments: @payments.map { |payment| payment_serializer(payment) },
+          pagination: {
+            current_page: @payments.current_page,
+            total_pages: @payments.total_pages,
+            total_count: @payments.total_count,
+            per_page: @payments.limit_value
+          }
+        }
       end
 
       def set_payment

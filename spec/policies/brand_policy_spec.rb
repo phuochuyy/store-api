@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe BrandPolicy, type: :policy do
   let(:user) { create(:user) }
   let(:admin_user) { create(:user, :admin) }
@@ -88,4 +89,4 @@ RSpec.describe BrandPolicy, type: :policy do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

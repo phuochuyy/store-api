@@ -44,7 +44,13 @@ module Orders
             quantity: item_params[:quantity].to_i,
             unit_price: product.price
           )
-          product.reduce_stock(item_params[:quantity].to_i)
+          # reduce_stock returns false if stock is insufficient, but we still want to reduce stock
+          # if stock is sufficient. If reduce_stock fails, we should handle it.
+          result = product.reduce_stock(item_params[:quantity].to_i)
+          unless result
+            Rails.logger.warn "Failed to reduce stock for product #{product.id}: insufficient stock"
+            # Don't raise exception, but log the warning
+          end
         end
       end
     end

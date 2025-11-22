@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe ProductComparison, type: :model do
   let(:user) { create(:user) }
   let(:product1) { create(:product) }
@@ -76,4 +77,4 @@ RSpec.describe ProductComparison, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

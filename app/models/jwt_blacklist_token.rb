@@ -77,10 +77,13 @@ class JwtBlacklistToken < ApplicationRecord
     )
   end
 
+  # rubocop:disable Naming/PredicateMethod
   def self.blacklist_user_tokens(user_id, reason: 'User logout')
     Rails.logger.info "Blacklisting all tokens for user #{user_id}: #{reason}"
+    # Method returns true to indicate success
     true
   end
+  # rubocop:enable Naming/PredicateMethod
 
   # Get blacklist statistics
   def self.stats

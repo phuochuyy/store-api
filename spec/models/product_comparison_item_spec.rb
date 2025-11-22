@@ -31,4 +31,3 @@ RSpec.describe ProductComparisonItem, type: :model do
     end
   end
 end
-

@@ -14,9 +14,14 @@ class ProductComparisonItem < ApplicationRecord
   belongs_to :product_comparison
   belongs_to :product
 
-  validates :product_comparison_id, uniqueness: { scope: :product_id, message: 'Product already in this comparison' }
+  validates :product_comparison_id,
+            uniqueness: {
+              scope: :product_id,
+              message: I18n.t(
+                'activerecord.errors.models.product_comparison_item.attributes.product_comparison_id.taken'
+              )
+            }
   validates :position, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  
+
   scope :ordered, -> { order(:position, :created_at) }
 end
-

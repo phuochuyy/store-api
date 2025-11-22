@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe BasePolicy, type: :policy do
   let(:user) { create(:user) }
   let(:record) { create(:user) }
@@ -73,3 +74,4 @@ RSpec.describe BasePolicy, type: :policy do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

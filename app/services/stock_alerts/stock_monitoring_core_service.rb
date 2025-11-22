@@ -74,11 +74,7 @@ module StockAlerts
         case alert.alert_type
         when 'out_of_stock'
           product.stock_quantity.positive?
-        when 'critical_stock'
-          product.stock_quantity > alert.threshold
-        when 'low_stock'
-          product.stock_quantity > alert.threshold
-        when 'reorder_point'
+        when 'critical_stock', 'low_stock', 'reorder_point'
           product.stock_quantity > alert.threshold
         else
           false

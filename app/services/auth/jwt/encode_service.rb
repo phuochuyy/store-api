@@ -13,7 +13,7 @@ module Auth
             iat: Time.current.to_i,
             exp: (Time.current + expiry).to_i
           }
-          
+
           # Add device fingerprint for security
           payload[:device_id] = device_id if device_id.present?
           payload[:ip_hash] = Digest::SHA256.hexdigest(ip_address.to_s)[0..15] if ip_address.present?
@@ -28,7 +28,7 @@ module Auth
             iat: Time.current.to_i,
             exp: (Time.current + expiry).to_i
           }
-          
+
           # Add device fingerprint for security
           payload[:device_id] = device_id if device_id.present?
           payload[:ip_hash] = Digest::SHA256.hexdigest(ip_address.to_s)[0..15] if ip_address.present?

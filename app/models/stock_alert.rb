@@ -165,12 +165,11 @@ class StockAlert < ApplicationRecord
       0
     when 'critical_stock'
       5
-    when 'low_stock'
-      10
     when 'reorder_point'
       20
     else
-      10 # Default to low_stock threshold
+      # Default to low_stock threshold (includes 'low_stock' and nil)
+      10
     end
   end
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Payments
+  # rubocop:disable Metrics/MethodLength
   class PaymentMethodCreationService
     class << self
       # @param params [Hash] Payment method parameters
@@ -84,5 +85,6 @@ module Payments
         }
       end
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end

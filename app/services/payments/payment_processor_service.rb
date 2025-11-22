@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Payments
+  # rubocop:disable Metrics/AbcSize
   class PaymentProcessorService
     class << self
       # Process a payment for an order
@@ -92,7 +93,7 @@ module Payments
       def get_payment_method_performance(period = 'month')
         start_date = calculate_start_date(period)
 
-        PaymentMethod.active.includes(:payments).map do |pm|
+        performance_data = PaymentMethod.active.includes(:payments).map do |pm|
           payments = pm.payments.where(created_at: start_date..)
           {
             payment_method_id: pm.id,
@@ -104,7 +105,8 @@ module Payments
             success_rate: calculate_success_rate(payments),
             average_amount: calculate_average_amount(payments.successful)
           }
-        end.sort_by { |data| -data[:total_amount] }
+        end
+        performance_data.sort_by { |data| -data[:total_amount] }
       end
 
       private
@@ -155,5 +157,6 @@ module Payments
         (payments.sum(:amount) / payments.count.to_f).round(2)
       end
     end
+    # rubocop:enable Metrics/AbcSize
   end
 end

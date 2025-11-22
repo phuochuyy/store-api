@@ -65,7 +65,7 @@ RSpec.describe Api::Authorization, type: :controller do
 
         get :test_authorize_action
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)['success']).to be true
+        expect(response.parsed_body['success']).to be true
       end
     end
 
@@ -77,7 +77,7 @@ RSpec.describe Api::Authorization, type: :controller do
       it 'allows access for admin' do
         get :test_authorize_action
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)['success']).to be true
+        expect(response.parsed_body['success']).to be true
       end
     end
 
@@ -93,7 +93,7 @@ RSpec.describe Api::Authorization, type: :controller do
 
         get :test_authorize_action
         expect(response).to have_http_status(:forbidden)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'error' => 'Access denied',
           'status' => 'forbidden'
@@ -118,7 +118,7 @@ RSpec.describe Api::Authorization, type: :controller do
 
         get :test_authorize_action
         expect(response).to have_http_status(:forbidden)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'error' => 'Authorization policy not found',
           'status' => 'forbidden'
@@ -136,7 +136,7 @@ RSpec.describe Api::Authorization, type: :controller do
       it 'allows access' do
         get :test_admin_only_action
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)['success']).to be true
+        expect(response.parsed_body['success']).to be true
       end
     end
 
@@ -148,7 +148,7 @@ RSpec.describe Api::Authorization, type: :controller do
       it 'denies access' do
         get :test_admin_only_action
         expect(response).to have_http_status(:forbidden)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'error' => 'Admin access required',
           'status' => 'forbidden'

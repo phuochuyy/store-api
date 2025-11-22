@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Payment, type: :model do
   let(:order) { create(:order) }
   let(:payment_method) { create(:payment_method) }
@@ -108,4 +109,4 @@ RSpec.describe Payment, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

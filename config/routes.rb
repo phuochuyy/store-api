@@ -67,6 +67,9 @@ Rails.application.routes.draw do
         member do
           delete :clear
         end
+        collection do
+          post :merge
+        end
         resources :cart_items
       end
 

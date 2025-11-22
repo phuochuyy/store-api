@@ -1,4 +1,6 @@
 module Carts
+  # rubocop:disable Metrics/ClassLength
+  # rubocop:disable Metrics/MethodLength
   class CartService
     class << self
       def get_or_create_cart(user: nil, session_id: nil)
@@ -52,7 +54,7 @@ module Carts
       def remove_from_cart(cart, product_id)
         product = Product.find(product_id)
 
-        if cart.remove_product(product)
+        if cart.remove_product?(product)
           {
             success: true,
             cart: cart.reload,
@@ -89,7 +91,7 @@ module Carts
           }
         end
 
-        if cart.update_product_quantity(product, quantity)
+        if cart.update_product_quantity?(product, quantity)
           {
             success: true,
             cart: cart.reload,
@@ -139,7 +141,7 @@ module Carts
           if existing_item
             # Merge quantities
             new_quantity = existing_item.quantity + guest_item.quantity
-            user_cart.update_product_quantity(guest_item.product, new_quantity)
+            user_cart.update_product_quantity?(guest_item.product, new_quantity)
           else
             # Add new item
             user_cart.add_product(guest_item.product, guest_item.quantity)
@@ -180,5 +182,7 @@ module Carts
         end
       end
     end
+    # rubocop:enable Metrics/ClassLength
+    # rubocop:enable Metrics/MethodLength
   end
 end

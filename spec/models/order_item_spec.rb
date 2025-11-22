@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe OrderItem, type: :model do
   let(:order) { create(:order) }
   let(:product) { create(:product, price: 100.00) }
@@ -67,4 +68,4 @@ RSpec.describe OrderItem, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

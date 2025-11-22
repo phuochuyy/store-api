@@ -19,9 +19,8 @@ class StockMovement < ApplicationRecord
 
   def self.get_movement_summary(product, start_date = nil, end_date = nil)
     movements = where(product: product)
-    movements = movements.where('created_at >= ?', start_date) if start_date
-    movements = movements.where('created_at <= ?', end_date) if end_date
+    movements = movements.where(created_at: start_date..) if start_date
+    movements = movements.where(created_at: ..end_date) if end_date
     movements
   end
 end
-

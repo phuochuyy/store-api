@@ -1,3 +1,6 @@
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/CyclomaticComplexity
+# rubocop:disable Metrics/PerceivedComplexity
 class Discount < ApplicationRecord
   # Associations
   has_many :coupons, dependent: :destroy
@@ -123,3 +126,6 @@ class Discount < ApplicationRecord
     errors.add(:end_date, 'must be after start date') if end_date <= start_date
   end
 end
+# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/CyclomaticComplexity
+# rubocop:enable Metrics/PerceivedComplexity

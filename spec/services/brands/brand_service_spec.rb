@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Brands::BrandService, type: :service do
   describe '.list_brands' do
     context 'without pagination' do
@@ -93,7 +94,7 @@ RSpec.describe Brands::BrandService, type: :service do
 
     it 'raises error for non-existent brand' do
       expect do
-        described_class.find_brand(99999)
+        described_class.find_brand(99_999)
       end.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
@@ -157,7 +158,7 @@ RSpec.describe Brands::BrandService, type: :service do
         invalid_params = { name: 'A', description: 'Short' }
         expect do
           described_class.create_brand(invalid_params)
-        end.not_to change { Brand.count }
+        end.not_to(change { Brand.count })
       end
     end
   end
@@ -204,7 +205,7 @@ RSpec.describe Brands::BrandService, type: :service do
       end
 
       it 'returns failure with errors for duplicate name' do
-        other_brand = create(:brand, name: 'Other Brand')
+        create(:brand, name: 'Other Brand')
         duplicate_params = { name: 'Other Brand' }
         result = described_class.update_brand(brand.id, duplicate_params)
 
@@ -224,7 +225,7 @@ RSpec.describe Brands::BrandService, type: :service do
 
     it 'raises error for non-existent brand' do
       expect do
-        described_class.update_brand(99999, { name: 'Test' })
+        described_class.update_brand(99_999, { name: 'Test' })
       end.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
@@ -252,9 +253,9 @@ RSpec.describe Brands::BrandService, type: :service do
 
     it 'raises error for non-existent brand' do
       expect do
-        described_class.delete_brand(99999)
+        described_class.delete_brand(99_999)
       end.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

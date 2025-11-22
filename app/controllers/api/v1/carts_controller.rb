@@ -108,7 +108,7 @@ module Api
 
       def set_cart
         @cart = if current_user
-                  current_user.carts.find(params[:id])
+                  current_user.carts.find_by(id: params[:id])
                 else
                   Cart.find_by(id: params[:id], session_id: session_id)
                 end

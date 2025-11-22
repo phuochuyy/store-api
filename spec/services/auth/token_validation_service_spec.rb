@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::TokenValidationService, type: :service do
   let(:user) { create(:user, email: 'test@example.com', password: 'password123') }
   let(:valid_token) do
@@ -130,5 +131,4 @@ RSpec.describe Auth::TokenValidationService, type: :service do
     end
   end
 end
-
-
+# rubocop:enable Metrics/BlockLength

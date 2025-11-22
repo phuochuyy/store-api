@@ -19,7 +19,7 @@ module RedisHelper
       redis.keys('store_api_test:*').each { |key| redis.del(key) }
     rescue Redis::BaseError, Errno::ECONNREFUSED => e
       # Redis not available, skip
-      Rails.logger.debug "Redis not available for test cleanup: #{e.message}" if defined?(Rails)
+      Rails.logger.debug { "Redis not available for test cleanup: #{e.message}" } if defined?(Rails)
     end
   end
 
@@ -43,4 +43,3 @@ end
 RSpec.configure do |config|
   config.include RedisHelper, type: :service
 end
-

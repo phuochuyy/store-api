@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe StockAlert, type: :model do
   let(:product) { create(:product, stock_quantity: 5) }
   let(:alert) { create(:stock_alert, product: product) }
@@ -86,4 +87,4 @@ RSpec.describe StockAlert, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

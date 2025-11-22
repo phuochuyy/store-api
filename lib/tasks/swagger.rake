@@ -1,7 +1,7 @@
 namespace :swagger do
   desc 'Generate Swagger documentation from code'
   task generate: :environment do
-    puts '🚀 Generating Swagger documentation...'
+    puts 'Generating Swagger documentation...'
 
     # This task can be extended to auto-generate documentation from code
     # For now, we'll validate the existing YAML file
@@ -13,34 +13,34 @@ namespace :swagger do
       swagger_file = Rails.root.join('swagger/v1/swagger.yaml')
       swagger_content = YAML.load_file(swagger_file)
 
-      puts '✅ Swagger YAML file is valid'
-      puts "📊 Found #{swagger_content['paths']&.keys&.count || 0} endpoints"
-      puts "📋 Found #{swagger_content['components']['schemas']&.keys&.count || 0} schemas"
-      puts "🏷️  Found #{swagger_content['tags']&.count || 0} tags"
+      puts 'Swagger YAML file is valid'
+      puts "Found #{swagger_content['paths']&.keys&.count || 0} endpoints"
+      puts "Found #{swagger_content['components']['schemas']&.keys&.count || 0} schemas"
+      puts "Found #{swagger_content['tags']&.count || 0} tags"
 
       # Basic validation
       required_sections = %w[openapi info paths components]
       missing_sections = required_sections - swagger_content.keys
 
       if missing_sections.any?
-        puts "❌ Missing required sections: #{missing_sections.join(', ')}"
+        puts "Missing required sections: #{missing_sections.join(', ')}"
         exit 1
       end
 
-      puts '✅ All required sections present'
-      puts '🎉 Swagger documentation is ready!'
+      puts 'All required sections present'
+      puts 'Swagger documentation is ready!'
     rescue Psych::SyntaxError => e
-      puts "❌ YAML syntax error: #{e.message}"
+      puts "YAML syntax error: #{e.message}"
       exit 1
     rescue StandardError => e
-      puts "❌ Error: #{e.message}"
+      puts "Error: #{e.message}"
       exit 1
     end
   end
 
   desc 'Validate Swagger documentation'
   task validate: :environment do
-    puts '🔍 Validating Swagger documentation...'
+    puts 'Validating Swagger documentation...'
 
     begin
       require 'yaml'
@@ -50,7 +50,7 @@ namespace :swagger do
 
       # Validate OpenAPI version
       unless swagger_content['openapi']&.start_with?('3.')
-        puts "❌ Invalid OpenAPI version: #{swagger_content['openapi']}"
+        puts "Invalid OpenAPI version: #{swagger_content['openapi']}"
         exit 1
       end
 
@@ -60,57 +60,57 @@ namespace :swagger do
       missing_info_fields = required_info_fields - info.keys
 
       if missing_info_fields.any?
-        puts "❌ Missing required info fields: #{missing_info_fields.join(', ')}"
+        puts "Missing required info fields: #{missing_info_fields.join(', ')}"
         exit 1
       end
 
       # Validate paths
       paths = swagger_content['paths']
       if paths.blank?
-        puts '❌ No paths defined'
+        puts 'No paths defined'
         exit 1
       end
 
       # Validate components
       components = swagger_content['components']
       if components.nil?
-        puts '❌ No components defined'
+        puts 'No components defined'
         exit 1
       end
 
       # Validate schemas
       schemas = components['schemas']
       if schemas.blank?
-        puts '❌ No schemas defined'
+        puts 'No schemas defined'
         exit 1
       end
 
       # Validate security schemes
       security_schemes = components['securitySchemes']
       if security_schemes.blank?
-        puts '❌ No security schemes defined'
+        puts 'No security schemes defined'
         exit 1
       end
 
-      puts "✅ OpenAPI version: #{swagger_content['openapi']}"
-      puts "✅ API title: #{info['title']}"
-      puts "✅ API version: #{info['version']}"
-      puts "✅ Endpoints: #{paths.keys.count}"
-      puts "✅ Schemas: #{schemas.keys.count}"
-      puts "✅ Security schemes: #{security_schemes.keys.count}"
-      puts '🎉 Swagger documentation is valid!'
+      puts "OpenAPI version: #{swagger_content['openapi']}"
+      puts "API title: #{info['title']}"
+      puts "API version: #{info['version']}"
+      puts "Endpoints: #{paths.keys.count}"
+      puts "Schemas: #{schemas.keys.count}"
+      puts "Security schemes: #{security_schemes.keys.count}"
+      puts 'Swagger documentation is valid!'
     rescue Psych::SyntaxError => e
-      puts "❌ YAML syntax error: #{e.message}"
+      puts "YAML syntax error: #{e.message}"
       exit 1
     rescue StandardError => e
-      puts "❌ Validation error: #{e.message}"
+      puts "Validation error: #{e.message}"
       exit 1
     end
   end
 
   desc 'Show Swagger documentation statistics'
   task stats: :environment do
-    puts '📊 Swagger Documentation Statistics'
+    puts 'Swagger Documentation Statistics'
     puts '=' * 50
 
     begin
@@ -120,14 +120,14 @@ namespace :swagger do
       swagger_content = YAML.load_file(swagger_file)
 
       # Basic stats
-      puts "📄 File: #{swagger_file}"
-      puts "📏 File size: #{File.size(swagger_file)} bytes"
-      puts "📅 Last modified: #{File.mtime(swagger_file)}"
+      puts "File: #{swagger_file}"
+      puts "File size: #{File.size(swagger_file)} bytes"
+      puts "Last modified: #{File.mtime(swagger_file)}"
       puts ''
 
       # API info
       info = swagger_content['info']
-      puts '🏷️  API Information:'
+      puts 'API Information:'
       puts "   Title: #{info['title']}"
       puts "   Version: #{info['version']}"
       puts "   Description length: #{info['description']&.length || 0} characters"
@@ -135,7 +135,7 @@ namespace :swagger do
 
       # Endpoints
       paths = swagger_content['paths']
-      puts "🔗 Endpoints (#{paths.keys.count}):"
+      puts "Endpoints (#{paths.keys.count}):"
       paths.each do |path, methods|
         puts "   #{path}: #{methods.keys.join(', ').upcase}"
       end
@@ -143,7 +143,7 @@ namespace :swagger do
 
       # Schemas
       schemas = swagger_content['components']['schemas']
-      puts "📋 Schemas (#{schemas.keys.count}):"
+      puts "Schemas (#{schemas.keys.count}):"
       schemas.each_key do |schema|
         puts "   - #{schema}"
       end
@@ -151,7 +151,7 @@ namespace :swagger do
 
       # Tags
       tags = swagger_content['tags']
-      puts "🏷️  Tags (#{tags.count}):"
+      puts "Tags (#{tags.count}):"
       tags.each do |tag|
         puts "   - #{tag['name']}: #{tag['description']}"
       end
@@ -159,7 +159,7 @@ namespace :swagger do
 
       # Security
       security_schemes = swagger_content['components']['securitySchemes']
-      puts "🔐 Security Schemes (#{security_schemes.keys.count}):"
+      puts "Security Schemes (#{security_schemes.keys.count}):"
       security_schemes.each do |name, scheme|
         puts "   - #{name}: #{scheme['type']} (#{scheme['scheme']})"
       end
@@ -175,19 +175,19 @@ namespace :swagger do
         end
       end
 
-      puts "📊 Response Codes (#{response_codes.count}):"
+      puts "Response Codes (#{response_codes.count}):"
       response_codes.sort.each do |code|
         puts "   - #{code}"
       end
     rescue StandardError => e
-      puts "❌ Error generating statistics: #{e.message}"
+      puts "Error generating statistics: #{e.message}"
       exit 1
     end
   end
 
   desc 'Clean up generated Swagger files'
   task clean: :environment do
-    puts '🧹 Cleaning up generated Swagger files...'
+    puts 'Cleaning up generated Swagger files...'
 
     files_to_clean = [
       Rails.root.join('swagger/v1/swagger.json'),
@@ -199,15 +199,15 @@ namespace :swagger do
       if File.exist?(file)
         if File.directory?(file)
           FileUtils.rm_rf(file)
-          puts "🗑️  Removed directory: #{file}"
+          puts "Removed directory: #{file}"
         else
           File.delete(file)
-          puts "🗑️  Removed file: #{file}"
+          puts "Removed file: #{file}"
         end
       end
     end
 
-    puts '✅ Cleanup completed'
+    puts 'Cleanup completed'
   end
 end
 

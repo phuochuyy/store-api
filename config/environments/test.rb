@@ -21,7 +21,7 @@ Rails.application.configure do
   # Show full error reports and disable caching.
   config.consider_all_requests_local = true
   config.action_controller.perform_caching = false
-  
+
   # Use Redis for caching in test (for JWT cache tests)
   # Fallback to memory store if Redis not available
   # In Docker: redis://redis:6379/1, locally: redis://localhost:6379/1
@@ -31,7 +31,7 @@ Rails.application.configure do
     # Test Redis connection
     redis = Redis.new(url: redis_url)
     redis.ping
-    
+
     config.cache_store = :redis_cache_store, {
       url: redis_url,
       namespace: 'store_api_test',

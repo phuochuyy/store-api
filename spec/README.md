@@ -74,7 +74,7 @@ The User factory provides:
 
 ## Test Results
 
-Current test status: **31 examples, 0 failures** ✅
+Current test status: **31 examples, 0 failures**
 
 All User model functionality is thoroughly tested and working correctly.
 

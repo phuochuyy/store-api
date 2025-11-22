@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe JwtBlacklistToken, type: :model do
   describe 'validations' do
     it 'requires a token' do
@@ -9,7 +10,7 @@ RSpec.describe JwtBlacklistToken, type: :model do
     end
 
     it 'requires a unique token' do
-      existing_token = create(:jwt_blacklist_token, token: 'unique-token')
+      create(:jwt_blacklist_token, token: 'unique-token')
       new_token = build(:jwt_blacklist_token, token: 'unique-token')
       expect(new_token).not_to be_valid
       expect(new_token.errors[:token]).to include('has already been taken')
@@ -66,7 +67,7 @@ RSpec.describe JwtBlacklistToken, type: :model do
   describe 'class methods' do
     describe '.blacklisted?' do
       it 'returns true for blacklisted token' do
-        token = create(:jwt_blacklist_token, token: 'test-token')
+        create(:jwt_blacklist_token, token: 'test-token')
         expect(JwtBlacklistToken.blacklisted?('test-token')).to be true
       end
 
@@ -138,9 +139,9 @@ RSpec.describe JwtBlacklistToken, type: :model do
     describe '.stats' do
       it 'returns blacklist statistics' do
         # Create test tokens
-        access_token = create(:jwt_blacklist_token, token_type: 'access')
-        refresh_token = create(:jwt_blacklist_token, :refresh_token)
-        expired_token = create(:jwt_blacklist_token, :expired)
+        create(:jwt_blacklist_token, token_type: 'access')
+        create(:jwt_blacklist_token, :refresh_token)
+        create(:jwt_blacklist_token, :expired)
 
         stats = JwtBlacklistToken.stats
 
@@ -171,3 +172,4 @@ RSpec.describe JwtBlacklistToken, type: :model do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

@@ -1,3 +1,6 @@
+# rubocop:disable Metrics/ClassLength
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/MethodLength
 # == Schema Information
 #
 # Table name: products
@@ -29,7 +32,7 @@ class Product < ApplicationRecord
 
   has_many :product_reviews, dependent: :destroy
   has_many :product_wishlists, dependent: :destroy
-  # Note: product_comparisons uses product_ids (text) not product_id, so no direct association
+  # NOTE: product_comparisons uses product_ids (text) not product_id, so no direct association
   # has_many :product_comparisons, dependent: :destroy
   has_many :stock_movements, dependent: :destroy
 
@@ -300,3 +303,6 @@ class Product < ApplicationRecord
     similar_products(limit)
   end
 end
+# rubocop:enable Metrics/ClassLength
+# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/MethodLength

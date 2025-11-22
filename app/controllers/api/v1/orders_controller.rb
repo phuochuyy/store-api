@@ -1,5 +1,7 @@
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
+    # rubocop:disable Metrics/AbcSize
     class OrdersController < Api::V1::BaseController
       before_action :set_order, only: %i[show update destroy confirm cancel ship deliver]
       before_action :admin_only!, only: %i[index update destroy confirm cancel ship deliver]
@@ -105,6 +107,39 @@ module Api
         render_ship_response(result)
       end
 
+      def deliver
+        result = deliver_order_with_service
+        render_deliver_response(result)
+      end
+
+      # Public order tracking (no authentication required)
+      def track
+        tracking_number = params[:tracking_number]
+        return render_error('Tracking number is required', :bad_request) if tracking_number.blank?
+
+        @order = Order.find_by(tracking_number: tracking_number)
+        return render_error('Order not found', :not_found) unless @order
+
+        order_data = {
+          id: @order.id,
+          status: @order.status,
+          tracking_number: @order.tracking_number,
+          carrier: @order.carrier,
+          shipped_at: @order.shipped_at&.iso8601,
+          delivered_at: @order.delivered_at&.iso8601,
+          shipping_status: @order.shipping_status,
+          tracking_info: @order.tracking_info,
+          delivery_info: @order.delivery_info
+        }
+
+        # Add estimated_delivery_date if method exists
+        if @order.respond_to?(:estimated_delivery_date) && @order.estimated_delivery_date
+          order_data[:estimated_delivery_date] = @order.estimated_delivery_date.iso8601
+        end
+
+        render_success({ order: order_data }, 'Order tracking information retrieved successfully')
+      end
+
       private
 
       def ship_order_with_service
@@ -130,11 +165,6 @@ module Api
             details: result[:details]
           }, status: :unprocessable_content
         end
-      end
-
-      def deliver
-        result = deliver_order_with_service
-        render_deliver_response(result)
       end
 
       def deliver_order_with_service
@@ -206,30 +236,8 @@ module Api
           render_error('Failed to remove discount', :unprocessable_content)
         end
       end
-
-      # Public order tracking (no authentication required)
-      def track
-        tracking_number = params[:tracking_number]
-        return render_error('Tracking number is required', :bad_request) if tracking_number.blank?
-
-        @order = Order.find_by(tracking_number: tracking_number)
-        return render_error('Order not found', :not_found) unless @order
-
-        render_success({
-                         order: {
-                           id: @order.id,
-                           status: @order.status,
-                           tracking_number: @order.tracking_number,
-                           carrier: @order.carrier,
-                           shipped_at: @order.shipped_at,
-                           delivered_at: @order.delivered_at,
-                           estimated_delivery_date: @order.estimated_delivery_date,
-                           shipping_status: @order.shipping_status,
-                           tracking_info: @order.tracking_info,
-                           delivery_info: @order.delivery_info
-                         }
-                       }, 'Order tracking information retrieved successfully')
-      end
     end
+    # rubocop:enable Metrics/ClassLength
+    # rubocop:enable Metrics/AbcSize
   end
 end

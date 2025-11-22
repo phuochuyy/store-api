@@ -40,14 +40,18 @@ module Api
         @comparison.product_ids_array = product_ids
 
         if @comparison.save
-          render_success({ comparison: comparison_serializer(@comparison) }, 'Product comparison created successfully', :created)
+          render_success({ comparison: comparison_serializer(@comparison) }, 'Product comparison created successfully',
+                         :created)
         else
           render_error('Failed to create product comparison', :unprocessable_content, @comparison.errors.full_messages)
         end
       end
 
       def update
-        return render_error('You can only update your own comparisons', :forbidden) unless @comparison.user == current_user
+        unless @comparison.user == current_user
+          return render_error('You can only update your own comparisons',
+                              :forbidden)
+        end
 
         product_ids = params[:product_ids] || []
         return render_error('At least 2 products are required for comparison', :bad_request) if product_ids.length < 2
@@ -66,7 +70,10 @@ module Api
       end
 
       def destroy
-        return render_error('You can only delete your own comparisons', :forbidden) unless @comparison.user == current_user
+        unless @comparison.user == current_user
+          return render_error('You can only delete your own comparisons',
+                              :forbidden)
+        end
 
         @comparison.destroy
         render_success(nil, 'Product comparison deleted successfully')
@@ -115,4 +122,3 @@ module Api
     end
   end
 end
-

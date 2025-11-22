@@ -98,8 +98,8 @@ namespace :swagger do
     output_file = Rails.root.join('swagger/v1/swagger.json')
     File.write(output_file, JSON.pretty_generate(complete_spec))
 
-    puts "✅ Merged Swagger files into #{output_file}"
-    puts "📊 Total endpoints: #{complete_spec['paths'].keys.length}"
+    puts "Merged Swagger files into #{output_file}"
+    puts "Total endpoints: #{complete_spec['paths'].keys.length}"
   end
 
   private

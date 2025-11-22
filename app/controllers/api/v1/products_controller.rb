@@ -1,7 +1,8 @@
 module Api
   module V1
     class ProductsController < Api::V1::BaseController
-      before_action :set_product, only: %i[show update destroy upload_image remove_image add_to_wishlist remove_from_wishlist]
+      before_action :set_product,
+                    only: %i[show update destroy upload_image remove_image add_to_wishlist remove_from_wishlist]
       before_action :authorize_product, only: %i[create update destroy upload_image remove_image]
       before_action :authenticate_user!, only: %i[add_to_wishlist remove_from_wishlist]
 
@@ -88,14 +89,13 @@ module Api
 
       def add_to_wishlist
         existing_wishlist = current_user.product_wishlists.find_by(product: @product)
-        if existing_wishlist
-          return render_error('Product already in wishlist', :unprocessable_content)
-        end
+        return render_error('Product already in wishlist', :unprocessable_content) if existing_wishlist
 
         wishlist = current_user.product_wishlists.build(product: @product)
 
         if wishlist.save
-          render_success({ wishlist: { id: wishlist.id, product_id: @product.id } }, 'Product added to wishlist successfully')
+          render_success({ wishlist: { id: wishlist.id, product_id: @product.id } },
+                         'Product added to wishlist successfully')
         else
           render_error('Failed to add product to wishlist', :unprocessable_content, wishlist.errors.full_messages)
         end

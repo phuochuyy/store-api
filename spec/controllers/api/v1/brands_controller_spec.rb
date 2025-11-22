@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Api::V1::BrandsController, type: :controller do
   let(:user) { create(:user) }
   let(:admin_user) { create(:user, :admin) }
@@ -47,18 +48,18 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         get :index
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Brands retrieved successfully'
         )
-        expect(JSON.parse(response.body)['data']).to include('brands', 'pagination')
+        expect(response.parsed_body['data']).to include('brands', 'pagination')
       end
 
       it 'returns paginated brands' do
         create_list(:brand, 15)
         get :index, params: { page: 1, per_page: 10 }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['brands'].length).to eq(10)
         expect(response_data['pagination']).to include(
           'current_page' => 1,
@@ -71,7 +72,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         create(:product, brand: brand_with_product)
         get :index
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['brands']).to be_an(Array)
       end
 
@@ -79,7 +80,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         Brand.delete_all
         get :index
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['brands']).to eq([])
         expect(response_data['pagination']['total_count']).to eq(0)
       end
@@ -88,7 +89,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         create_list(:brand, 15)
         get :index, params: { page: 2, per_page: 10 }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['brands'].length).to eq(5)
         expect(response_data['pagination']['current_page']).to eq(2)
       end
@@ -98,7 +99,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         get :index, params: { page: -1, per_page: -10 }
 
         expect(response).to have_http_status(:ok)
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['brands']).to be_an(Array)
       end
     end
@@ -107,7 +108,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
       it 'returns unauthorized' do
         get :index
         expect(response).to have_http_status(:unauthorized)
-        response_body = JSON.parse(response.body)
+        response_body = response.parsed_body
         expect(response_body).to include('success' => false)
         expect(response_body['message'] || response_body['error']).to be_present
       end
@@ -144,17 +145,17 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         get :show, params: { id: brand.id }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Brand retrieved successfully'
         )
-        expect(JSON.parse(response.body)['data']).to include('brand', 'products_count')
+        expect(response.parsed_body['data']).to include('brand', 'products_count')
       end
 
       it 'returns brand with correct attributes' do
         get :show, params: { id: brand.id }
 
-        brand_data = JSON.parse(response.body)['data']['brand']
+        brand_data = response.parsed_body['data']['brand']
         expect(brand_data).to include(
           'id' => brand.id,
           'name' => brand.name,
@@ -166,7 +167,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         create_list(:product, 3, brand: brand)
         get :show, params: { id: brand.id }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products_count']).to eq(3)
       end
 
@@ -174,7 +175,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         get :show, params: { id: 99_999 }
 
         expect(response).to have_http_status(:not_found)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Brand not found'
         )
@@ -189,7 +190,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         brand_without_products = create(:brand)
         get :show, params: { id: brand_without_products.id }
 
-        response_data = JSON.parse(response.body)['data']
+        response_data = response.parsed_body['data']
         expect(response_data['products_count']).to eq(0)
       end
     end
@@ -229,7 +230,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         post :create, params: valid_brand_params
 
         expect(response).to have_http_status(:created)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Brand created successfully'
         )
@@ -240,7 +241,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         post :create, params: valid_brand_params
 
         expect(response).to have_http_status(:created)
-        response_body = JSON.parse(response.body)
+        response_body = response.parsed_body
         expect(response_body).to include('success' => true, 'data' => be_present)
         brand_data = response_body['data']['brand'] || response_body['data']
         expect(brand_data).to include(
@@ -260,7 +261,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         post :create, params: invalid_params
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => false,
           'message' => 'Validation failed'
         )
@@ -291,7 +292,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         post :create, params: duplicate_params
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(JSON.parse(response.body)['errors']).to be_present
+        expect(response.parsed_body['errors']).to be_present
       end
 
       it 'returns error for name too long' do
@@ -326,7 +327,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
 
         # Controller uses params.expect which may raise or return error
         expect(response.status).to be >= 400
-        response_body = JSON.parse(response.body)
+        response_body = response.parsed_body
         expect(response_body['success']).to be false
       end
 
@@ -351,7 +352,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         post :create, params: valid_brand_params
 
         expect(response).to have_http_status(:forbidden)
-        response_body = JSON.parse(response.body)
+        response_body = response.parsed_body
         expect(response_body).to include('success' => false)
         expect(response_body['message'] || response_body['error']).to be_present
       end
@@ -393,7 +394,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         patch :update, params: update_params
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Brand updated successfully'
         )
@@ -405,7 +406,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         patch :update, params: update_params
 
         expect(response).to have_http_status(:ok)
-        response_body = JSON.parse(response.body)
+        response_body = response.parsed_body
         expect(response_body).to include('success' => true, 'data' => be_present)
         brand_data = response_body['data']['brand'] || response_body['data']
         expect(brand_data['name']).to eq('Updated Brand Name')
@@ -533,7 +534,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         delete :destroy, params: { id: brand_id }
 
         expect(response).to have_http_status(:ok)
-        expect(JSON.parse(response.body)).to include(
+        expect(response.parsed_body).to include(
           'success' => true,
           'message' => 'Brand deleted successfully'
         )
@@ -570,7 +571,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
         brand_to_delete = create(:brand)
         delete :destroy, params: { id: brand_to_delete.id }
 
-        response_body = JSON.parse(response.body)
+        response_body = response.parsed_body
         expect(response_body['message']).to eq('Brand deleted successfully')
         expect(response_body['data']).to be_nil
       end
@@ -611,7 +612,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
 
     it 'returns consistent success response format for index' do
       get :index
-      response_body = JSON.parse(response.body)
+      response_body = response.parsed_body
 
       expect(response_body).to include(
         'success' => true,
@@ -623,7 +624,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
 
     it 'returns consistent success response format for show' do
       get :show, params: { id: brand.id }
-      response_body = JSON.parse(response.body)
+      response_body = response.parsed_body
 
       expect(response_body).to include(
         'success' => true,
@@ -635,7 +636,7 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
 
     it 'returns consistent error response format' do
       get :show, params: { id: 99_999 }
-      response_body = JSON.parse(response.body)
+      response_body = response.parsed_body
 
       expect(response_body).to include(
         'success' => false,
@@ -644,3 +645,4 @@ RSpec.describe Api::V1::BrandsController, type: :controller do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

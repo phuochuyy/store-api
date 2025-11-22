@@ -2,6 +2,7 @@
 
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::Jwt::CacheService, type: :service do
   let(:user) { create(:user) }
   let(:token) { Auth::Jwt::EncodeService.encode(user) }
@@ -10,7 +11,7 @@ RSpec.describe Auth::Jwt::CacheService, type: :service do
   before do
     # Skip tests if Redis not available
     skip 'Redis not available' unless redis_available?
-    
+
     # Clear cache before each test
     clear_redis_cache
     described_class.clear_all
@@ -275,4 +276,4 @@ RSpec.describe Auth::Jwt::CacheService, type: :service do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

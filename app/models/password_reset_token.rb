@@ -31,4 +31,3 @@ class PasswordResetToken < ApplicationRecord
     !expired? && !used?
   end
 end
-

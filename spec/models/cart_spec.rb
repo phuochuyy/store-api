@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Cart, type: :model do
   let(:user) { create(:user) }
   let(:product) { create(:product) }
@@ -146,8 +147,8 @@ RSpec.describe Cart, type: :model do
 
   describe '#clear' do
     it 'removes all cart items' do
-      item1 = create(:cart_item, cart: cart, product: product)
-      item2 = create(:cart_item, cart: cart, product: create(:product))
+      create(:cart_item, cart: cart, product: product)
+      create(:cart_item, cart: cart, product: create(:product))
       cart.clear
       expect(cart.cart_items.reload.count).to eq(0)
       expect(cart.reload.total_amount.to_f).to eq(0.0)
@@ -194,4 +195,4 @@ RSpec.describe Cart, type: :model do
     end
   end
 end
-
+# rubocop:enable Metrics/BlockLength

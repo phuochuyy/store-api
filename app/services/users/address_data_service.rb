@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Users
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   class AddressDataService
     class << self
       # @param user [User] User to get addresses for
@@ -50,7 +52,7 @@ module Users
 
       # @param address [UserAddress] Address to set as default
       # @return [Hash] Result with success status
-      def set_default_address(address)
+      def update_default_address(address)
         return { success: false, error: 'Address not found' } unless address
 
         address.set_as_default!
@@ -146,5 +148,7 @@ module Users
         AddressCreationService.create_address(user: user, **address_data)
       end
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
   end
 end

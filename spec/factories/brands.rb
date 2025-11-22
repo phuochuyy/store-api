@@ -4,4 +4,3 @@ FactoryBot.define do
     description { 'A test brand description' }
   end
 end
-
