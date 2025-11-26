@@ -237,6 +237,25 @@ spec/**/*_spec.rb
 !spec/services/auth/jwt/encode_service_spec.rb
 !spec/services/auth/token_validation_service_spec.rb
 
+# ============================================================================
+# Factories - Keep Important Factories on GitHub, Others Local Only
+# ============================================================================
+
+# Ignore all factories by default
+spec/factories/**/*.rb
+
+# But keep important factories on GitHub (needed for critical tests)
+!spec/factories/users.rb
+!spec/factories/orders.rb
+!spec/factories/order_items.rb
+!spec/factories/products.rb
+!spec/factories/payments.rb
+!spec/factories/payment_methods.rb
+!spec/factories/brands.rb
+!spec/factories/categories.rb
+!spec/factories/jwt_blacklist_tokens.rb
+!spec/factories/password_reset_tokens.rb
+
 # Temporary files
 *.tmp
 *.temp
