@@ -32,6 +32,7 @@ class Product < ApplicationRecord
 
   has_many :product_reviews, dependent: :destroy
   has_many :product_wishlists, dependent: :destroy
+  has_many :product_variants, dependent: :destroy
   # NOTE: product_comparisons uses product_ids (text) not product_id, so no direct association
   # has_many :product_comparisons, dependent: :destroy
   has_many :stock_movements, dependent: :destroy
@@ -42,6 +43,7 @@ class Product < ApplicationRecord
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :description, presence: true, length: { minimum: 10, maximum: 1000 }
   validates :price, presence: true, numericality: { greater_than: 0, less_than: 100_000 }
+  validates :weight, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 10_000 }
 
   scope :available, -> { where('stock_quantity > 0') }

@@ -39,6 +39,11 @@ module Auth
           "#{CACHE_NAMESPACE}:user_tokens:#{user_id}"
         end
 
+        # Cache key for user logout timestamp
+        def user_logout_timestamp_key(user_id)
+          "#{CACHE_NAMESPACE}:logout_timestamp:#{user_id}"
+        end
+
         # Check if token is blacklisted (with cache)
         def blacklisted?(token)
           return true if token.blank?
@@ -219,6 +224,46 @@ module Auth
           true
         rescue Redis::BaseError => e
           Rails.logger.error "Redis error in invalidate_user_tokens: #{e.message}"
+          false
+        end
+
+        # Set logout timestamp for user (to reject tokens issued before this time)
+        def set_user_logout_timestamp(user_id)
+          return false unless user_id
+
+          timestamp_key = user_logout_timestamp_key(user_id)
+          logout_timestamp = Time.current.to_i
+          # Store for 7 days (max refresh token expiry)
+          redis.setex(timestamp_key, 7.days.to_i, logout_timestamp.to_s)
+          true
+        rescue Redis::BaseError => e
+          Rails.logger.error "Redis error in set_user_logout_timestamp: #{e.message}"
+          false
+        end
+
+        # Get logout timestamp for user
+        def get_user_logout_timestamp(user_id)
+          return nil unless user_id
+
+          timestamp_key = user_logout_timestamp_key(user_id)
+          timestamp_str = redis.get(timestamp_key)
+          return nil unless timestamp_str
+
+          Time.zone.at(timestamp_str.to_i)
+        rescue Redis::BaseError => e
+          Rails.logger.error "Redis error in get_user_logout_timestamp: #{e.message}"
+          nil
+        end
+
+        # Clear logout timestamp for user
+        def clear_user_logout_timestamp(user_id)
+          return false unless user_id
+
+          timestamp_key = user_logout_timestamp_key(user_id)
+          redis.del(timestamp_key)
+          true
+        rescue Redis::BaseError => e
+          Rails.logger.error "Redis error in clear_user_logout_timestamp: #{e.message}"
           false
         end
 

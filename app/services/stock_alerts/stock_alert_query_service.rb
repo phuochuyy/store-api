@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module StockAlerts
-  # rubocop:disable Metrics/AbcSize
   class StockAlertQueryService
     class << self
       # @param filters [Hash] Filter parameters
@@ -35,28 +34,52 @@ module StockAlerts
       end
 
       def apply_filters(alerts, filters)
-        alerts = alerts.where(status: filters[:status]) if filters[:status].present?
-        alerts = alerts.where(alert_type: filters[:alert_type]) if filters[:alert_type].present?
-        alerts = alerts.where(product_id: filters[:product_id]) if filters[:product_id].present?
+        alerts = apply_status_filter(alerts, filters[:status])
+        alerts = apply_alert_type_filter(alerts, filters[:alert_type])
+        alerts = apply_product_filter(alerts, filters[:product_id])
+        alerts = apply_date_range_filter(alerts, filters[:start_date], filters[:end_date])
+        apply_severity_filter(alerts, filters[:severity])
+      end
 
-        if filters[:start_date].present? && filters[:end_date].present?
-          start_date = Date.parse(filters[:start_date])
-          end_date = Date.parse(filters[:end_date])
-          alerts = alerts.where(triggered_at: start_date.beginning_of_day..end_date.end_of_day)
-        end
+      def apply_status_filter(alerts, status)
+        return alerts if status.blank?
 
-        if filters[:severity].present?
-          severity_map = {
-            'critical' => %w[out_of_stock],
-            'high' => %w[critical_stock],
-            'medium' => %w[low_stock],
-            'low' => %w[reorder_point]
-          }
-          alert_types = severity_map[filters[:severity]]
-          alerts = alerts.where(alert_type: alert_types) if alert_types
-        end
+        alerts.where(status: status)
+      end
 
-        alerts
+      def apply_alert_type_filter(alerts, alert_type)
+        return alerts if alert_type.blank?
+
+        alerts.where(alert_type: alert_type)
+      end
+
+      def apply_product_filter(alerts, product_id)
+        return alerts if product_id.blank?
+
+        alerts.where(product_id: product_id)
+      end
+
+      def apply_date_range_filter(alerts, start_date, end_date)
+        return alerts unless start_date.present? && end_date.present?
+
+        start = Date.parse(start_date)
+        finish = Date.parse(end_date)
+        alerts.where(triggered_at: start.beginning_of_day..finish.end_of_day)
+      end
+
+      def apply_severity_filter(alerts, severity)
+        return alerts if severity.blank?
+
+        severity_map = {
+          'critical' => %w[out_of_stock],
+          'high' => %w[critical_stock],
+          'medium' => %w[low_stock],
+          'low' => %w[reorder_point]
+        }
+        alert_types = severity_map[severity]
+        return alerts unless alert_types
+
+        alerts.where(alert_type: alert_types)
       end
 
       def apply_pagination(alerts, page, per_page)
@@ -88,6 +111,5 @@ module StockAlerts
         }
       end
     end
-    # rubocop:enable Metrics/AbcSize
   end
 end

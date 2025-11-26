@@ -28,28 +28,40 @@ module Api
       end
 
       def sales
-        date_range = if params[:start_date] && params[:end_date]
-                       Date.parse(params[:start_date])..Date.parse(params[:end_date])
-                     else
-                       30.days.ago..Time.current
-                     end
-
-        sales_stats = {
-          total_sales: Order.where(created_at: date_range).sum(:total_amount),
-          total_orders: Order.where(created_at: date_range).count,
-          average_order_value: Order.where(created_at: date_range).average(:total_amount),
-          sales_by_day: Order.where(created_at: date_range)
-                             .group('DATE(created_at)')
-                             .sum(:total_amount),
-          top_customers: Order.joins('LEFT JOIN users ON orders.customer_email = users.email')
-                              .where(created_at: date_range)
-                              .group(:customer_email, :customer_name)
-                              .sum(:total_amount)
-                              .sort_by { |_, amount| -amount }
-                              .first(10)
-        }
-
+        date_range = calculate_date_range
+        sales_stats = build_sales_stats(date_range)
         render json: sales_stats
+      end
+
+      def calculate_date_range
+        if params[:start_date] && params[:end_date]
+          Date.parse(params[:start_date])..Date.parse(params[:end_date])
+        else
+          30.days.ago..Time.current
+        end
+      end
+
+      def build_sales_stats(date_range)
+        orders_in_range = Order.where(created_at: date_range)
+        {
+          total_sales: orders_in_range.sum(:total_amount),
+          total_orders: orders_in_range.count,
+          average_order_value: orders_in_range.average(:total_amount),
+          sales_by_day: calculate_sales_by_day(orders_in_range),
+          top_customers: calculate_top_customers(orders_in_range)
+        }
+      end
+
+      def calculate_sales_by_day(orders)
+        orders.group('DATE(created_at)').sum(:total_amount)
+      end
+
+      def calculate_top_customers(orders)
+        orders.joins('LEFT JOIN users ON orders.customer_email = users.email')
+              .group(:customer_email, :customer_name)
+              .sum(:total_amount)
+              .sort_by { |_, amount| -amount }
+              .first(10)
       end
     end
   end

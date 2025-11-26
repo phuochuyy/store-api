@@ -11,19 +11,26 @@ class ProductComparison < ApplicationRecord
     return product_comparison_items.ordered.pluck(:product_id) if product_comparison_items.any?
 
     # Fallback to old product_ids field
+    parse_product_ids_field
+  end
+
+  def parse_product_ids_field
     return [] if product_ids.blank?
 
-    if product_ids.is_a?(Array)
+    case product_ids
+    when Array
       product_ids
-    elsif product_ids.is_a?(String)
-      begin
-        JSON.parse(product_ids)
-      rescue JSON::ParserError
-        product_ids.split(',').map(&:strip).map(&:to_i)
-      end
+    when String
+      parse_product_ids_string
     else
       []
     end
+  end
+
+  def parse_product_ids_string
+    JSON.parse(product_ids)
+  rescue JSON::ParserError
+    product_ids.split(',').map(&:strip).map(&:to_i)
   end
 
   # Set product_ids from array (backward compatibility)

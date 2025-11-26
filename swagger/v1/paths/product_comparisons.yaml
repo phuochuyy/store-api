@@ -1,0 +1,342 @@
+product_comparisons:
+  get:
+    tags:
+      - Product Comparisons
+    summary: List product comparisons
+    description: Get all product comparisons for the current user
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+    responses:
+      '200':
+        description: Product comparisons retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    comparisons:
+                      type: array
+                      items:
+                        $ref: './components/schemas.yaml#/ProductComparison'
+                    pagination:
+                      $ref: './components/schemas.yaml#/Pagination'
+                message:
+                  type: string
+                  example: "Product comparisons retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  post:
+    tags:
+      - Product Comparisons
+    summary: Create product comparison
+    description: Create a new product comparison (requires 2-5 products)
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - product_ids
+            properties:
+              product_ids:
+                type: array
+                minItems: 2
+                maxItems: 5
+                items:
+                  type: integer
+                example: [1, 2, 3]
+              name:
+                type: string
+                example: "Smartphone Comparison"
+              is_public:
+                type: boolean
+                default: false
+                example: false
+    responses:
+      '201':
+        description: Product comparison created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    comparison:
+                      $ref: './components/schemas.yaml#/ProductComparison'
+                message:
+                  type: string
+                  example: "Product comparison created successfully"
+      '400':
+        description: Bad request (e.g., invalid number of products)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '422':
+        description: Unprocessable entity
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+product_comparison_by_id:
+  get:
+    tags:
+      - Product Comparisons
+    summary: Get product comparison
+    description: Get a specific product comparison by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Comparison ID
+    responses:
+      '200':
+        description: Product comparison retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    comparison:
+                      $ref: './components/schemas.yaml#/ProductComparison'
+                message:
+                  type: string
+                  example: "Product comparison retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Comparison not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  patch:
+    tags:
+      - Product Comparisons
+    summary: Update product comparison
+    description: Update a product comparison (only own comparisons)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Comparison ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              product_ids:
+                type: array
+                minItems: 2
+                maxItems: 5
+                items:
+                  type: integer
+              name:
+                type: string
+              is_public:
+                type: boolean
+    responses:
+      '200':
+        description: Product comparison updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    comparison:
+                      $ref: './components/schemas.yaml#/ProductComparison'
+                message:
+                  type: string
+                  example: "Product comparison updated successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (can only update own comparisons)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Comparison not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  delete:
+    tags:
+      - Product Comparisons
+    summary: Delete product comparison
+    description: Delete a product comparison (only own comparisons)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Comparison ID
+    responses:
+      '200':
+        description: Product comparison deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  nullable: true
+                message:
+                  type: string
+                  example: "Product comparison deleted successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (can only delete own comparisons)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Comparison not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+product_comparisons_my_comparisons:
+  get:
+    tags:
+      - Product Comparisons
+    summary: Get my comparisons
+    description: Get the current user's product comparisons (alias for GET /product_comparisons)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+    responses:
+      '200':
+        description: Product comparisons retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    comparisons:
+                      type: array
+                      items:
+                        $ref: './components/schemas.yaml#/ProductComparison'
+                    pagination:
+                      $ref: './components/schemas.yaml#/Pagination'
+                message:
+                  type: string
+                  example: "Product comparisons retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+

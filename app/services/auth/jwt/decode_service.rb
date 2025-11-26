@@ -22,7 +22,20 @@ module Auth
 
           return nil if BlacklistService.blacklisted?(token)
 
-          decode_raw(token)
+          payload = decode_raw(token)
+          return nil unless payload
+
+          # Check if token was issued before user's logout timestamp
+          user_id = payload['user_id']
+          if user_id.present?
+            logout_timestamp = CacheService.get_user_logout_timestamp(user_id)
+            if logout_timestamp && payload['iat']
+              token_issued_at = Time.zone.at(payload['iat'])
+              return nil if token_issued_at < logout_timestamp
+            end
+          end
+
+          payload
         end
 
         def decode_user(token)
@@ -106,13 +119,29 @@ module Auth
 
           return { valid: false, error: 'Token has been revoked' } if BlacklistService.blacklisted?(token)
 
+          # Decode raw to get payload for logout timestamp check (before full decode)
+          raw_payload = decode_raw(token)
+          return { valid: false, error: 'Invalid token' } unless raw_payload
+
+          # Check if token was issued before user's logout timestamp
+          user_id = raw_payload['user_id']
+          if user_id.present?
+            logout_timestamp = CacheService.get_user_logout_timestamp(user_id)
+            if logout_timestamp && raw_payload['iat']
+              token_issued_at = Time.zone.at(raw_payload['iat'])
+              if token_issued_at < logout_timestamp
+                return { valid: false, error: 'Token has been revoked (user logged out)' }
+              end
+            end
+          end
+
+          # Now decode with full validation (blacklist check, etc.)
           payload = decode(token)
           return { valid: false, error: 'Invalid token' } unless payload
 
           return { valid: false, error: 'Token has expired' } if expired?(token)
 
           # Try to get user from cache first
-          user_id = payload['user_id']
           user = CacheService.get_cached_user(user_id) || User.find_by(id: user_id)
           return { valid: false, error: 'User not found' } unless user
 

@@ -1,0 +1,162 @@
+tax_calculate:
+  get:
+    tags:
+      - Tax
+    summary: Calculate tax
+    description: Calculate tax for cart items based on destination
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: country_code
+        in: query
+        required: true
+        schema:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        description: Country code (ISO 3166-1 alpha-2)
+        example: "US"
+      - name: region
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Region/State code
+        example: "CA"
+      - name: address
+        in: query
+        required: false
+        schema:
+          type: object
+        description: Full address object (alternative to separate params)
+    responses:
+      '200':
+        description: Tax calculated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    tax_amount:
+                      type: number
+                      format: decimal
+                      example: 8.50
+                    tax_rate:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "California Sales Tax"
+                        rate:
+                          type: number
+                          format: decimal
+                          example: 8.5
+                        type:
+                          type: string
+                          enum: [VAT, GST, Sales]
+                          example: "Sales"
+                    tax_breakdown:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          order_item_id:
+                            type: integer
+                          product_id:
+                            type: integer
+                          tax_rate_id:
+                            type: integer
+                          tax_rate_value:
+                            type: number
+                            format: decimal
+                          tax_amount:
+                            type: number
+                            format: decimal
+                          subtotal:
+                            type: number
+                            format: decimal
+                message:
+                  type: string
+                  example: "Tax calculated successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '422':
+        description: Unprocessable entity
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+tax_rates:
+  get:
+    tags:
+      - Tax
+    summary: Get tax rates
+    description: Get tax rates (Admin only). Can filter by country and region
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: country_code
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        description: Filter by country code
+        example: "US"
+      - name: region
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by region
+        example: "CA"
+    responses:
+      '200':
+        description: Tax rates retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: './components/schemas.yaml#/TaxRate'
+                message:
+                  type: string
+                  example: "Tax rates retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+

@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength
 class PromotionValidator
   include ActiveModel::Model
   include ActiveModel::Attributes
@@ -76,24 +77,39 @@ class PromotionValidator
   end
 
   def validate_conditions_structure(conditions)
-    # Validate common condition fields
-    if conditions['minimum_amount'].present? &&
-       !(conditions['minimum_amount'].is_a?(Numeric) && conditions['minimum_amount'].positive?)
-      errors.add(:conditions, 'minimum_amount must be a positive number')
-    end
+    validate_minimum_amount(conditions)
+    validate_product_ids(conditions)
+    validate_category_ids(conditions)
+    validate_brand_ids(conditions)
+  end
 
-    if conditions['product_ids'].present? &&
-       !(conditions['product_ids'].is_a?(Array) && conditions['product_ids'].all? { |id| id.is_a?(Integer) })
-      errors.add(:conditions, 'product_ids must be an array of integers')
-    end
+  def validate_minimum_amount(conditions)
+    return if conditions['minimum_amount'].blank?
+    return if conditions['minimum_amount'].is_a?(Numeric) && conditions['minimum_amount'].positive?
 
-    if conditions['category_ids'].present? &&
-       !(conditions['category_ids'].is_a?(Array) && conditions['category_ids'].all? { |id| id.is_a?(Integer) })
-      errors.add(:conditions, 'category_ids must be an array of integers')
-    end
+    errors.add(:conditions, 'minimum_amount must be a positive number')
+  end
 
+  def validate_product_ids(conditions)
+    return if conditions['product_ids'].blank?
+    return if conditions['product_ids'].is_a?(Array) &&
+              conditions['product_ids'].all? { |id| id.is_a?(Integer) }
+
+    errors.add(:conditions, 'product_ids must be an array of integers')
+  end
+
+  def validate_category_ids(conditions)
+    return if conditions['category_ids'].blank?
+    return if conditions['category_ids'].is_a?(Array) &&
+              conditions['category_ids'].all? { |id| id.is_a?(Integer) }
+
+    errors.add(:conditions, 'category_ids must be an array of integers')
+  end
+
+  def validate_brand_ids(conditions)
     return if conditions['brand_ids'].blank?
-    return if conditions['brand_ids'].is_a?(Array) && conditions['brand_ids'].all? { |id| id.is_a?(Integer) }
+    return if conditions['brand_ids'].is_a?(Array) &&
+              conditions['brand_ids'].all? { |id| id.is_a?(Integer) }
 
     errors.add(:conditions, 'brand_ids must be an array of integers')
   end
@@ -105,39 +121,67 @@ class PromotionValidator
   def validate_bulk_pricing_structure
     return if benefits.blank?
 
-    begin
-      parsed_benefits = JSON.parse(benefits)
+    parsed_benefits = parse_benefits_json
+    return unless parsed_benefits
 
-      unless parsed_benefits['tiers'].is_a?(Array) && parsed_benefits['tiers'].any?
-        errors.add(:benefits, 'bulk_pricing requires tiers array')
-        return
-      end
+    validate_bulk_pricing_tiers(parsed_benefits)
+  end
 
-      parsed_benefits['tiers'].each_with_index do |tier, index|
-        unless tier.is_a?(Hash)
-          errors.add(:benefits, "tier #{index} must be an object")
-          next
-        end
+  def parse_benefits_json
+    JSON.parse(benefits)
+  rescue JSON::ParserError
+    errors.add(:benefits, 'must be valid JSON for bulk_pricing')
+    nil
+  end
 
-        unless tier['min_quantity'].is_a?(Integer) && tier['min_quantity'].positive?
-          errors.add(:benefits, "tier #{index} min_quantity must be a positive integer")
-        end
-
-        unless tier['discount_type'].in?(%w[percentage fixed_amount])
-          errors.add(:benefits, "tier #{index} discount_type must be 'percentage' or 'fixed_amount'")
-        end
-
-        unless tier['discount_value'].is_a?(Numeric) && tier['discount_value'].positive?
-          errors.add(:benefits, "tier #{index} discount_value must be a positive number")
-        end
-
-        if tier['discount_type'] == 'percentage' && tier['discount_value'] > 100
-          errors.add(:benefits, "tier #{index} percentage discount cannot exceed 100%")
-        end
-      end
-    rescue JSON::ParserError
-      errors.add(:benefits, 'must be valid JSON for bulk_pricing')
+  def validate_bulk_pricing_tiers(parsed_benefits)
+    unless parsed_benefits['tiers'].is_a?(Array) && parsed_benefits['tiers'].any?
+      errors.add(:benefits, 'bulk_pricing requires tiers array')
+      return
     end
+
+    parsed_benefits['tiers'].each_with_index do |tier, index|
+      validate_bulk_pricing_tier(tier, index)
+    end
+  end
+
+  def validate_bulk_pricing_tier(tier, index)
+    validate_tier_structure(tier, index)
+    validate_tier_min_quantity(tier, index)
+    validate_tier_discount_type(tier, index)
+    validate_tier_discount_value(tier, index)
+    validate_tier_percentage_limit(tier, index)
+  end
+
+  def validate_tier_structure(tier, index)
+    return if tier.is_a?(Hash)
+
+    errors.add(:benefits, "tier #{index} must be an object")
+  end
+
+  def validate_tier_min_quantity(tier, index)
+    return if tier['min_quantity'].is_a?(Integer) && tier['min_quantity'].positive?
+
+    errors.add(:benefits, "tier #{index} min_quantity must be a positive integer")
+  end
+
+  def validate_tier_discount_type(tier, index)
+    return if tier['discount_type'].in?(%w[percentage fixed_amount])
+
+    errors.add(:benefits, "tier #{index} discount_type must be 'percentage' or 'fixed_amount'")
+  end
+
+  def validate_tier_discount_value(tier, index)
+    return if tier['discount_value'].is_a?(Numeric) && tier['discount_value'].positive?
+
+    errors.add(:benefits, "tier #{index} discount_value must be a positive number")
+  end
+
+  def validate_tier_percentage_limit(tier, index)
+    return unless tier['discount_type'] == 'percentage'
+    return unless tier['discount_value'] > 100
+
+    errors.add(:benefits, "tier #{index} percentage discount cannot exceed 100%")
   end
 
   def validate_buy_x_get_y_structure
@@ -161,20 +205,33 @@ class PromotionValidator
   def validate_free_gift_structure
     return if benefits.blank?
 
-    begin
-      parsed_benefits = JSON.parse(benefits)
+    parsed_benefits = parse_free_gift_json
+    return unless parsed_benefits
 
-      unless parsed_benefits['gift_product_id'].is_a?(Integer) && parsed_benefits['gift_product_id'].positive?
-        errors.add(:benefits, 'gift_product_id must be a positive integer')
-      end
+    validate_gift_product_id(parsed_benefits)
+    validate_gift_quantity(parsed_benefits)
+  end
 
-      if parsed_benefits['gift_quantity'].present? &&
-         !(parsed_benefits['gift_quantity'].is_a?(Integer) && parsed_benefits['gift_quantity'].positive?)
-        errors.add(:benefits, 'gift_quantity must be a positive integer')
-      end
-    rescue JSON::ParserError
-      errors.add(:benefits, 'must be valid JSON for free_gift')
-    end
+  def parse_free_gift_json
+    JSON.parse(benefits)
+  rescue JSON::ParserError
+    errors.add(:benefits, 'must be valid JSON for free_gift')
+    nil
+  end
+
+  def validate_gift_product_id(parsed_benefits)
+    return if parsed_benefits['gift_product_id'].is_a?(Integer) &&
+              parsed_benefits['gift_product_id'].positive?
+
+    errors.add(:benefits, 'gift_product_id must be a positive integer')
+  end
+
+  def validate_gift_quantity(parsed_benefits)
+    return if parsed_benefits['gift_quantity'].blank?
+    return if parsed_benefits['gift_quantity'].is_a?(Integer) &&
+              parsed_benefits['gift_quantity'].positive?
+
+    errors.add(:benefits, 'gift_quantity must be a positive integer')
   end
 
   def validate_shipping_discount_structure
@@ -191,3 +248,4 @@ class PromotionValidator
     end
   end
 end
+# rubocop:enable Metrics/ClassLength

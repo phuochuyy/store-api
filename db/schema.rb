@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_25_095917) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,9 +57,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.decimal "unit_price", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "product_variant_id"
     t.index ["cart_id", "product_id"], name: "index_cart_items_on_cart_id_and_product_id", unique: true
     t.index ["cart_id"], name: "index_cart_items_on_cart_id"
     t.index ["product_id"], name: "index_cart_items_on_product_id"
+    t.index ["product_variant_id"], name: "index_cart_items_on_product_variant_id"
   end
 
   create_table "carts", force: :cascade do |t|
@@ -167,8 +169,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.decimal "unit_price", precision: 10, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "product_variant_id"
     t.index ["order_id"], name: "index_order_items_on_order_id"
     t.index ["product_id"], name: "index_order_items_on_product_id"
+    t.index ["product_variant_id"], name: "index_order_items_on_product_variant_id"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -192,11 +196,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0"
     t.string "discount_code"
     t.bigint "discount_id"
+    t.bigint "shipping_method_id"
+    t.decimal "shipping_cost", precision: 10, scale: 2, default: "0.0"
+    t.text "shipping_address"
+    t.decimal "shipping_weight", precision: 10, scale: 2
+    t.bigint "tax_rate_id"
+    t.decimal "tax_amount", precision: 10, scale: 2, default: "0.0"
+    t.decimal "tax_rate_value", precision: 5, scale: 2
     t.index ["created_at"], name: "index_orders_on_created_at"
     t.index ["discount_code"], name: "index_orders_on_discount_code"
     t.index ["discount_id"], name: "index_orders_on_discount_id"
+    t.index ["shipping_method_id"], name: "index_orders_on_shipping_method_id"
     t.index ["status", "created_at"], name: "index_orders_on_status_and_created_at"
     t.index ["status"], name: "index_orders_on_status"
+    t.index ["tax_rate_id"], name: "index_orders_on_tax_rate_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
@@ -322,6 +335,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.index ["user_id"], name: "index_product_reviews_on_user_id"
   end
 
+  create_table "product_variants", force: :cascade do |t|
+    t.bigint "product_id", null: false
+    t.string "name", null: false
+    t.string "sku", null: false
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.integer "stock_quantity", default: 0, null: false
+    t.boolean "is_active", default: true, null: false
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_product_variants_on_is_active"
+    t.index ["product_id", "position"], name: "index_product_variants_on_product_id_and_position"
+    t.index ["product_id"], name: "index_product_variants_on_product_id"
+    t.index ["sku"], name: "index_product_variants_on_sku", unique: true
+  end
+
   create_table "product_wishlists", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "product_id", null: false
@@ -348,6 +377,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.text "specifications"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "weight", precision: 10, scale: 2, default: "0.5"
     t.index ["brand_id"], name: "index_products_on_brand_id"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["price", "stock_quantity"], name: "index_products_on_price_and_stock_quantity"
@@ -374,6 +404,77 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.index ["priority"], name: "index_promotions_on_priority"
     t.index ["promotion_type"], name: "index_promotions_on_promotion_type"
     t.index ["start_date", "end_date"], name: "index_promotions_on_start_date_and_end_date"
+  end
+
+  create_table "return_items", force: :cascade do |t|
+    t.bigint "return_request_id", null: false
+    t.bigint "order_item_id", null: false
+    t.integer "quantity", null: false
+    t.text "reason"
+    t.string "condition", default: "unopened"
+    t.decimal "refund_amount", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_item_id"], name: "index_return_items_on_order_item_id"
+    t.index ["return_request_id"], name: "index_return_items_on_return_request_id"
+  end
+
+  create_table "return_requests", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "user_id", null: false
+    t.string "status", default: "pending", null: false
+    t.text "reason"
+    t.datetime "requested_at"
+    t.datetime "processed_at"
+    t.decimal "refund_amount", precision: 10, scale: 2, default: "0.0"
+    t.string "return_type", default: "refund"
+    t.text "admin_notes"
+    t.datetime "approved_at"
+    t.datetime "rejected_at"
+    t.text "rejection_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id", "status"], name: "index_return_requests_on_order_id_and_status"
+    t.index ["order_id"], name: "index_return_requests_on_order_id"
+    t.index ["status"], name: "index_return_requests_on_status"
+    t.index ["user_id"], name: "index_return_requests_on_user_id"
+  end
+
+  create_table "shipping_methods", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.decimal "base_cost", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "handling_fee", precision: 10, scale: 2, default: "0.0", null: false
+    t.boolean "is_active", default: true, null: false
+    t.integer "estimated_days", default: 3, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_shipping_methods_on_is_active"
+    t.index ["name"], name: "index_shipping_methods_on_name", unique: true
+  end
+
+  create_table "shipping_zone_methods", force: :cascade do |t|
+    t.bigint "shipping_zone_id", null: false
+    t.bigint "shipping_method_id", null: false
+    t.decimal "cost_multiplier", precision: 5, scale: 2, default: "1.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shipping_method_id"], name: "index_shipping_zone_methods_on_shipping_method_id"
+    t.index ["shipping_zone_id", "shipping_method_id"], name: "index_shipping_zone_methods_unique", unique: true
+    t.index ["shipping_zone_id"], name: "index_shipping_zone_methods_on_shipping_zone_id"
+  end
+
+  create_table "shipping_zones", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "country_code", null: false
+    t.string "region"
+    t.decimal "base_cost", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "cost_per_kg", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "free_shipping_threshold", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_code", "region"], name: "index_shipping_zones_on_country_code_and_region"
+    t.index ["country_code"], name: "index_shipping_zones_on_country_code"
   end
 
   create_table "stock_alerts", force: :cascade do |t|
@@ -420,6 +521,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.index ["user_id"], name: "index_stock_movements_on_user_id"
   end
 
+  create_table "tax_rates", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "country_code", null: false
+    t.string "region"
+    t.bigint "category_id"
+    t.decimal "tax_rate", precision: 5, scale: 2, null: false
+    t.string "tax_type", default: "VAT", null: false
+    t.boolean "is_active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_tax_rates_on_category_id"
+    t.index ["country_code", "region"], name: "index_tax_rates_on_country_code_and_region"
+    t.index ["country_code"], name: "index_tax_rates_on_country_code"
+    t.index ["is_active"], name: "index_tax_rates_on_is_active"
+  end
+
   create_table "user_addresses", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "address_type", default: "shipping"
@@ -464,9 +581,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
     t.index ["phone"], name: "index_users_on_phone"
   end
 
+  create_table "variant_options", force: :cascade do |t|
+    t.bigint "product_variant_id", null: false
+    t.string "option_type", null: false
+    t.string "option_value", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_variant_id", "option_type"], name: "index_variant_options_on_product_variant_id_and_option_type"
+    t.index ["product_variant_id"], name: "index_variant_options_on_product_variant_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "cart_items", "carts"
+  add_foreign_key "cart_items", "product_variants"
   add_foreign_key "cart_items", "products"
   add_foreign_key "carts", "users"
   add_foreign_key "coupons", "discounts"
@@ -475,8 +603,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
   add_foreign_key "jwt_blacklist_tokens", "users", on_delete: :nullify
   add_foreign_key "notifications", "users"
   add_foreign_key "order_items", "orders"
+  add_foreign_key "order_items", "product_variants"
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "discounts"
+  add_foreign_key "orders", "shipping_methods"
+  add_foreign_key "orders", "tax_rates"
   add_foreign_key "orders", "users"
   add_foreign_key "password_reset_tokens", "users"
   add_foreign_key "payment_histories", "payments"
@@ -487,12 +618,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_11_064953) do
   add_foreign_key "product_comparisons", "users"
   add_foreign_key "product_reviews", "products"
   add_foreign_key "product_reviews", "users"
+  add_foreign_key "product_variants", "products"
   add_foreign_key "product_wishlists", "products"
   add_foreign_key "product_wishlists", "users"
   add_foreign_key "products", "brands"
   add_foreign_key "products", "categories"
+  add_foreign_key "return_items", "order_items"
+  add_foreign_key "return_items", "return_requests"
+  add_foreign_key "return_requests", "orders"
+  add_foreign_key "return_requests", "users"
+  add_foreign_key "shipping_zone_methods", "shipping_methods"
+  add_foreign_key "shipping_zone_methods", "shipping_zones"
   add_foreign_key "stock_alerts", "products"
   add_foreign_key "stock_movements", "products"
   add_foreign_key "stock_movements", "users"
+  add_foreign_key "tax_rates", "categories"
   add_foreign_key "user_addresses", "users"
+  add_foreign_key "variant_options", "product_variants"
 end

@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 module Api
   module V1
-    class OrderItemsController < Api::V1::BaseController
+    module Orders
+      class ItemsController < Api::V1::BaseController
       before_action :set_order_item, only: %i[show update destroy]
       before_action :set_order, only: %i[create index]
 
@@ -60,6 +63,7 @@ module Api
 
       def order_item_params
         params.expect(order_item: %i[product_id quantity])
+      end
       end
     end
   end

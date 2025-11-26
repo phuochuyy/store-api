@@ -9,17 +9,37 @@ class StockAlertNotificationJob < ApplicationJob
   def perform(stock_alert)
     return unless stock_alert.is_a?(StockAlert)
 
-    # Send notification for the stock alert
-    result = StockAlerts::StockNotificationService.send_stock_alert_notification(stock_alert)
+    result = send_notification(stock_alert)
+    handle_notification_result(stock_alert, result)
+  rescue StandardError => e
+    handle_notification_error(stock_alert, e)
+    raise e
+  end
 
+  private
+
+  def send_notification(stock_alert)
+    StockAlerts::StockNotificationService.send_stock_alert_notification(stock_alert)
+  end
+
+  def handle_notification_result(stock_alert, result)
     if result[:success]
-      Rails.logger.info "Stock alert notification sent successfully for alert #{stock_alert.id}: #{result[:message]}"
+      log_success(stock_alert, result)
     else
-      Rails.logger.error "Failed to send stock alert notification for alert #{stock_alert.id}: #{result[:error]}"
+      log_error(stock_alert, result)
       raise StandardError, result[:error] if result[:error]
     end
-  rescue StandardError => e
-    Rails.logger.error "StockAlertNotificationJob failed for alert #{stock_alert&.id}: #{e.message}"
-    raise e
+  end
+
+  def log_success(stock_alert, result)
+    Rails.logger.info "Stock alert notification sent successfully for alert #{stock_alert.id}: #{result[:message]}"
+  end
+
+  def log_error(stock_alert, result)
+    Rails.logger.error "Failed to send stock alert notification for alert #{stock_alert.id}: #{result[:error]}"
+  end
+
+  def handle_notification_error(stock_alert, error)
+    Rails.logger.error "StockAlertNotificationJob failed for alert #{stock_alert&.id}: #{error.message}"
   end
 end

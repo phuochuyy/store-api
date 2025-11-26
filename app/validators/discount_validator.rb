@@ -68,16 +68,27 @@ class DiscountValidator
   def valid_applies_to_ids
     return if applies_to == 'all' || applies_to_ids.blank?
 
-    ids = applies_to_ids.split(',').map(&:strip)
+    ids = parse_applies_to_ids
+    return unless ids
 
+    validate_ids_format(ids)
+    validate_ids_existence(ids)
+  end
+
+  def parse_applies_to_ids
+    applies_to_ids.split(',').map(&:strip)
+  end
+
+  def validate_ids_format(ids)
     ids.each do |id|
-      unless id.match?(/\A\d+\z/)
-        errors.add(:applies_to_ids, 'must contain only comma-separated integers')
-        break
-      end
-    end
+      next if id.match?(/\A\d+\z/)
 
-    # Validate that the referenced IDs exist
+      errors.add(:applies_to_ids, 'must contain only comma-separated integers')
+      break
+    end
+  end
+
+  def validate_ids_existence(ids)
     case applies_to
     when 'products'
       validate_ids_exist(Product, ids, 'products')

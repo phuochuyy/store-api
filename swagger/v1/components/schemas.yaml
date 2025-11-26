@@ -498,4 +498,421 @@ ErrorResponse:
       example: "Error message"
     status:
       type: string
-      example: "error_status"
+
+# Product Variants
+ProductVariant:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    product_id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      example: "iPhone 15 Pro - 256GB - Blue"
+    sku:
+      type: string
+      example: "IP15P-256-BLUE"
+    price:
+      type: number
+      format: decimal
+      example: 1099.99
+    stock_quantity:
+      type: integer
+      example: 25
+    is_active:
+      type: boolean
+      example: true
+    in_stock:
+      type: boolean
+      example: true
+    display_name:
+      type: string
+      example: "iPhone 15 Pro - Blue, 256GB"
+    options:
+      type: array
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+            example: "color"
+          value:
+            type: string
+            example: "Blue"
+
+VariantOption:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    product_variant_id:
+      type: integer
+      example: 1
+    option_type:
+      type: string
+      enum: [size, color, material, style]
+      example: "color"
+    option_value:
+      type: string
+      example: "Blue"
+
+# Shipping
+ShippingMethod:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      example: "Standard Shipping"
+    description:
+      type: string
+      example: "Standard delivery in 3-5 business days"
+    base_cost:
+      type: number
+      format: decimal
+      example: 5.00
+    handling_fee:
+      type: number
+      format: decimal
+      example: 2.00
+    total_cost:
+      type: number
+      format: decimal
+      example: 7.00
+    estimated_days:
+      type: integer
+      example: 3
+
+ShippingZone:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      example: "United States"
+    country_code:
+      type: string
+      example: "US"
+    region:
+      type: string
+      nullable: true
+      example: "CA"
+    base_cost:
+      type: number
+      format: decimal
+      example: 5.00
+    cost_per_kg:
+      type: number
+      format: decimal
+      example: 2.50
+    free_shipping_threshold:
+      type: number
+      format: decimal
+      nullable: true
+      example: 100.00
+
+# Tax
+TaxRate:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      example: "California Sales Tax"
+    country_code:
+      type: string
+      example: "US"
+    region:
+      type: string
+      nullable: true
+      example: "CA"
+    category_id:
+      type: integer
+      nullable: true
+      example: 1
+    tax_rate:
+      type: number
+      format: decimal
+      example: 8.5
+    tax_type:
+      type: string
+      enum: [VAT, GST, Sales]
+      example: "Sales"
+    is_active:
+      type: boolean
+      example: true
+
+# Returns
+ReturnRequest:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    order_id:
+      type: integer
+      example: 1
+    status:
+      type: string
+      enum: [pending, approved, rejected, processing, completed, cancelled]
+      example: "pending"
+    return_type:
+      type: string
+      enum: [refund, exchange]
+      example: "refund"
+    reason:
+      type: string
+      example: "Product does not match description"
+    refund_amount:
+      type: number
+      format: decimal
+      example: 99.99
+    total_quantity:
+      type: integer
+      example: 1
+    requested_at:
+      type: string
+      format: date-time
+    processed_at:
+      type: string
+      format: date-time
+      nullable: true
+    approved_at:
+      type: string
+      format: date-time
+      nullable: true
+    rejected_at:
+      type: string
+      format: date-time
+      nullable: true
+    rejection_reason:
+      type: string
+      nullable: true
+    admin_notes:
+      type: string
+      nullable: true
+    return_items:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          order_item_id:
+            type: integer
+          quantity:
+            type: integer
+          reason:
+            type: string
+          condition:
+            type: string
+            enum: [unopened, opened, damaged, defective]
+          refund_amount:
+            type: number
+            format: decimal
+
+# User Profile & Addresses
+UserProfile:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      example: "John Doe"
+    email:
+      type: string
+      format: email
+      example: "user@example.com"
+    first_name:
+      type: string
+      example: "John"
+    last_name:
+      type: string
+      example: "Doe"
+    phone:
+      type: string
+      nullable: true
+      example: "+1234567890"
+    gender:
+      type: string
+      enum: [male, female, other]
+      nullable: true
+    bio:
+      type: string
+      nullable: true
+    avatar_url:
+      type: string
+      nullable: true
+    role:
+      type: string
+      enum: [customer, admin]
+      example: "customer"
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+
+UserAddress:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    user_id:
+      type: integer
+      example: 1
+    street:
+      type: string
+      example: "123 Main St"
+    city:
+      type: string
+      example: "Los Angeles"
+    state:
+      type: string
+      nullable: true
+      example: "CA"
+    postal_code:
+      type: string
+      nullable: true
+      example: "90001"
+    country_code:
+      type: string
+      example: "US"
+    address_type:
+      type: string
+      enum: [billing, shipping, both]
+      example: "both"
+    is_default:
+      type: boolean
+      example: true
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+
+# Product Reviews
+ProductReview:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    user_id:
+      type: integer
+      example: 1
+    product_id:
+      type: integer
+      example: 1
+    rating:
+      type: integer
+      minimum: 1
+      maximum: 5
+      example: 5
+    title:
+      type: string
+      nullable: true
+      example: "Great product!"
+    content:
+      type: string
+      nullable: true
+      example: "This product exceeded my expectations"
+    helpful_count:
+      type: integer
+      example: 10
+    verified_purchase:
+      type: boolean
+      example: true
+    status:
+      type: string
+      enum: [pending, approved, rejected]
+      example: "approved"
+    user:
+      $ref: '#/components/schemas/User'
+    product:
+      $ref: '#/components/schemas/Product'
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+
+# Product Wishlists
+ProductWishlist:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    user_id:
+      type: integer
+      example: 1
+    product_id:
+      type: integer
+      example: 1
+    notes:
+      type: string
+      nullable: true
+      example: "Want to buy this later"
+    priority:
+      type: integer
+      default: 0
+      example: 1
+    product:
+      $ref: '#/components/schemas/Product'
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+
+# Product Comparisons
+ProductComparison:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    user_id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      nullable: true
+      example: "Smartphone Comparison"
+    product_ids:
+      type: array
+      items:
+        type: integer
+      example: [1, 2, 3]
+    is_public:
+      type: boolean
+      default: false
+      example: false
+    products:
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time

@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+# frozen_string_literal: true
+
 module Api
   module V1
-    class PaymentMethodsController < Api::V1::BaseController
+    module Payments
+      class MethodsController < Api::V1::BaseController
       before_action :set_payment_method, only: %i[show update destroy stats]
       before_action :admin_only!, only: %i[create update destroy stats]
 
@@ -82,29 +85,50 @@ module Api
       end
 
       def calculate_fees
+        validation_result = validate_calculate_fees_params
+        return validation_result if validation_result
+
+        payment_method = find_payment_method_for_fees
+        return payment_method unless payment_method.is_a?(PaymentMethod)
+
+        process_fee_calculation(payment_method)
+      end
+
+      def validate_calculate_fees_params
         amount = params[:amount]&.to_f
-        payment_method_id = params[:payment_method_id]
-
         return render_error('Amount is required', :bad_request) unless amount&.positive?
-        return render_error('Payment method ID is required', :bad_request) unless payment_method_id
+        return render_error('Payment method ID is required', :bad_request) unless params[:payment_method_id]
 
-        payment_method = PaymentMethod.find_by(id: payment_method_id)
+        nil
+      end
+
+      def find_payment_method_for_fees
+        payment_method = PaymentMethod.find_by(id: params[:payment_method_id])
         return render_error('Payment method not found', :not_found) unless payment_method
 
+        payment_method
+      end
+
+      def process_fee_calculation(payment_method)
+        amount = params[:amount]&.to_f
         result = Payments::PaymentMethodService.calculate_processing_fees(amount, payment_method)
 
         if result[:success]
-          data = {
-            original_amount: result[:original_amount],
-            processing_fee: result[:processing_fee],
-            total_amount: result[:total_amount],
-            fee_breakdown: result[:fee_breakdown],
-            payment_method: payment_method_serializer(payment_method)
-          }
+          data = build_fee_calculation_data(result, payment_method)
           render_success(data, 'Processing fees calculated successfully')
         else
           render_error(result[:error], :unprocessable_content, result[:details])
         end
+      end
+
+      def build_fee_calculation_data(result, payment_method)
+        {
+          original_amount: result[:original_amount],
+          processing_fee: result[:processing_fee],
+          total_amount: result[:total_amount],
+          fee_breakdown: result[:fee_breakdown],
+          payment_method: payment_method_serializer(payment_method)
+        }
       end
 
       def validate_config
@@ -157,6 +181,7 @@ module Api
           created_at: payment_method.created_at,
           updated_at: payment_method.updated_at
         }
+      end
       end
     end
   end

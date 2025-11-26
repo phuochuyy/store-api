@@ -1,0 +1,346 @@
+product_variants:
+  get:
+    tags:
+      - Products
+    summary: List product variants
+    description: Get all variants for a specific product
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+    responses:
+      '200':
+        description: Variants retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: './components/schemas.yaml#/ProductVariant'
+                message:
+                  type: string
+                  example: "Variants retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Product not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  post:
+    tags:
+      - Products
+    summary: Create product variant
+    description: Create a new variant for a product (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - variant
+            properties:
+              variant:
+                type: object
+                required:
+                  - name
+                  - sku
+                  - price
+                  - stock_quantity
+                properties:
+                  name:
+                    type: string
+                    example: "iPhone 15 Pro - 256GB - Blue"
+                  sku:
+                    type: string
+                    example: "IP15P-256-BLUE"
+                  price:
+                    type: number
+                    format: decimal
+                    example: 1099.99
+                  stock_quantity:
+                    type: integer
+                    example: 25
+                  is_active:
+                    type: boolean
+                    example: true
+                  position:
+                    type: integer
+                    example: 1
+                  variant_options_attributes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        option_type:
+                          type: string
+                          enum: [size, color, material, style]
+                          example: "color"
+                        option_value:
+                          type: string
+                          example: "Blue"
+    responses:
+      '201':
+        description: Variant created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ProductVariant'
+                message:
+                  type: string
+                  example: "Variant created successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+product_variant_by_id:
+  get:
+    tags:
+      - Products
+    summary: Get product variant
+    description: Get a specific variant by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Variant ID
+    responses:
+      '200':
+        description: Variant retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ProductVariant'
+                message:
+                  type: string
+                  example: "Variant retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Variant not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  patch:
+    tags:
+      - Products
+    summary: Update product variant
+    description: Update a variant (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Variant ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              variant:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  sku:
+                    type: string
+                  price:
+                    type: number
+                    format: decimal
+                  stock_quantity:
+                    type: integer
+                  is_active:
+                    type: boolean
+                  position:
+                    type: integer
+                  variant_options_attributes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        option_type:
+                          type: string
+                        option_value:
+                          type: string
+                        _destroy:
+                          type: boolean
+    responses:
+      '200':
+        description: Variant updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ProductVariant'
+                message:
+                  type: string
+                  example: "Variant updated successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Variant not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  delete:
+    tags:
+      - Products
+    summary: Delete product variant
+    description: Delete a variant (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Product ID
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Variant ID
+    responses:
+      '200':
+        description: Variant deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  nullable: true
+                message:
+                  type: string
+                  example: "Variant deleted successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Variant not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+

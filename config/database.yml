@@ -23,7 +23,7 @@ default: &default
   username: store_api
   password: userpw
   host: <%= ENV.fetch("DATABASE_HOST", "127.0.0.1") %>
-  port: <%= ENV.fetch("DATABASE_PORT", "5433") %>
+  port: <%= ENV.fetch("DATABASE_PORT", "5432") %>
 
 development:
   <<: *default

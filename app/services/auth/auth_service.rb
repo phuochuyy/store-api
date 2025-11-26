@@ -166,14 +166,51 @@ module Auth
       end
 
       def logout(token = nil, user_id: nil)
-        # Blacklist the current token if provided
-        if token.present?
-          Auth::Jwt::BlacklistService.blacklist_token(
-            token,
-            user_id: user_id,
-            token_type: 'access',
+        # If user_id is provided, blacklist all tokens for the user
+        # This is more secure as it invalidates all sessions
+        if user_id.present?
+          # Blacklist all user tokens (sets logout timestamp)
+          Auth::Jwt::BlacklistService.blacklist_user_tokens(
+            user_id,
             reason: 'User logout'
           )
+          # Also blacklist the current token if provided (for database record)
+          if token.present?
+            Auth::Jwt::BlacklistService.blacklist_token(
+              token,
+              user_id: user_id,
+              token_type: 'access',
+              reason: 'User logout'
+            )
+          end
+        # Otherwise, try to extract user_id from token
+        elsif token.present?
+          # Try to extract user_id from token if not provided
+          payload = Auth::Jwt::DecodeService.decode_raw(token)
+          extracted_user_id = payload&.dig('user_id')
+
+          if extracted_user_id.present?
+            # Blacklist all tokens for better security
+            Auth::Jwt::BlacklistService.blacklist_user_tokens(
+              extracted_user_id,
+              reason: 'User logout'
+            )
+            # Also blacklist the current token (for database record)
+            Auth::Jwt::BlacklistService.blacklist_token(
+              token,
+              user_id: extracted_user_id,
+              token_type: 'access',
+              reason: 'User logout'
+            )
+          else
+            # Fallback: just blacklist the current token
+            Auth::Jwt::BlacklistService.blacklist_token(
+              token,
+              user_id: user_id,
+              token_type: 'access',
+              reason: 'User logout'
+            )
+          end
         end
 
         { success: true, message: 'Logged out successfully' }

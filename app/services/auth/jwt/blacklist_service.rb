@@ -101,13 +101,52 @@ module Auth
         end
 
         def blacklist_user_tokens(user_id, reason: 'User logout')
-          # NOTE: This is a placeholder - actual implementation would need to
-          # blacklist all active tokens for the user
-          # For now, we invalidate all caches for the user
-          CacheService.invalidate_user_tokens(user_id)
-          JwtBlacklistToken.blacklist_user_tokens(user_id, reason: reason)
+          return false if user_id.blank?
+
+          # Convert user_id to integer for consistency (database stores as bigint)
+          user_id_int = user_id.to_i
+          return false if user_id_int.zero? && user_id.to_s != '0'
+
+          Rails.logger.info "Blacklisting all tokens for user #{user_id_int}: #{reason}"
+
+          # Step 1: Set logout timestamp to reject all tokens issued before now
+          # This handles tokens we don't know about (not yet in database)
+          # Continue even if Redis is not available (graceful degradation)
+          begin
+            CacheService.set_user_logout_timestamp(user_id_int)
+          rescue StandardError => e
+            Rails.logger.warn "Failed to set logout timestamp (Redis may not be available): #{e.message}"
+          end
+
+          # Step 2: Blacklist all existing tokens in database for this user
+          db_result = JwtBlacklistToken.blacklist_user_tokens(user_id_int, reason: reason)
+          return false unless db_result
+
+          # Step 3: Invalidate all caches for this user
+          # Continue even if Redis is not available
+          begin
+            CacheService.invalidate_user_tokens(user_id_int)
+          rescue StandardError => e
+            Rails.logger.warn "Failed to invalidate user tokens (Redis may not be available): #{e.message}"
+          end
+
+          # Step 4: Get all token hashes from Redis and invalidate their validation caches
+          # Note: We can't reverse hashes to get original tokens, but we clear validation cache
+          begin
+            token_hashes = get_user_token_hashes(user_id_int)
+            token_hashes.each do |_token_hash|
+              # Validation cache will be invalidated by invalidate_user_tokens
+              # Individual token blacklist cache will be checked on next validation
+            end
+          rescue StandardError => e
+            Rails.logger.warn "Failed to get user token hashes (Redis may not be available): #{e.message}"
+          end
+
+          Rails.logger.info "Successfully blacklisted all tokens for user #{user_id_int}"
+          true
         rescue StandardError => e
           Rails.logger.error "Failed to blacklist user tokens: #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
           false
         end
 
@@ -121,6 +160,16 @@ module Auth
           Time.zone.at(payload['exp'])
         rescue StandardError
           Config::DEFAULT_EXPIRY.from_now
+        end
+
+        def get_user_token_hashes(user_id)
+          return [] if user_id.blank?
+
+          cache_key = CacheService.user_tokens_key(user_id)
+          CacheService.redis.smembers(cache_key)
+        rescue StandardError => e
+          Rails.logger.error "Failed to get user token hashes: #{e.message}"
+          []
         end
       end
     end

@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 module Api
   module V1
-    class CartItemsController < Api::V1::BaseController
+    module Carts
+      class ItemsController < Api::V1::BaseController
       before_action :set_cart
       before_action :set_cart_item, only: %i[show update destroy]
 
@@ -95,6 +98,7 @@ module Api
 
       def session_id
         request.headers['X-Session-ID'] || session.id
+      end
       end
     end
   end

@@ -1,0 +1,406 @@
+returns:
+  get:
+    tags:
+      - Returns
+    summary: List return requests
+    description: Get all return requests for the current user
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Return requests retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: './components/schemas.yaml#/ReturnRequest'
+                message:
+                  type: string
+                  example: "Return requests retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  post:
+    tags:
+      - Returns
+    summary: Create return request
+    description: Create a new return request for an order
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - order_id
+              - reason
+              - return_items
+            properties:
+              order_id:
+                type: integer
+                example: 1
+              reason:
+                type: string
+                minLength: 10
+                maxLength: 1000
+                example: "Product does not match description"
+              return_type:
+                type: string
+                enum: [refund, exchange]
+                default: refund
+                example: "refund"
+              return_items:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - order_item_id
+                    - quantity
+                  properties:
+                    order_item_id:
+                      type: integer
+                      example: 1
+                    quantity:
+                      type: integer
+                      minimum: 1
+                      example: 1
+                    reason:
+                      type: string
+                      example: "Wrong size"
+                    condition:
+                      type: string
+                      enum: [unopened, opened, damaged, defective]
+                      default: unopened
+                      example: "unopened"
+    responses:
+      '201':
+        description: Return request created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ReturnRequest'
+                message:
+                  type: string
+                  example: "Return request created successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '422':
+        description: Unprocessable entity
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+return_by_id:
+  get:
+    tags:
+      - Returns
+    summary: Get return request
+    description: Get a specific return request by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Return request ID
+    responses:
+      '200':
+        description: Return request retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ReturnRequest'
+                message:
+                  type: string
+                  example: "Return request retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Return request not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  patch:
+    tags:
+      - Returns
+    summary: Cancel return request
+    description: Cancel a return request (only if pending or approved)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Return request ID
+    responses:
+      '200':
+        description: Return request cancelled successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ReturnRequest'
+                message:
+                  type: string
+                  example: "Return request cancelled successfully"
+      '400':
+        description: Cannot cancel this return request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Return request not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+return_approve:
+  patch:
+    tags:
+      - Returns
+    summary: Approve return request
+    description: Approve a return request (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Return request ID
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              admin_notes:
+                type: string
+                example: "Approved for refund"
+    responses:
+      '200':
+        description: Return request approved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ReturnRequest'
+                message:
+                  type: string
+                  example: "Return request approved successfully"
+      '400':
+        description: Cannot approve this return request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Return request not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+return_reject:
+  patch:
+    tags:
+      - Returns
+    summary: Reject return request
+    description: Reject a return request (Admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Return request ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - rejection_reason
+            properties:
+              rejection_reason:
+                type: string
+                minLength: 10
+                example: "Return period has expired"
+    responses:
+      '200':
+        description: Return request rejected successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ReturnRequest'
+                message:
+                  type: string
+                  example: "Return request rejected successfully"
+      '400':
+        description: Bad request or cannot reject this return request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Return request not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+return_process:
+  patch:
+    tags:
+      - Returns
+    summary: Process return request
+    description: Process an approved return request (Admin only). This will restore stock and process refund.
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Return request ID
+    responses:
+      '200':
+        description: Return processed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: './components/schemas.yaml#/ReturnRequest'
+                message:
+                  type: string
+                  example: "Return processed successfully"
+      '400':
+        description: Cannot process this return request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Return request not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+

@@ -1,0 +1,182 @@
+addresses_validate:
+  post:
+    tags:
+      - Addresses
+    summary: Validate address
+    description: Validate and normalize an address
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - address
+            properties:
+              address:
+                type: object
+                required:
+                  - street
+                  - city
+                  - country_code
+                properties:
+                  street:
+                    type: string
+                    example: "123 Main St"
+                  city:
+                    type: string
+                    example: "Los Angeles"
+                  state:
+                    type: string
+                    example: "CA"
+                  postal_code:
+                    type: string
+                    example: "90001"
+                  country_code:
+                    type: string
+                    pattern: '^[A-Z]{2}$'
+                    example: "US"
+                  country:
+                    type: string
+                    example: "United States"
+    responses:
+      '200':
+        description: Address validation result
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    valid:
+                      type: boolean
+                      example: true
+                    normalized_address:
+                      type: object
+                      properties:
+                        street:
+                          type: string
+                          example: "123 Main St"
+                        city:
+                          type: string
+                          example: "Los Angeles"
+                        state:
+                          type: string
+                          example: "CA"
+                        postal_code:
+                          type: string
+                          example: "90001"
+                        country_code:
+                          type: string
+                          example: "US"
+                        country:
+                          type: string
+                          example: "United States"
+                    errors:
+                      type: array
+                      items:
+                        type: string
+                      example: []
+                    suggestions:
+                      type: array
+                      items:
+                        type: object
+                      example: []
+                message:
+                  type: string
+                  example: "Address is valid"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '422':
+        description: Unprocessable entity
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+addresses_autocomplete:
+  get:
+    tags:
+      - Addresses
+    summary: Address autocomplete
+    description: Get address suggestions based on query (requires external API integration)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: query
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Search query
+        example: "123 Main St, Los Angeles"
+      - name: country_code
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        description: Limit results to specific country
+        example: "US"
+    responses:
+      '200':
+        description: Address suggestions retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    suggestions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          street:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            type: string
+                          postal_code:
+                            type: string
+                          country_code:
+                            type: string
+                message:
+                  type: string
+                  example: "Address suggestions retrieved successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+

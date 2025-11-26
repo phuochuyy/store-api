@@ -22,6 +22,7 @@ class User < ApplicationRecord
   has_many :user_addresses, dependent: :destroy
   has_many :password_reset_tokens, dependent: :destroy
   has_many :orders, dependent: :destroy
+  has_many :return_requests, dependent: :destroy
   has_many :coupons, dependent: :nullify
   has_many :product_reviews, dependent: :destroy
   has_many :product_wishlists, dependent: :destroy

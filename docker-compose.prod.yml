@@ -1,0 +1,85 @@
+# Docker Compose for Production
+# Full stack deployment with Rails app, DB, and Redis
+
+services:
+  db:
+    image: postgres:15
+    container_name: store_api_db_prod
+    restart: always
+    environment:
+      POSTGRES_DB: store_api_production
+      POSTGRES_USER: ${DATABASE_USER:-store_api}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-store_api} -d store_api_production"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - store_api_prod_network
+    # No ports exposed in production for security
+
+  redis:
+    image: redis:7-alpine
+    container_name: store_api_redis_prod
+    restart: always
+    volumes:
+      - redis_prod_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - store_api_prod_network
+    # No ports exposed in production for security
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: store_api_web_prod
+    restart: always
+    ports:
+      - "${RAILS_PORT:-3000}:3000"
+    environment:
+      - RAILS_ENV=production
+      - DATABASE_HOST=db
+      - DATABASE_USERNAME=${DATABASE_USER:-store_api}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=store_api_production
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+    volumes:
+      - ./storage:/rails/storage
+      - ./tmp:/rails/tmp
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint: ./bin/docker-entrypoint
+    command: ./bin/rails server -b 0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - store_api_prod_network
+
+volumes:
+  postgres_prod_data:
+    driver: local
+  redis_prod_data:
+    driver: local
+
+networks:
+  store_api_prod_network:
+    driver: bridge
+

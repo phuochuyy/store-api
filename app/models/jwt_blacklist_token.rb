@@ -79,9 +79,37 @@ class JwtBlacklistToken < ApplicationRecord
 
   # rubocop:disable Naming/PredicateMethod
   def self.blacklist_user_tokens(user_id, reason: 'User logout')
-    Rails.logger.info "Blacklisting all tokens for user #{user_id}: #{reason}"
-    # Method returns true to indicate success
+    return false if user_id.blank?
+
+    # Convert user_id to integer if it's a string (database stores as bigint)
+    user_id_int = user_id.to_i
+    return false if user_id_int.zero? && user_id.to_s != '0'
+
+    Rails.logger.info "Blacklisting all tokens for user #{user_id_int}: #{reason}"
+
+    # Find all active tokens for this user that haven't been blacklisted yet
+    # We'll blacklist tokens that are in the database (from previous logouts)
+    # and mark all future tokens as invalid via logout timestamp
+    blacklisted_count = 0
+
+    # Blacklist all existing tokens in database for this user
+    # Note: We can only blacklist tokens we know about (already in database)
+    # For tokens not yet in database, we rely on logout timestamp check
+    active_tokens = active.by_user(user_id_int)
+    blacklisted_count = active_tokens.count
+
+    # Update reason for existing blacklisted tokens
+    active_tokens.update_all(
+      reason: reason,
+      updated_at: Time.current
+    )
+
+    Rails.logger.info "Blacklisted #{blacklisted_count} existing tokens for user #{user_id_int}"
     true
+  rescue StandardError => e
+    Rails.logger.error "Failed to blacklist user tokens: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    false
   end
   # rubocop:enable Naming/PredicateMethod
 

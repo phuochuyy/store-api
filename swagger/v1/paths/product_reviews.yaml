@@ -1,0 +1,331 @@
+product_reviews:
+  get:
+    tags:
+      - Product Reviews
+    summary: List all product reviews
+    description: Get all approved product reviews (standalone endpoint, not nested under products)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+      - name: product_id
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: Filter by product ID
+      - name: rating
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5
+        description: Filter by rating
+    responses:
+      '200':
+        description: Reviews retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    reviews:
+                      type: array
+                      items:
+                        $ref: './components/schemas.yaml#/ProductReview'
+                    pagination:
+                      $ref: './components/schemas.yaml#/Pagination'
+                message:
+                  type: string
+                  example: "Reviews retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+product_review_by_id:
+  get:
+    tags:
+      - Product Reviews
+    summary: Get product review
+    description: Get a specific review by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Review ID
+    responses:
+      '200':
+        description: Review retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    review:
+                      $ref: './components/schemas.yaml#/ProductReview'
+                message:
+                  type: string
+                  example: "Review retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Review not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  patch:
+    tags:
+      - Product Reviews
+    summary: Update product review
+    description: Update a review (only own reviews)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Review ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              review:
+                type: object
+                properties:
+                  rating:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                  title:
+                    type: string
+                  content:
+                    type: string
+    responses:
+      '200':
+        description: Review updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    review:
+                      $ref: './components/schemas.yaml#/ProductReview'
+                message:
+                  type: string
+                  example: "Review updated successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (can only update own reviews)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Review not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  delete:
+    tags:
+      - Product Reviews
+    summary: Delete product review
+    description: Delete a review (only own reviews)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Review ID
+    responses:
+      '200':
+        description: Review deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  nullable: true
+                message:
+                  type: string
+                  example: "Review deleted successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (can only delete own reviews)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Review not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+product_review_helpful:
+  post:
+    tags:
+      - Product Reviews
+    summary: Mark review as helpful
+    description: Mark a review as helpful
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Review ID
+    responses:
+      '200':
+        description: Review marked as helpful
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    review:
+                      $ref: './components/schemas.yaml#/ProductReview'
+                message:
+                  type: string
+                  example: "Review marked as helpful"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Review not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+  delete:
+    tags:
+      - Product Reviews
+    summary: Unmark review as helpful
+    description: Unmark a review as helpful
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Review ID
+    responses:
+      '200':
+        description: Review unmarked as helpful
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    review:
+                      $ref: './components/schemas.yaml#/ProductReview'
+                message:
+                  type: string
+                  example: "Review unmarked as helpful"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '404':
+        description: Review not found
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+

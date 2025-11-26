@@ -1,0 +1,61 @@
+# Docker Compose Commands for Development and Production
+
+.PHONY: help docker-dev-up docker-dev-down docker-dev-restart docker-dev-logs docker-dev-shell-db docker-dev-shell-redis
+.PHONY: docker-prod-up docker-prod-down docker-prod-restart docker-prod-logs docker-prod-build
+
+help:
+	@echo "Docker Compose Commands:"
+	@echo "  make docker-dev-up          - Start development containers (db, redis)"
+	@echo "  make docker-dev-down        - Stop development containers"
+	@echo "  make docker-dev-restart     - Restart development containers"
+	@echo "  make docker-dev-logs        - View development container logs"
+	@echo "  make docker-dev-shell-db    - Open PostgreSQL shell"
+	@echo "  make docker-dev-shell-redis - Open Redis shell"
+	@echo ""
+	@echo "  make docker-prod-up          - Start production containers"
+	@echo "  make docker-prod-down       - Stop production containers"
+	@echo "  make docker-prod-restart    - Restart production containers"
+	@echo "  make docker-prod-build      - Build production image"
+	@echo "  make docker-prod-logs       - View production container logs"
+
+# Development Commands
+docker-dev-up:
+	docker compose up -d
+
+docker-dev-down:
+	docker compose down
+
+docker-dev-restart:
+	docker compose restart
+
+docker-dev-logs:
+	docker compose logs -f
+
+docker-dev-shell-db:
+	docker compose exec db psql -U store_api -d store_api_development
+
+docker-dev-shell-redis:
+	docker compose exec redis redis-cli
+
+docker-dev-clean:
+	docker compose down -v
+
+# Production Commands
+docker-prod-up:
+	docker compose -f docker-compose.prod.yml up -d
+
+docker-prod-down:
+	docker compose -f docker-compose.prod.yml down
+
+docker-prod-restart:
+	docker compose -f docker-compose.prod.yml restart
+
+docker-prod-build:
+	docker compose -f docker-compose.prod.yml build
+
+docker-prod-logs:
+	docker compose -f docker-compose.prod.yml logs -f
+
+docker-prod-clean:
+	docker compose -f docker-compose.prod.yml down -v
+

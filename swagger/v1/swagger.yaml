@@ -44,6 +44,24 @@ tags:
   description: Payment processing
 - name: Statistics
   description: System statistics and analytics
+- name: Product Reviews
+  description: Product review management
+- name: Wishlists
+  description: Product wishlist management
+- name: Product Comparisons
+  description: Product comparison management
+- name: User Profile
+  description: User profile management
+- name: User Addresses
+  description: User address management
+- name: Shipping
+  description: Shipping methods and cost calculation
+- name: Tax
+  description: Tax calculation and rates
+- name: Returns
+  description: Return and exchange management
+- name: Addresses
+  description: Address validation and autocomplete
 paths:
   "/api/v1/health":
     "$ref": "./paths/health.yaml#/health"
@@ -163,6 +181,105 @@ paths:
     "$ref": "./paths/statistics.yaml#/statistics/inventory"
   "/api/v1/statistics/sales":
     "$ref": "./paths/statistics.yaml#/statistics/sales"
+  
+  # ============================================================================
+  # Product Variants
+  # ============================================================================
+  "/api/v1/products/{product_id}/variants":
+    "$ref": "./paths/product_variants.yaml#/product_variants"
+  "/api/v1/products/{product_id}/variants/{id}":
+    "$ref": "./paths/product_variants.yaml#/product_variant_by_id"
+  
+  # ============================================================================
+  # Shipping
+  # ============================================================================
+  "/api/v1/shipping/methods":
+    "$ref": "./paths/shipping.yaml#/shipping_methods"
+  "/api/v1/shipping/calculate":
+    "$ref": "./paths/shipping.yaml#/shipping_calculate"
+  "/api/v1/shipping/zones":
+    "$ref": "./paths/shipping.yaml#/shipping_zones"
+  
+  # ============================================================================
+  # Tax
+  # ============================================================================
+  "/api/v1/tax/calculate":
+    "$ref": "./paths/tax.yaml#/tax_calculate"
+  "/api/v1/tax/rates":
+    "$ref": "./paths/tax.yaml#/tax_rates"
+  
+  # ============================================================================
+  # Returns
+  # ============================================================================
+  "/api/v1/return_requests":
+    "$ref": "./paths/returns.yaml#/returns"
+  "/api/v1/return_requests/{id}":
+    "$ref": "./paths/returns.yaml#/return_by_id"
+  "/api/v1/return_requests/{id}/approve":
+    "$ref": "./paths/returns.yaml#/return_approve"
+  "/api/v1/return_requests/{id}/reject":
+    "$ref": "./paths/returns.yaml#/return_reject"
+  "/api/v1/return_requests/{id}/process":
+    "$ref": "./paths/returns.yaml#/return_process"
+  
+  # ============================================================================
+  # Addresses
+  # ============================================================================
+  "/api/v1/addresses/validate":
+    "$ref": "./paths/addresses.yaml#/addresses_validate"
+  "/api/v1/addresses/autocomplete":
+    "$ref": "./paths/addresses.yaml#/addresses_autocomplete"
+  
+  # ============================================================================
+  # Product Reviews (Standalone)
+  # ============================================================================
+  "/api/v1/products/reviews":
+    "$ref": "./paths/product_reviews.yaml#/product_reviews"
+  "/api/v1/products/reviews/{id}":
+    "$ref": "./paths/product_reviews.yaml#/product_review_by_id"
+  "/api/v1/products/reviews/{id}/helpful":
+    "$ref": "./paths/product_reviews.yaml#/product_review_helpful"
+  
+  # ============================================================================
+  # Product Wishlists
+  # ============================================================================
+  "/api/v1/products/wishlists":
+    "$ref": "./paths/wishlists.yaml#/wishlists"
+  "/api/v1/products/wishlists/{id}":
+    "$ref": "./paths/wishlists.yaml#/wishlist_by_id"
+  "/api/v1/products/wishlists/my_wishlist":
+    "$ref": "./paths/wishlists.yaml#/wishlists_my_wishlist"
+  
+  # ============================================================================
+  # Product Comparisons
+  # ============================================================================
+  "/api/v1/products/comparisons":
+    "$ref": "./paths/product_comparisons.yaml#/product_comparisons"
+  "/api/v1/products/comparisons/{id}":
+    "$ref": "./paths/product_comparisons.yaml#/product_comparison_by_id"
+  "/api/v1/products/comparisons/my_comparisons":
+    "$ref": "./paths/product_comparisons.yaml#/product_comparisons_my_comparisons"
+  
+  # ============================================================================
+  # User Profile
+  # ============================================================================
+  "/api/v1/users/profile":
+    "$ref": "./paths/users_profile.yaml#/users_profile"
+  "/api/v1/users/profile/avatar":
+    "$ref": "./paths/users_profile.yaml#/users_profile_avatar"
+  
+  # ============================================================================
+  # User Addresses
+  # ============================================================================
+  "/api/v1/users/addresses":
+    "$ref": "./paths/users_addresses.yaml#/users_addresses"
+  "/api/v1/users/addresses/{id}":
+    "$ref": "./paths/users_addresses.yaml#/users_address_by_id"
+  "/api/v1/users/addresses/{id}/set_default":
+    "$ref": "./paths/users_addresses.yaml#/users_address_set_default"
+  "/api/v1/users/addresses/default":
+    "$ref": "./paths/users_addresses.yaml#/users_address_default"
+  
 components:
   securitySchemes:
     bearerAuth:

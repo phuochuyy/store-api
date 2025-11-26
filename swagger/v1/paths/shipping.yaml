@@ -1,0 +1,171 @@
+shipping_methods:
+  get:
+    tags:
+      - Shipping
+    summary: Get shipping methods
+    description: Get all active shipping methods
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Shipping methods retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: './components/schemas.yaml#/ShippingMethod'
+                message:
+                  type: string
+                  example: "Shipping methods retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+shipping_calculate:
+  get:
+    tags:
+      - Shipping
+    summary: Calculate shipping cost
+    description: Calculate shipping cost for cart items based on destination
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: shipping_method_id
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: Shipping method ID
+      - name: country_code
+        in: query
+        required: true
+        schema:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        description: Country code (ISO 3166-1 alpha-2)
+        example: "US"
+      - name: region
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Region/State code
+        example: "CA"
+      - name: address
+        in: query
+        required: false
+        schema:
+          type: object
+        description: Full address object (alternative to separate params)
+    responses:
+      '200':
+        description: Shipping cost calculated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    shipping_cost:
+                      type: number
+                      format: decimal
+                      example: 10.50
+                    base_cost:
+                      type: number
+                      format: decimal
+                      example: 5.00
+                    free_shipping:
+                      type: boolean
+                      example: false
+                    shipping_method:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "Standard Shipping"
+                        estimated_days:
+                          type: integer
+                          example: 3
+                    weight:
+                      type: number
+                      format: decimal
+                      example: 2.5
+                message:
+                  type: string
+                  example: "Shipping cost calculated successfully"
+      '400':
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '422':
+        description: Unprocessable entity
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+
+shipping_zones:
+  get:
+    tags:
+      - Shipping
+    summary: Get shipping zones
+    description: Get all shipping zones (Admin only)
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Shipping zones retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: './components/schemas.yaml#/ShippingZone'
+                message:
+                  type: string
+                  example: "Shipping zones retrieved successfully"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden (Admin only)
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/ErrorResponse'
+

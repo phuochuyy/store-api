@@ -16,10 +16,13 @@
 class Order < ApplicationRecord
   belongs_to :user, optional: true
   belongs_to :discount, optional: true
+  belongs_to :shipping_method, optional: true
+  belongs_to :tax_rate, optional: true
   has_many :order_items, dependent: :destroy
   has_many :products, through: :order_items
   has_many :payments, dependent: :destroy
   has_many :coupons, dependent: :nullify
+  has_many :return_requests, dependent: :destroy
 
   validates :customer_name, presence: true
   validates :customer_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
@@ -51,8 +54,16 @@ class Order < ApplicationRecord
 
   def update_total_amount
     subtotal = order_items.sum(&:total_price)
-    final_total = subtotal - (discount_amount || 0)
-    update!(total_amount: final_total, discount_amount: discount_amount || 0)
+    discount = discount_amount || 0
+    shipping = shipping_cost || 0
+    tax = tax_amount || 0
+    final_total = subtotal - discount + shipping + tax
+    update!(
+      total_amount: final_total,
+      discount_amount: discount,
+      shipping_cost: shipping,
+      tax_amount: tax
+    )
   end
 
   def subtotal_amount
@@ -60,7 +71,7 @@ class Order < ApplicationRecord
   end
 
   def final_amount
-    subtotal_amount - (discount_amount || 0)
+    subtotal_amount - (discount_amount || 0) + (shipping_cost || 0) + (tax_amount || 0)
   end
 
   def discount?
@@ -213,6 +224,16 @@ class Order < ApplicationRecord
 
   def can_be_refunded?
     %w[paid].include?(status) && successful_payments.any?
+  end
+
+  def can_be_returned?
+    # Order can be returned if delivered and within return period (typically 30 days)
+    return false unless delivered?
+    return false if delivered_at.nil?
+
+    # Check if within return period (30 days)
+    return_period = 30.days
+    delivered_at + return_period >= Time.current
   end
 
   def payment_methods_used

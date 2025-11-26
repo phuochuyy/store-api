@@ -1,52 +1,52 @@
-# Docker ignore file
-# Files and directories to exclude from Docker build context
-
 # Git
 .git
 .gitignore
+.gitattributes
 
 # Documentation
 README.md
-DISCOUNT_SYSTEM.md
+docs/
 *.md
 
-# Development files
+# Docker
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile
+.dockerignore
+
+# Environment
 .env
 .env.*
-config/application.yml
-config/application.yml.example
+!.env.example
 
 # Logs
 log/*
-!log/.keep
-
-# Temporary files
 tmp/*
-!tmp/.keep
+*.log
+
+# Dependencies
+node_modules/
+vendor/bundle
 
 # Test files
-test/
 spec/
+test/
 coverage/
 
-# IDE files
-.vscode/
+# IDE
 .idea/
+.vscode/
 *.swp
 *.swo
+*~
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Node modules (if any)
-node_modules/
-yarn-error.log
-package-lock.json
-
-# Build artifacts
-vendor/bundle
-.bundle
-
-# Local development
-docker-compose.override.yml
+# Rails
+*.pid
+*.seed
+*.swo
+*.swp
+.sass-cache/

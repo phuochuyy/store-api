@@ -2,12 +2,24 @@
 
 module Api
   module V1
+    # rubocop:disable Metrics/ClassLength
     class StockAlertsController < Api::V1::BaseController
       before_action :set_stock_alert, only: %i[show update destroy resolve dismiss]
       before_action :admin_only!, only: %i[index show update destroy resolve dismiss bulk_operation statistics]
 
       def index
-        filters = {
+        filters = build_stock_alert_filters
+        result = fetch_stock_alerts(filters)
+
+        if result[:success]
+          render_success(result, 'Stock alerts retrieved successfully')
+        else
+          render_error(result[:error], :unprocessable_content, result[:details])
+        end
+      end
+
+      def build_stock_alert_filters
+        {
           status: params[:status],
           alert_type: params[:alert_type],
           product_id: params[:product_id],
@@ -16,18 +28,14 @@ module Api
           end_date: params[:end_date],
           severity: params[:severity]
         }
+      end
 
-        result = StockAlerts::StockAlertService.get_alerts(
+      def fetch_stock_alerts(filters)
+        StockAlerts::StockAlertService.get_alerts(
           filters: filters,
           page: params[:page] || 1,
           per_page: params[:per_page] || 20
         )
-
-        if result[:success]
-          render_success(result, 'Stock alerts retrieved successfully')
-        else
-          render_error(result[:error], :unprocessable_content, result[:details])
-        end
       end
 
       def show
@@ -227,5 +235,6 @@ module Api
         }
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end

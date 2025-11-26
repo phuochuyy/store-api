@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 module Api
   module V1
-    # rubocop:disable Metrics/ClassLength
-    # rubocop:disable Metrics/AbcSize
-    class OrdersController < Api::V1::BaseController
+    module Orders
+      # rubocop:disable Metrics/ClassLength
+      # rubocop:disable Metrics/AbcSize
+      class OrdersController < Api::V1::BaseController
       before_action :set_order, only: %i[show update destroy confirm cancel ship deliver]
       before_action :admin_only!, only: %i[index update destroy confirm cancel ship deliver]
       skip_before_action :authenticate_user!, only: [:track]
@@ -140,6 +143,22 @@ module Api
         render_success({ order: order_data }, 'Order tracking information retrieved successfully')
       end
 
+      def refund
+        result = refund_order_with_service
+
+        if result[:success]
+          render json: {
+            success: true,
+            message: 'Order refunded successfully',
+            data: {
+              order: order_serializer(@order.reload)
+            }
+          }
+        else
+          render_error(result[:error], :unprocessable_content, result[:details])
+        end
+      end
+
       private
 
       def ship_order_with_service
@@ -236,8 +255,9 @@ module Api
           render_error('Failed to remove discount', :unprocessable_content)
         end
       end
+      end
+      # rubocop:enable Metrics/ClassLength
+      # rubocop:enable Metrics/AbcSize
     end
-    # rubocop:enable Metrics/ClassLength
-    # rubocop:enable Metrics/AbcSize
   end
 end

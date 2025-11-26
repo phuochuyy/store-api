@@ -19,6 +19,7 @@
 #  updated_at       :datetime         not null
 #
 
+# rubocop:disable Metrics/ClassLength
 class StockAlert < ApplicationRecord
   # Associations
   belongs_to :product
@@ -190,26 +191,38 @@ class StockAlert < ApplicationRecord
 
   def self.check_and_create_alerts_for_product(product)
     alerts_created = []
+    stock_quantity = product.stock_quantity
 
-    # Check for out of stock
-    alerts_created << create_alert_for_product(product, 'out_of_stock', 0) if product.stock_quantity <= 0
-
-    # Check for critical stock (1-5 units)
-    if product.stock_quantity.positive? && product.stock_quantity <= 5
-      alerts_created << create_alert_for_product(product, 'critical_stock', 5)
-    end
-
-    # Check for low stock (6-10 units)
-    if product.stock_quantity > 5 && product.stock_quantity <= 10
-      alerts_created << create_alert_for_product(product, 'low_stock', 10)
-    end
-
-    # Check for reorder point (11-20 units)
-    if product.stock_quantity > 10 && product.stock_quantity <= 20
-      alerts_created << create_alert_for_product(product, 'reorder_point', 20)
-    end
+    alerts_created << check_out_of_stock(product, stock_quantity)
+    alerts_created << check_critical_stock(product, stock_quantity)
+    alerts_created << check_low_stock(product, stock_quantity)
+    alerts_created << check_reorder_point(product, stock_quantity)
 
     alerts_created.compact
+  end
+
+  def self.check_out_of_stock(product, stock_quantity)
+    return nil unless stock_quantity <= 0
+
+    create_alert_for_product(product, 'out_of_stock', 0)
+  end
+
+  def self.check_critical_stock(product, stock_quantity)
+    return nil unless stock_quantity.positive? && stock_quantity <= 5
+
+    create_alert_for_product(product, 'critical_stock', 5)
+  end
+
+  def self.check_low_stock(product, stock_quantity)
+    return nil unless stock_quantity > 5 && stock_quantity <= 10
+
+    create_alert_for_product(product, 'low_stock', 10)
+  end
+
+  def self.check_reorder_point(product, stock_quantity)
+    return nil unless stock_quantity > 10 && stock_quantity <= 20
+
+    create_alert_for_product(product, 'reorder_point', 20)
   end
 
   def self.resolve_alerts_for_product(product)
@@ -254,3 +267,4 @@ class StockAlert < ApplicationRecord
 
   private_class_method :check_and_create_alerts_for_product, :resolve_alerts_for_product
 end
+# rubocop:enable Metrics/ClassLength

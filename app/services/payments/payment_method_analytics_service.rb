@@ -33,21 +33,28 @@ module Payments
         start_date = calculate_start_date(period)
         payment_methods = PaymentMethod.active.includes(:payments)
 
-        performance_data = payment_methods.map do |pm|
-          payments = pm.payments.where(created_at: start_date..)
-          {
-            payment_method_id: pm.id,
-            name: pm.name,
-            gateway_type: pm.gateway_type,
-            total_transactions: payments.count,
-            successful_transactions: payments.successful.count,
-            total_amount: payments.successful.sum(:amount),
-            success_rate: calculate_success_rate(payments),
-            average_amount: calculate_average_amount(payments.successful)
-          }
-        end
-
+        performance_data = build_performance_data(payment_methods, start_date)
         performance_data.sort_by { |data| -data[:total_amount] }
+      end
+
+      def build_performance_data(payment_methods, start_date)
+        payment_methods.map do |pm|
+          payments = pm.payments.where(created_at: start_date..)
+          build_payment_method_performance(pm, payments)
+        end
+      end
+
+      def build_payment_method_performance(payment_method, payments)
+        {
+          payment_method_id: payment_method.id,
+          name: payment_method.name,
+          gateway_type: payment_method.gateway_type,
+          total_transactions: payments.count,
+          successful_transactions: payments.successful.count,
+          total_amount: payments.successful.sum(:amount),
+          success_rate: calculate_success_rate(payments),
+          average_amount: calculate_average_amount(payments.successful)
+        }
       end
 
       # @param payment_method [PaymentMethod] Payment method to analyze
