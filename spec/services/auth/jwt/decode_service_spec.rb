@@ -70,6 +70,53 @@ RSpec.describe Auth::Jwt::DecodeService, type: :service do
         result = described_class.decode(invalid_algo_token)
         expect(result).to be_nil
       end
+
+      it 'returns nil for token issued before user logout' do
+        # Create token issued 1 hour ago
+        old_payload = {
+          user_id: user.id,
+          email: user.email,
+          role: user.role,
+          iat: 1.hour.ago.to_i,
+          exp: 1.hour.from_now.to_i
+        }
+        old_token = JWT.encode(old_payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
+
+        # Set logout timestamp to 30 minutes ago (after token was issued)
+        logout_time = 30.minutes.ago
+        Auth::Jwt::CacheService.set_user_logout_timestamp(user.id)
+        # Manually set the timestamp to 30 minutes ago for testing
+        timestamp_key = Auth::Jwt::CacheService.user_logout_timestamp_key(user.id)
+        Auth::Jwt::CacheService.redis.setex(timestamp_key, 7.days.to_i, logout_time.to_i.to_s)
+
+        result = described_class.decode(old_token)
+        expect(result).to be_nil
+      end
+
+      it 'returns payload for token issued after user logout' do
+        # Set logout timestamp first
+        logout_time = 1.hour.ago
+        begin
+          timestamp_key = "jwt:auth:logout_timestamp:#{user.id}"
+          Auth::Jwt::CacheService.redis.setex(timestamp_key, 7.days.to_i, logout_time.to_i.to_s)
+        rescue StandardError
+          skip 'Redis not available for logout timestamp test'
+        end
+
+        # Create token issued after logout
+        new_payload = {
+          user_id: user.id,
+          email: user.email,
+          role: user.role,
+          iat: 30.minutes.ago.to_i,
+          exp: 1.hour.from_now.to_i
+        }
+        new_token = JWT.encode(new_payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
+
+        result = described_class.decode(new_token)
+        expect(result).to be_present
+        expect(result['user_id']).to eq(user.id)
+      end
     end
 
     context 'with nil or empty token' do
@@ -242,6 +289,60 @@ RSpec.describe Auth::Jwt::DecodeService, type: :service do
 
       expect(result[:valid]).to be false
       expect(result[:error]).to be_present
+    end
+
+    it 'returns invalid result for token issued before user logout' do
+      # Create token issued 1 hour ago
+      old_payload = {
+        user_id: user.id,
+        email: user.email,
+        role: user.role,
+        iat: 1.hour.ago.to_i,
+        exp: 1.hour.from_now.to_i
+      }
+      old_token = JWT.encode(old_payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
+
+      # Set logout timestamp to 30 minutes ago (after token was issued)
+      logout_time = 30.minutes.ago
+      # Manually set the timestamp for testing
+      begin
+        timestamp_key = "jwt:auth:logout_timestamp:#{user.id}"
+        Auth::Jwt::CacheService.redis.setex(timestamp_key, 7.days.to_i, logout_time.to_i.to_s)
+      rescue StandardError
+        skip 'Redis not available for logout timestamp test'
+      end
+
+      result = described_class.validate_token(old_token)
+
+      expect(result[:valid]).to be false
+      expect(result[:error]).to eq('Token has been revoked (user logged out)')
+    end
+
+    it 'returns valid result for token issued after user logout' do
+      # Set logout timestamp first
+      logout_time = 1.hour.ago
+      # Manually set the timestamp for testing
+      begin
+        timestamp_key = "jwt:auth:logout_timestamp:#{user.id}"
+        Auth::Jwt::CacheService.redis.setex(timestamp_key, 7.days.to_i, logout_time.to_i.to_s)
+      rescue StandardError
+        skip 'Redis not available for logout timestamp test'
+      end
+
+      # Create token issued after logout
+      new_payload = {
+        user_id: user.id,
+        email: user.email,
+        role: user.role,
+        iat: 30.minutes.ago.to_i,
+        exp: 1.hour.from_now.to_i
+      }
+      new_token = JWT.encode(new_payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
+
+      result = described_class.validate_token(new_token)
+
+      expect(result[:valid]).to be true
+      expect(result[:user]).to eq(user)
     end
   end
 

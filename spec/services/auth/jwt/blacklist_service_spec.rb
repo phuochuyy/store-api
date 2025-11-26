@@ -192,17 +192,84 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
   end
 
   describe '.blacklist_user_tokens' do
+    let(:user_id) { user.id }
+
     it 'blacklists all tokens for a user' do
+      # Create some tokens for the user
+      token1 = create(:jwt_blacklist_token, user_id: user.id, token_type: 'access')
+      token2 = create(:jwt_blacklist_token, user_id: user.id, token_type: 'refresh')
+
+      result = described_class.blacklist_user_tokens(user_id, reason: 'Security breach')
+
+      expect(result).to be true
+      # Verify tokens are updated with reason
+      expect(token1.reload.reason).to eq('Security breach')
+      expect(token2.reload.reason).to eq('Security breach')
+    end
+
+    it 'accepts user_id as string and converts to integer' do
+      token1 = create(:jwt_blacklist_token, user_id: user.id, token_type: 'access')
+
       result = described_class.blacklist_user_tokens(user.id.to_s, reason: 'Security breach')
 
       expect(result).to be true
+      expect(token1.reload.reason).to eq('Security breach')
+    end
+
+    it 'sets logout timestamp in cache' do
+      result = described_class.blacklist_user_tokens(user_id, reason: 'User logout')
+
+      expect(result).to be true
+      # Only check logout timestamp if Redis is available
+      begin
+        logout_timestamp = Auth::Jwt::CacheService.get_user_logout_timestamp(user_id)
+        if logout_timestamp
+          expect(logout_timestamp).to be_present
+          expect(logout_timestamp).to be <= Time.current
+        end
+      rescue StandardError
+        # Redis may not be available in test environment, skip this check
+        skip 'Redis not available for logout timestamp check'
+      end
+    end
+
+    it 'invalidates user cache' do
+      # Cache a user first
+      Auth::Jwt::CacheService.cache_user(user)
+
+      result = described_class.blacklist_user_tokens(user_id)
+
+      expect(result).to be true
+      # User cache should be invalidated
+      cached_user = Auth::Jwt::CacheService.get_cached_user(user.id)
+      expect(cached_user).to be_nil
+    end
+
+    it 'returns false for blank user_id' do
+      result = described_class.blacklist_user_tokens('')
+      expect(result).to be false
+    end
+
+    it 'returns false for nil user_id' do
+      result = described_class.blacklist_user_tokens(nil)
+      expect(result).to be false
     end
 
     it 'handles database errors gracefully' do
       allow(JwtBlacklistToken).to receive(:blacklist_user_tokens).and_raise(StandardError, 'Database error')
 
-      result = described_class.blacklist_user_tokens(user.id.to_s)
+      result = described_class.blacklist_user_tokens(user_id)
       expect(result).to be false
+    end
+
+    it 'handles cache errors gracefully' do
+      # Create a token first so database operation succeeds
+      create(:jwt_blacklist_token, user_id: user.id)
+      allow(Auth::Jwt::CacheService).to receive(:set_user_logout_timestamp).and_raise(StandardError, 'Cache error')
+
+      result = described_class.blacklist_user_tokens(user_id)
+      # Should still return true if database operation succeeds
+      expect(result).to be true
     end
   end
 

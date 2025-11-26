@@ -4,6 +4,10 @@
 # or operating system, you probably want to add a global ignore instead:
 #   git config --global core.excludesfile '~/.gitignore_global'
 
+# ============================================================================
+# Rails Defaults
+# ============================================================================
+
 # Ignore bundler config.
 /.bundle
 
@@ -35,60 +39,272 @@
 # Ignore application configuration
 /config/application.yml
 
-# Ignore environment variables
+# ============================================================================
+# Environment Variables
+# ============================================================================
+
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
 
-# Ignore IDE files
+# ============================================================================
+# Documentation Files (except root README.md)
+# ============================================================================
+
+# Ignore all .md files
+*.md
+
+# But keep README.md in root directory
+!/README.md
+
+# Ignore documentation folders
+/docs/
+/swagger/v1/MISSING_APIS.md
+/spec/README.md
+/swagger/README.md
+
+# ============================================================================
+# IDE and Editor Files
+# ============================================================================
+
+# VSCode
 .vscode/
+*.code-workspace
+
+# IntelliJ IDEA / RubyMine
 .idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
 *.swp
 *.swo
 *~
+*.swn
+*.swm
+Session.vim
+.netrwhist
 
-# Ignore OS generated files
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# RubyMine
+.idea/
+
+# ============================================================================
+# OS Generated Files
+# ============================================================================
+
+# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
+.AppleDouble
+.LSOverride
+Icon
 Thumbs.db
 
-# Ignore coverage reports
-/coverage/
+# Windows
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
 
-# Ignore node modules if any
-node_modules/
+# Linux
+.directory
+.Trash-*
 
-# Ignore yarn files
-yarn-error.log
-yarn-debug.log*
-.yarn-integrity
-
-# Ignore package-lock.json
-package-lock.json
-
-# Ignore backup files
-*.sql
-backup_*.sql
+# ============================================================================
+# Ruby / Rails Specific
+# ============================================================================
 
 # Ruby LSP files
 .ruby-lsp/
 .ruby-lsp.yml
 
+# RVM / rbenv
+.rvmrc
+.ruby-version
+.ruby-gemset
+.rbenv-version
+
+# Bundler
+vendor/bundle/
+vendor/cache/
+.bundle/
+
+# Coverage reports
+/coverage/
+/.simplecov
+coverage/
+*.coverage
+
+# RSpec
+.rspec_status
+spec/examples.txt
+
+# ============================================================================
+# Node.js / JavaScript (if using)
+# ============================================================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn-integrity
+package-lock.json
+yarn.lock
+.pnp/
+.pnp.js
+
+# ============================================================================
+# Database Files
+# ============================================================================
+
+# SQLite
+*.sqlite3
+*.sqlite3-journal
+*.db
+
+# PostgreSQL
+*.pgsql
+*.sql
+backup_*.sql
+*.dump
+
+# MySQL
+*.sql.gz
+*.sql.bz2
+
+# ============================================================================
+# Docker
+# ============================================================================
+
 # Local development overrides
 docker-compose.override.yml
+.docker/
 
-# Development documentation (keep local only)
+# ============================================================================
+# Development and Testing
+# ============================================================================
+
+# Test files (keep structure, ignore generated)
+/test/tmp/
+/test/fixtures/files/
+
+# Development scripts
 DEVELOPMENT_COMMANDS.md
-docs/
+LOCAL_SETUP.md
 
-# Keep Makefile for development convenience
-# Makefile
+# ============================================================================
+# Test Files - Keep Important Tests on GitHub, Others Local Only
+# ============================================================================
 
-my_cv.tex
-MISSING_TESTS.md
+# Ignore all test files by default
+spec/**/*_spec.rb
+
+# But keep important test files on GitHub
+!spec/controllers/api/v1/auth_controller_spec.rb
+!spec/controllers/concerns/api/authentication_spec.rb
+!spec/controllers/concerns/api/authorization_spec.rb
+!spec/controllers/api/v1/orders_controller_spec.rb
+!spec/controllers/api/v1/payments_controller_spec.rb
+!spec/models/user_spec.rb
+!spec/models/order_spec.rb
+!spec/models/product_spec.rb
+!spec/services/auth/auth_service_spec.rb
+!spec/services/auth/jwt/blacklist_service_spec.rb
+!spec/services/auth/jwt/cache_service_spec.rb
+!spec/services/auth/jwt/decode_service_spec.rb
+!spec/services/auth/jwt/encode_service_spec.rb
+!spec/services/auth/token_validation_service_spec.rb
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.save
+
+# ============================================================================
+# Build and Cache Files
+# ============================================================================
+
+# Rails cache
+tmp/cache/
+tmp/cache/assets/
+.sass-cache/
+.byebug_history
+
+# Asset compilation
+/public/assets/
+/public/packs/
+/public/packs-test/
+
+# ============================================================================
+# Security and Secrets
+# ============================================================================
+
+# Secret files
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.yml
+config/secrets.yml
+
+# Credentials
+/config/credentials/*.key
+/config/credentials/*.yml
+
+# ============================================================================
+# Miscellaneous
+# ============================================================================
+
+# Letter opener (email preview)
+/tmp/letter_opener/
+
+# Pid files
+*.pid
+*.pid.lock
+
+# Seed files (except main)
+/db/seeds/*.rb
+!/db/seeds.rb
+
+# Local configuration
+config/local_env.yml
+config/local_*.yml
+
+# ============================================================================
+# Keep Important Files
+# ============================================================================
+
+# Keep example files
+!.env.example
+!config/application.yml.example
+!config/database.yml.example
+
+# Keep keep files
+!.keep
+!.gitkeep

@@ -9,10 +9,13 @@ RSpec.describe Order, type: :model do
   describe 'associations' do
     it { should belong_to(:user).optional }
     it { should belong_to(:discount).optional }
+    it { should belong_to(:shipping_method).optional }
+    it { should belong_to(:tax_rate).optional }
     it { should have_many(:order_items).dependent(:destroy) }
     it { should have_many(:products).through(:order_items) }
     it { should have_many(:payments).dependent(:destroy) }
     it { should have_many(:coupons).dependent(:nullify) }
+    it { should have_many(:return_requests).dependent(:destroy) }
   end
 
   describe 'validations' do
@@ -76,6 +79,40 @@ RSpec.describe Order, type: :model do
       order.update_total_amount
       expect(order.reload.total_amount.to_f).to eq(90.00)
     end
+
+    it 'includes shipping cost in total amount calculation' do
+      shipping_method = create(:shipping_method, base_cost: 10.00, handling_fee: 2.00)
+      order.update!(shipping_method: shipping_method, shipping_cost: 12.00)
+      item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
+      order.update_total_amount
+      expect(order.total_amount).to eq(112.00)
+    end
+
+    it 'includes tax amount in total amount calculation' do
+      tax_rate = create(:tax_rate, tax_rate: 8.5)
+      order.update!(tax_rate: tax_rate, tax_amount: 8.50)
+      item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
+      order.update_total_amount
+      expect(order.total_amount).to eq(108.50)
+    end
+
+    it 'includes discount, shipping, and tax in total amount calculation' do
+      discount = create(:discount, code: 'TEST10', discount_type: 'percentage', discount_value: 10)
+      shipping_method = create(:shipping_method, base_cost: 10.00, handling_fee: 2.00)
+      tax_rate = create(:tax_rate, tax_rate: 8.5)
+      order.update!(
+        discount: discount,
+        discount_code: discount.code,
+        shipping_method: shipping_method,
+        shipping_cost: 12.00,
+        tax_rate: tax_rate,
+        tax_amount: 8.50
+      )
+      item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
+      order.update_total_amount
+      # 100 - 10 (discount) + 12 (shipping) + 8.50 (tax) = 110.50
+      expect(order.reload.total_amount.to_f).to eq(110.50)
+    end
   end
 
   describe '#subtotal_amount' do
@@ -114,7 +151,7 @@ RSpec.describe Order, type: :model do
     end
   end
 
-  describe '#apply_discount' do
+  describe '#apply_discount (private method)' do
     let(:discount) { create(:discount, code: 'TEST10', discount_type: 'percentage', value: 10, minimum_amount: 0) }
     let(:order_with_items) do
       o = create(:order, user: user)
@@ -125,24 +162,24 @@ RSpec.describe Order, type: :model do
     end
 
     it 'applies discount successfully' do
-      result = order_with_items.apply_discount('TEST10')
+      result = order_with_items.send(:apply_discount, 'TEST10')
       expect(result[:success]).to be true
       expect(order_with_items.reload.discount_id).to eq(discount.id)
       expect(order_with_items.discount_code).to eq('TEST10')
     end
 
     it 'returns error for invalid discount code' do
-      result = order_with_items.apply_discount('INVALID')
+      result = order_with_items.send(:apply_discount, 'INVALID')
       expect(result[:success]).to be false
       expect(result[:error]).to eq('Invalid discount code')
     end
   end
 
-  describe '#remove_discount' do
+  describe '#remove_discount (private method)' do
     it 'removes discount from order' do
       discount = create(:discount)
       order.update!(discount: discount, discount_code: discount.code, discount_amount: 10.00)
-      result = order.remove_discount
+      result = order.send(:remove_discount)
       expect(result[:success]).to be true
       expect(order.reload.discount).to be_nil
       expect(order.discount_code).to be_nil
@@ -150,14 +187,14 @@ RSpec.describe Order, type: :model do
     end
   end
 
-  describe '#total_items' do
+  describe '#total_items (private method)' do
     it 'returns sum of order items quantities' do
       item1 = build(:order_item, order: order, product: product, quantity: 2)
       item2 = build(:order_item, order: order, product: create(:product), quantity: 3)
       order.order_items << item1
       order.order_items << item2
       order.save!
-      expect(order.total_items).to eq(5)
+      expect(order.send(:total_items)).to eq(5)
     end
   end
 
@@ -182,6 +219,30 @@ RSpec.describe Order, type: :model do
       order.save!
       expect(order.status).to eq('confirmed')
       expect(order.pending?).to be false
+    end
+  end
+
+  describe '#can_be_returned?' do
+    it 'returns false for non-delivered orders' do
+      order.update!(status: 'shipped')
+      expect(order.send(:can_be_returned?)).to be false
+    end
+
+    it 'returns false if delivered_at is nil' do
+      order.update!(status: 'delivered', delivered_at: nil)
+      expect(order.send(:can_be_returned?)).to be false
+    end
+
+    it 'returns true for delivered orders within return period' do
+      order.update!(status: 'delivered', delivered_at: 10.days.ago)
+      # Check if within 30 days return period
+      expect(order.send(:can_be_returned?)).to be true
+    end
+
+    it 'returns false for delivered orders outside return period' do
+      order.update!(status: 'delivered', delivered_at: 31.days.ago)
+      # Check if outside 30 days return period
+      expect(order.send(:can_be_returned?)).to be false
     end
   end
 end

@@ -16,6 +16,8 @@ RSpec.describe Product, type: :model do
     it { should have_many(:stock_alerts).dependent(:destroy) }
     it { should have_many(:product_reviews).dependent(:destroy) }
     it { should have_many(:product_wishlists).dependent(:destroy) }
+    it { should have_many(:product_variants).dependent(:destroy) }
+    it { should have_many(:variant_options).through(:product_variants) }
     it { should have_many(:stock_movements).dependent(:destroy) }
     it { should have_one_attached(:image) }
   end
@@ -34,6 +36,7 @@ RSpec.describe Product, type: :model do
 
     it { should validate_presence_of(:stock_quantity) }
     it { should validate_numericality_of(:stock_quantity).is_greater_than_or_equal_to(0).is_less_than(10_000) }
+    it { should validate_numericality_of(:weight).is_greater_than_or_equal_to(0).allow_nil }
 
     context 'price validation' do
       it 'rejects price less than or equal to 0' do
