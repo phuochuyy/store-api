@@ -315,10 +315,12 @@ RSpec.describe Product, type: :model do
     describe 'after_update :check_stock_alerts' do
       it 'triggers when stock_quantity changes' do
         product = create(:product, brand: brand, category: category, stock_quantity: 100)
+        allow(StockAlert).to receive(:resolve_alerts_for_product)
         allow(StockAlert).to receive(:check_and_create_alerts_for_product)
 
         product.update!(stock_quantity: 50)
 
+        expect(StockAlert).to have_received(:resolve_alerts_for_product).with(product)
         expect(StockAlert).to have_received(:check_and_create_alerts_for_product).with(product)
       end
 

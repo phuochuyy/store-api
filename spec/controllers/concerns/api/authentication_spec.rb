@@ -19,7 +19,7 @@ RSpec.describe Api::Authentication, type: :controller do
       iat: Time.current.to_i,
       exp: 1.hour.from_now.to_i
     }
-    JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+    JWT.encode(payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
   end
 
   before do
@@ -63,7 +63,7 @@ RSpec.describe Api::Authentication, type: :controller do
           iat: 2.days.ago.to_i,
           exp: 1.day.ago.to_i
         }
-        JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+        JWT.encode(payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
       end
 
       before do
@@ -121,7 +121,7 @@ RSpec.describe Api::Authentication, type: :controller do
     it 'returns the authenticated user' do
       get :test_action
       expect(response).to have_http_status(:ok)
-      expect(controller.current_user&.id).to eq(user.id)
+      expect(response.parsed_body['current_user']).to eq(user.id)
     end
   end
 

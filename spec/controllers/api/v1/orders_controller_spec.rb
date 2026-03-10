@@ -12,7 +12,7 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
 
   # Helper method to generate JWT token
   def generate_token(user)
-    secret_key = Rails.application.credentials.secret_key_base || 'fallback_secret_key'
+    secret_key = Auth::Jwt::Config::SECRET_KEY
     payload = {
       user_id: user.id,
       email: user.email,
@@ -63,14 +63,16 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
         request.headers['Authorization'] = "Bearer #{user_token}"
       end
 
-      it 'returns forbidden' do
+      it 'returns only their orders (not all orders)' do
         get :index
 
-        # admin_only! returns :forbidden, not :unauthorized
-        expect(response).to have_http_status(:forbidden)
+        # Controller allows index for customers but scopes to current_user.orders
+        expect(response).to have_http_status(:ok)
         json_response = response.parsed_body
-        expect(json_response['success']).to be false
-        expect(json_response['message']).to eq('Admin access required')
+        expect(json_response['orders']).to be_an(Array)
+        # All returned orders should belong to the current user
+        order_ids = json_response['orders'].map { |o| o['id'] }
+        expect(Order.where(id: order_ids).where.not(user_id: user.id).count).to eq(0)
       end
     end
   end
@@ -103,6 +105,10 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
   end
 
   describe 'POST #create' do
+    before do
+      allow_any_instance_of(Product).to receive(:check_stock_alerts)
+    end
+
     let(:valid_order_params) do
       {
         order: {

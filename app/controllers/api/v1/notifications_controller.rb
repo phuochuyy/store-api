@@ -3,8 +3,8 @@
 module Api
   module V1
     class NotificationsController < Api::V1::BaseController
-      before_action :set_notification, only: %i[show update destroy mark_read mark_unread]
       before_action :authenticate_user!
+      before_action :set_notification, only: %i[show update destroy mark_read mark_unread]
 
       def index
         filters = {

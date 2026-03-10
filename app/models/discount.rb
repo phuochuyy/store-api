@@ -109,6 +109,7 @@ class Discount < ApplicationRecord
   end
 
   def valid_discount_value
+    return unless value.is_a?(Numeric)
     case discount_type
     when 'percentage'
       errors.add(:value, 'must be between 0 and 100 for percentage discounts') if value > 100

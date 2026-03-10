@@ -2,7 +2,7 @@
 
 module JwtHelper
   def generate_jwt_token(user, expires_in: 1.hour)
-    secret_key = Rails.application.credentials.secret_key_base || 'fallback_secret_key'
+    secret_key = Auth::Jwt::Config::SECRET_KEY
     payload = {
       user_id: user.id,
       email: user.email,

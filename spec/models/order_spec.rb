@@ -32,11 +32,10 @@ RSpec.describe Order, type: :model do
       expect(order.errors[:customer_email]).to be_present
     end
 
-    it 'validates status inclusion' do
+    it 'rejects invalid status' do
+      expect(Order.statuses.keys).to include('pending', 'confirmed', 'cancelled')
       order = build(:order)
-      order.write_attribute(:status, 'invalid_status')
-      expect(order).not_to be_valid
-      expect(order.errors[:status]).to be_present
+      expect { order.status = 'invalid_status' }.to raise_error(ArgumentError)
     end
   end
 
@@ -96,7 +95,7 @@ RSpec.describe Order, type: :model do
     end
 
     it 'includes discount, shipping, and tax in total amount calculation' do
-      discount = create(:discount, code: 'TEST10', discount_type: 'percentage', discount_value: 10)
+      discount = create(:discount, code: 'TEST10', discount_type: 'percentage', value: 10)
       shipping_method = create(:shipping_method, base_cost: 10.00, handling_fee: 2.00)
       tax_rate = create(:tax_rate, tax_rate: 8.5)
       order.update!(
@@ -152,7 +151,7 @@ RSpec.describe Order, type: :model do
   end
 
   describe '#apply_discount (private method)' do
-    let(:discount) { create(:discount, code: 'TEST10', discount_type: 'percentage', value: 10, minimum_amount: 0) }
+    let(:discount) { create(:discount, code: 'TEST10', discount_type: 'percentage', value: 10, minimum_amount: 0, applies_to: 'all') }
     let(:order_with_items) do
       o = create(:order, user: user)
       item = build(:order_item, order: o, product: product, quantity: 2, unit_price: 100.00)
@@ -162,6 +161,7 @@ RSpec.describe Order, type: :model do
     end
 
     it 'applies discount successfully' do
+      discount # ensure discount exists and is available
       result = order_with_items.send(:apply_discount, 'TEST10')
       expect(result[:success]).to be true
       expect(order_with_items.reload.discount_id).to eq(discount.id)

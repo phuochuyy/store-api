@@ -51,7 +51,7 @@ module Api
       end
 
       def process_payment_creation(payment_method)
-        result = Payments::PaymentProcessorService.process_payment(
+        result = ::Payments::PaymentProcessorService.process_payment(
           order: @order,
           payment_method: payment_method,
           payment_data: payment_params[:payment_data] || {}
@@ -94,10 +94,17 @@ module Api
       def refund
         return render_error('Payment cannot be refunded', :unprocessable_content) unless @payment.can_be_refunded?
 
-        refund_amount = refund_params[:amount]&.to_f
+        refund_amount = refund_params[:amount].nil? ? nil : refund_params[:amount].to_f
+        if refund_amount.nil?
+          return render_error('Refund amount is required', :unprocessable_content)
+        end
+        if refund_amount <= 0
+          return render_error('Refund amount must be positive', :unprocessable_content)
+        end
+
         refund_reason = refund_params[:reason]
 
-        result = Payments::PaymentProcessorService.refund_payment(
+        result = ::Payments::PaymentProcessorService.refund_payment(
           payment: @payment,
           amount: refund_amount,
           reason: refund_reason

@@ -36,7 +36,7 @@ module Api
       def create
         attrs = order_params.to_h.symbolize_keys
         attrs[:user_id] = current_user&.id if current_user
-        result = Orders::OrderCreationService.create_order(attrs, params[:order_items])
+        result = ::Orders::OrderCreationService.create_order(attrs, params[:order_items])
 
         if result[:success]
           render json: {
@@ -69,7 +69,7 @@ module Api
       end
 
       def confirm
-        result = Orders::OrderConfirmationService.confirm_order(@order, current_user)
+        result = ::Orders::OrderConfirmationService.confirm_order(@order, current_user)
 
         if result[:success]
           render json: {
@@ -89,7 +89,7 @@ module Api
       end
 
       def cancel
-        result = Orders::OrderCancellationService.cancel_order(@order, current_user, params[:reason])
+        result = ::Orders::OrderCancellationService.cancel_order(@order, current_user, params[:reason])
 
         if result[:success]
           render json: {
@@ -183,7 +183,7 @@ module Api
       end
 
       def ship_order_with_service
-        Orders::ShippingService.ship_order(
+        ::Orders::ShippingService.ship_order(
           @order,
           current_user,
           tracking_number: params[:tracking_number],
@@ -208,7 +208,7 @@ module Api
       end
 
       def deliver_order_with_service
-        Orders::DeliveryService.deliver_order(
+        ::Orders::DeliveryService.deliver_order(
           @order,
           current_user,
           delivery_notes: params[:delivery_notes],
@@ -242,11 +242,11 @@ module Api
       end
 
       def order_serializer(order)
-        Orders::OrderSerializerService.serialize_order(order)
+        ::Orders::OrderSerializerService.serialize_order(order)
       end
 
       def order_item_serializer(item)
-        Orders::OrderSerializerService.serialize_order_item(item)
+        ::Orders::OrderSerializerService.serialize_order_item(item)
       end
       end
     end

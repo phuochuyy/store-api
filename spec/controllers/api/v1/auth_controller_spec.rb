@@ -405,7 +405,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         expect(response).to have_http_status(:unauthorized)
         expect(response.parsed_body).to include(
           'success' => false,
-          'message' => 'Token not provided'
+          'message' => 'Token missing'
         )
       end
     end
@@ -505,7 +505,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         expect(response).to have_http_status(:unauthorized)
         expect(response.parsed_body).to include(
           'success' => false,
-          'message' => 'Token not provided'
+          'message' => 'Token missing'
         )
       end
     end
@@ -1680,7 +1680,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
         expect(response).to have_http_status(:unauthorized)
         expect(response.parsed_body).to include(
           'success' => false,
-          'message' => 'Token not provided'
+          'message' => 'Token missing'
         )
       end
     end

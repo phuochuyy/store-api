@@ -8,11 +8,15 @@ RSpec.describe Api::Authorization, type: :controller do
 
     def test_authorize_action
       authorize!(:show, test_resource)
+      return if performed?
+
       render json: { success: true }
     end
 
     def test_admin_only_action
       admin_only!
+      return if performed?
+
       render json: { success: true }
     end
 
@@ -33,7 +37,7 @@ RSpec.describe Api::Authorization, type: :controller do
       iat: Time.current.to_i,
       exp: 1.hour.from_now.to_i
     }
-    JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+    JWT.encode(payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
   end
   let(:admin_token) do
     payload = {
@@ -43,7 +47,7 @@ RSpec.describe Api::Authorization, type: :controller do
       iat: Time.current.to_i,
       exp: 1.hour.from_now.to_i
     }
-    JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+    JWT.encode(payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
   end
 
   before do
@@ -72,6 +76,7 @@ RSpec.describe Api::Authorization, type: :controller do
     context 'with admin user' do
       before do
         request.headers['Authorization'] = "Bearer #{admin_token}"
+        allow(controller).to receive(:test_resource).and_return(create(:user))
       end
 
       it 'allows access for admin' do

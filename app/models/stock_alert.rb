@@ -247,7 +247,7 @@ class StockAlert < ApplicationRecord
     self.triggered_at ||= Time.current
     self.status ||= 'active'
     self.notification_sent ||= false
-    self.message ||= generate_message
+    self.message ||= generate_message if product.present?
   end
 
   def update_product_alert_status
@@ -264,5 +264,4 @@ class StockAlert < ApplicationRecord
     StockAlertNotificationJob.perform_later(self)
   end
 
-  private_class_method :check_and_create_alerts_for_product, :resolve_alerts_for_product
 end

@@ -4,10 +4,7 @@
 # See: https://github.com/sidekiq/sidekiq
 
 Sidekiq.configure_server do |config|
-  config.redis = {
-    url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0'),
-    namespace: 'store_api_sidekiq'
-  }
+  config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
 
   # Configure cron jobs
   schedule_file = Rails.root.join('config', 'schedule.yml')
@@ -17,10 +14,7 @@ Sidekiq.configure_server do |config|
 end
 
 Sidekiq.configure_client do |config|
-  config.redis = {
-    url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0'),
-    namespace: 'store_api_sidekiq'
-  }
+  config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
 end
 
 # Set Active Job adapter

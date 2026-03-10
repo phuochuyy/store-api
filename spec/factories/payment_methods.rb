@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :payment_method do
-    name { 'Credit Card' }
+    sequence(:name) { |n| "Payment Method #{n}" }
     description { 'Credit card payment method' }
     gateway_type { 'stripe' }
     is_active { true }
