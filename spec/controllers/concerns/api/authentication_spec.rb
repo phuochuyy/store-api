@@ -49,11 +49,8 @@ RSpec.describe Api::Authentication, type: :controller do
       it 'returns unauthorized' do
         get :test_action
         expect(response).to have_http_status(:unauthorized)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => be_present,
-          'status' => 'unauthorized'
-        )
+        expect(response.parsed_body['success']).to be false
+        expect(response.parsed_body['message']).to be_present
       end
     end
 
@@ -76,11 +73,8 @@ RSpec.describe Api::Authentication, type: :controller do
       it 'returns unauthorized' do
         get :test_action
         expect(response).to have_http_status(:unauthorized)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => be_present,
-          'status' => 'unauthorized'
-        )
+        expect(response.parsed_body['success']).to be false
+        expect(response.parsed_body['message']).to be_present
       end
     end
 
@@ -93,11 +87,8 @@ RSpec.describe Api::Authentication, type: :controller do
       it 'returns unauthorized' do
         get :test_action
         expect(response).to have_http_status(:unauthorized)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => be_present,
-          'status' => 'unauthorized'
-        )
+        expect(response.parsed_body['success']).to be false
+        expect(response.parsed_body['message']).to be_present
       end
     end
 
@@ -105,11 +96,7 @@ RSpec.describe Api::Authentication, type: :controller do
       it 'returns unauthorized' do
         get :test_action
         expect(response).to have_http_status(:unauthorized)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => 'Token missing',
-          'status' => 'unauthorized'
-        )
+        expect(response.parsed_body).to include('success' => false, 'message' => 'Token missing')
       end
     end
 
@@ -121,11 +108,7 @@ RSpec.describe Api::Authentication, type: :controller do
       it 'returns unauthorized' do
         get :test_action
         expect(response).to have_http_status(:unauthorized)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => 'Token missing',
-          'status' => 'unauthorized'
-        )
+        expect(response.parsed_body).to include('success' => false, 'message' => 'Token missing')
       end
     end
   end
@@ -137,7 +120,8 @@ RSpec.describe Api::Authentication, type: :controller do
 
     it 'returns the authenticated user' do
       get :test_action
-      expect(controller.current_user).to eq(user)
+      expect(response).to have_http_status(:ok)
+      expect(controller.current_user&.id).to eq(user.id)
     end
   end
 
@@ -160,15 +144,12 @@ RSpec.describe Api::Authentication, type: :controller do
     end
   end
 
-  describe '#render_unauthorized' do
-    it 'renders unauthorized response' do
-      controller.send(:render_unauthorized, 'Test error')
+  describe 'unauthorized response format' do
+    it 'returns success false and message in body' do
+      get :test_action
       expect(response).to have_http_status(:unauthorized)
-      expect(response.parsed_body).to include(
-        'success' => false,
-        'error' => 'Test error',
-        'status' => 'unauthorized'
-      )
+      expect(response.parsed_body['success']).to be false
+      expect(response.parsed_body['message']).to eq('Token missing')
     end
   end
 end

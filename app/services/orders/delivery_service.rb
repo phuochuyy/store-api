@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module Orders
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   class DeliveryService
     class << self
       # Deliver an order
@@ -102,7 +100,5 @@ module Orders
         end
       end
     end
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
   end
 end

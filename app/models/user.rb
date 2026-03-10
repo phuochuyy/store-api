@@ -1,5 +1,3 @@
-# == Schema Information
-#
 # Table name: users
 #
 #  id              :integer          not null, primary key
@@ -18,6 +16,12 @@ class User < ApplicationRecord
 
   # Associations
   has_many :carts, dependent: :destroy
+
+  # Current active cart for the user (used by Shipping, Tax controllers)
+  def cart
+    Cart.find_or_create_for_user(self)
+  end
+
   has_many :notifications, dependent: :destroy
   has_many :user_addresses, dependent: :destroy
   has_many :password_reset_tokens, dependent: :destroy
@@ -70,24 +74,29 @@ class User < ApplicationRecord
 
   # Public instance methods
 
+  # Display name: prefers full_name, then name, then the part before @ of email.
   def display_name
     full_name.presence || name.presence || email.split('@').first
   end
 
+  # Whether the user has verified their email (has email_verified_at).
   def email_verified?
     email_verified_at.present?
   end
 
+  # Mark email as verified and clear email_verification_token.
   def verify_email!
     update!(email_verified_at: Time.current, email_verification_token: nil)
   end
 
+  # Generate a new email verification token, persist to DB and return it (for use in verification link).
   def generate_email_verification_token!
     token = SecureRandom.urlsafe_base64(32)
     update!(email_verification_token: token)
     token
   end
 
+  # Full name from first_name + last_name.
   def full_name
     [first_name, last_name].compact.join(' ')
   end
@@ -101,10 +110,12 @@ class User < ApplicationRecord
     age
   end
 
+  # Whether the profile has required fields (first_name, last_name, phone).
   def profile_complete?
     first_name.present? && last_name.present? && phone.present?
   end
 
+  # Profile completion percentage based on first_name, last_name, phone, date_of_birth, gender, bio.
   def profile_completion_percentage
     fields = %w[first_name last_name phone date_of_birth gender bio]
     completed_fields = fields.count do |field|
@@ -113,7 +124,7 @@ class User < ApplicationRecord
     (completed_fields.to_f / fields.size * 100).round
   end
 
-  # Address methods
+  # Default address for the given type (shipping/billing).
   def default_address(address_type = 'shipping')
     user_addresses.find_by(address_type: address_type, is_default: true)
   end
@@ -167,15 +178,19 @@ class User < ApplicationRecord
   end
 
   # Class methods
+
+  # Authenticate user by email (case-insensitive) and password; returns user or nil.
   def self.authenticate(email, password)
     user = find_by(email: email.downcase)
     user&.authenticate(password)
   end
 
+  # Find user by email (normalized to lowercase).
   def self.find_by_email(email)
     find_by(email: email.downcase)
   end
 
+  # Find user by email verification token (used in verify_email flow).
   def self.find_by_verification_token(token)
     return nil if token.blank?
 
@@ -184,10 +199,12 @@ class User < ApplicationRecord
 
   private
 
+  # Normalize email before save: always lowercase.
   def downcase_email
     self.email = email.downcase if email.present?
   end
 
+  # Callback after_create: generate email verification token for new user.
   def generate_email_verification_token
     self.email_verification_token = SecureRandom.urlsafe_base64(32)
     update!(email_verification_token: email_verification_token)
@@ -195,9 +212,8 @@ class User < ApplicationRecord
     Rails.logger.error "Failed to generate email verification token: #{e.message}"
   end
 
+  # Callback after_commit (update/destroy): invalidate user JWT cache so tokens reflect fresh data.
   def invalidate_jwt_cache
-    # Invalidate user cache when user is updated or destroyed
-    # This ensures cached user data is refreshed
     Auth::Jwt::CacheService.invalidate_user(id) if id.present?
   rescue StandardError => e
     Rails.logger.error "Failed to invalidate JWT cache: #{e.message}"

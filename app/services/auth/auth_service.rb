@@ -1,19 +1,16 @@
 require 'digest'
 
 module Auth
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
+  # User authentication service: login, register, refresh_token, logout, get_current_user.
+  # Integrates JWT (encode, blacklist, cache) and optional email verification.
   class AuthService
     class << self
+      # Login: find user by email (case-insensitive), verify password and optional email_verified; return tokens + user.
       def login(email, password, device_id: nil, ip_address: nil, require_email_verification: false)
-        # Normalize email (case-insensitive lookup)
         normalized_email = email.to_s.strip.downcase
         return { success: false, error: 'Email is required' } if normalized_email.blank?
         return { success: false, error: 'Password is required' } if password.blank?
 
-        # Use find_by_email for case-insensitive lookup
         user = User.find_by(email: normalized_email)
 
         unless user
@@ -22,13 +19,11 @@ module Auth
           return { success: false, error: 'Invalid email or password' }
         end
 
-        # Check password
         unless user.authenticate(password)
           Rails.logger.warn "Failed login attempt for user: #{user.id} (wrong password) from IP: #{ip_address}"
           return { success: false, error: 'Invalid email or password' }
         end
 
-        # Check email verification if required
         if require_email_verification && !user.email_verified?
           Rails.logger.info "Login blocked for user: #{user.id} (email not verified)"
           return {
@@ -39,7 +34,6 @@ module Auth
           }
         end
 
-        # Log successful login
         Rails.logger.info "Successful login for user: #{user.id} (#{user.email}) from IP: #{ip_address}"
 
         tokens = generate_tokens(user, device_id: device_id, ip_address: ip_address)
@@ -53,22 +47,19 @@ module Auth
         }
       end
 
+      # Register new user from user_params; send verification email if configured; return tokens + user (+ email_verification_required if unverified).
       def register(user_params, device_id: nil, ip_address: nil)
-        # Normalize email
         user_params[:email] = user_params[:email].to_s.strip.downcase if user_params[:email].present?
 
         user = User.new(user_params)
 
         if user.save
-          # Log successful registration
           Rails.logger.info "New user registered: #{user.id} (#{user.email}) from IP: #{ip_address}"
 
-          # Send email verification (if mailer is configured)
           begin
             EmailVerificationMailer.verification_email(user).deliver_later if user.email_verification_token.present?
           rescue StandardError => e
             Rails.logger.error "Failed to send verification email: #{e.message}"
-            # Don't fail registration if email sending fails
           end
 
           tokens = generate_tokens(user, device_id: device_id, ip_address: ip_address)
@@ -83,7 +74,6 @@ module Auth
             message_detail: user.email_verified? ? nil : 'Please check your email to verify your account'
           }
         else
-          # Log failed registration attempt
           Rails.logger.warn "Registration failed for email: #{user_params[:email]} " \
                             "from IP: #{ip_address} - Errors: #{user.errors.full_messages.join(', ')}"
 
@@ -95,13 +85,12 @@ module Auth
         end
       end
 
+      # Refresh token: decode refresh_token, find user, blacklist old token (rotation), issue new tokens.
       def refresh_token(refresh_token_param, old_access_token: nil, user_id: nil, device_id: nil, ip_address: nil)
         return { success: false, error: 'Refresh token is required' } if refresh_token_param.blank?
 
-        # Try to decode as refresh token first, if that fails try as access token
         payload = Auth::Jwt::DecodeService.decode_refresh_token(refresh_token_param)
 
-        # If not a refresh token, try as access token (for backward compatibility with tests)
         payload = Auth::Jwt::DecodeService.decode(refresh_token_param) if payload.nil?
 
         return { success: false, error: 'Invalid or expired refresh token' } unless payload
@@ -109,8 +98,6 @@ module Auth
         user = User.find_by(id: payload['user_id'])
         return { success: false, error: 'User not found' } unless user
 
-        # Validate device fingerprint if present in token
-        # Note: Device validation is strict for security, but allows backward compatibility
         if payload['device_id'].present? && device_id.present? && payload['device_id'] != device_id
           Rails.logger.warn "Device mismatch for user #{user.id}: " \
                             "token has #{payload['device_id']}, request has #{device_id}"
@@ -165,6 +152,7 @@ module Auth
         }
       end
 
+      # Logout: blacklist current token and (if user_id or decoded from token) all tokens for that user.
       def logout(token = nil, user_id: nil)
         # If user_id is provided, blacklist all tokens for the user
         # This is more secure as it invalidates all sessions
@@ -216,6 +204,7 @@ module Auth
         { success: true, message: 'Logged out successfully' }
       end
 
+      # Return serialized user data for API (auth/me); returns error if user nil.
       def get_current_user(user)
         return { success: false, error: 'Not authenticated' } unless user
 
@@ -244,9 +233,5 @@ module Auth
         }
       end
     end
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Metrics/CyclomaticComplexity
-    # rubocop:enable Metrics/PerceivedComplexity
   end
 end

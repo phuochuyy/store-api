@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Payments
-  # rubocop:disable Metrics/AbcSize
   class PaymentProcessorService
     class << self
       # Process a payment for an order
@@ -157,6 +156,5 @@ module Payments
         (payments.sum(:amount) / payments.count.to_f).round(2)
       end
     end
-    # rubocop:enable Metrics/AbcSize
   end
 end

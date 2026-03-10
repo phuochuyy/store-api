@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Users
-  # rubocop:disable Metrics/AbcSize
+  # Reads user profile data: profile_data (full), public_profile_data, user_statistics, extract preferences/addresses.
   class ProfileDataService
     class << self
       # @param user [User] User to get profile for
@@ -120,6 +120,5 @@ module Users
         }
       end
     end
-    # rubocop:enable Metrics/AbcSize
   end
 end

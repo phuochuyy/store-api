@@ -34,28 +34,6 @@ module StockAlerts
         }
       end
 
-      private
-
-      def perform_alert_update(alert, params)
-        alert.update(params)
-      end
-
-      def build_update_response(alert, success)
-        if success
-          {
-            success: true,
-            alert: alert,
-            message: 'Stock alert updated successfully'
-          }
-        else
-          {
-            success: false,
-            error: 'Failed to update stock alert',
-            details: alert.errors.full_messages
-          }
-        end
-      end
-
       # @param filters [Hash] Filter parameters
       # @param page [Integer] Page number
       # @param per_page [Integer] Items per page
@@ -71,10 +49,6 @@ module StockAlerts
       end
 
       # Perform bulk operations on alerts
-      # @param alert_ids [Array<Integer>] Alert IDs to operate on
-      # @param action [String] Action to perform
-      # @param params [Hash] Additional parameters
-      # @return [Hash] Result with success status
       def bulk_operation(alert_ids, action, params = {})
         return { success: false, error: 'No alerts provided' } if alert_ids.blank?
 
@@ -98,6 +72,28 @@ module StockAlerts
           error: 'Failed to perform bulk operation',
           details: e.message
         }
+      end
+
+      private
+
+      def perform_alert_update(alert, params)
+        alert.update(params)
+      end
+
+      def build_update_response(alert, success)
+        if success
+          {
+            success: true,
+            alert: alert,
+            message: 'Stock alert updated successfully'
+          }
+        else
+          {
+            success: false,
+            error: 'Failed to update stock alert',
+            details: alert.errors.full_messages
+          }
+        end
       end
 
       def resolve_alerts(alerts, params)

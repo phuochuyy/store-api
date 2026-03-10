@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Discounts
-  # rubocop:disable Metrics/CyclomaticComplexity
   class PromotionBenefitService
     class << self
       # Apply promotion benefit to order
@@ -191,6 +190,5 @@ module Discounts
         order_items
       end
     end
-    # rubocop:enable Metrics/CyclomaticComplexity
   end
 end

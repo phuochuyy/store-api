@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Users
+  # Create/update/delete user addresses: validate params, handle is_default, build response.
   class AddressCreationService
     class << self
       # @param user [User] User to create address for

@@ -1,4 +1,3 @@
-# rubocop:disable Metrics/ClassLength
 class PromotionValidator
   include ActiveModel::Model
   include ActiveModel::Attributes
@@ -21,8 +20,8 @@ class PromotionValidator
     in: %w[bulk_pricing buy_x_get_y free_gift shipping_discount]
   }
   validates :usage_limit, numericality: { greater_than: 0 }, allow_nil: true
-  validates :priority, inclusion: { in: %w[high normal low] }
-  validates :stackable, inclusion: { in: [true, false] }
+  validates :priority, inclusion: { in: %w[high normal low] }, allow_nil: true
+  validates :stackable, inclusion: { in: [true, false] }, allow_nil: true
 
   validate :valid_date_range
   validate :valid_conditions_json
@@ -248,4 +247,3 @@ class PromotionValidator
     end
   end
 end
-# rubocop:enable Metrics/ClassLength

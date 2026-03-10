@@ -2,6 +2,8 @@
 
 # Rate limiting configuration using Rack::Attack
 # See: https://github.com/rack/rack-attack
+# Disabled in test to allow specs to run without throttling
+return if Rails.env.test?
 
 class Rack::Attack
   # Configure cache store (use Redis in production, memory in development)

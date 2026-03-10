@@ -3,7 +3,7 @@
 class StockAlertNotificationJob < ApplicationJob
   queue_as :default
 
-  # Retry failed jobs with exponential backoff
+  discard_on ActiveJob::DeserializationError
   retry_on StandardError, wait: :exponentially_longer, attempts: 3
 
   def perform(stock_alert)

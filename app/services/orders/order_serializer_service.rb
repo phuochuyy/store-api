@@ -16,14 +16,14 @@ module Orders
           status: order.status,
           tracking_number: order.tracking_number,
           carrier: order.carrier,
-          shipped_at: order.shipped_at,
-          delivered_at: order.delivered_at,
+          shipped_at: order.shipped_at&.iso8601,
+          delivered_at: order.delivered_at&.iso8601,
           delivery_notes: order.delivery_notes,
           delivery_signature: order.delivery_signature,
           shipping_status: order.shipping_status,
-          estimated_delivery_date: order.estimated_delivery_date,
-          created_at: order.created_at,
-          updated_at: order.updated_at
+          estimated_delivery_date: order.estimated_delivery_date&.iso8601,
+          created_at: order.created_at&.iso8601,
+          updated_at: order.updated_at&.iso8601
         }
       end
 

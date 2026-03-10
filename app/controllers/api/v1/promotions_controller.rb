@@ -8,13 +8,13 @@ module Api
         filters = extract_filters
         pagination = extract_pagination
 
-        result = Discounts::PromotionService.list_promotions(filters: filters, pagination: pagination)
+        result = ::Discounts::PromotionService.list_promotions(filters: filters, pagination: pagination)
 
         render_success(result, 'Promotions retrieved successfully')
       end
 
       def show
-        result = Discounts::PromotionService.find_promotion(@promotion.id)
+        result = ::Discounts::PromotionService.find_promotion(@promotion.id)
 
         if result[:error]
           render_error(result[:error], :not_found)
@@ -30,7 +30,7 @@ module Api
           return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
-        result = Discounts::PromotionService.create_promotion(promotion_params)
+        result = ::Discounts::PromotionService.create_promotion(promotion_params)
 
         if result[:success]
           render_success(result[:promotion], 'Promotion created successfully', :created)
@@ -46,7 +46,7 @@ module Api
           return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
-        result = Discounts::PromotionService.update_promotion(@promotion, promotion_params)
+        result = ::Discounts::PromotionService.update_promotion(@promotion, promotion_params)
 
         if result[:success]
           render_success(result[:promotion], 'Promotion updated successfully')
@@ -56,7 +56,7 @@ module Api
       end
 
       def destroy
-        result = Discounts::PromotionService.delete_promotion(@promotion)
+        result = ::Discounts::PromotionService.delete_promotion(@promotion)
 
         if result[:success]
           render_success(nil, 'Promotion deleted successfully')
@@ -66,7 +66,7 @@ module Api
       end
 
       def stats
-        stats = Discounts::PromotionService.get_promotion_stats(@promotion)
+        stats = ::Discounts::PromotionService.get_promotion_stats(@promotion)
         render_success(stats, 'Promotion statistics retrieved successfully')
       end
 
@@ -75,7 +75,7 @@ module Api
         return render_error('Order ID is required', :unprocessable_content) if order_id.blank?
 
         order = Order.find(order_id)
-        result = Discounts::PromotionService.get_applicable_promotions(order)
+        result = ::Discounts::PromotionService.get_applicable_promotions(order)
 
         render_success(result, 'Applicable promotions retrieved successfully')
       rescue ActiveRecord::RecordNotFound
@@ -87,7 +87,7 @@ module Api
         return render_error('Order ID is required', :unprocessable_content) if order_id.blank?
 
         order = Order.find(order_id)
-        result = Discounts::PromotionService.apply_promotion_to_order(order, @promotion.id)
+        result = ::Discounts::PromotionService.apply_promotion_to_order(order, @promotion.id)
 
         if result[:success]
           render_success(result, 'Promotion applied successfully')

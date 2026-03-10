@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Users
+  # Orchestrates user profile: get/update profile, preferences, avatar, deactivate, statistics, public profile.
   class ProfileService
     class << self
       # @param user [User] User to get profile for

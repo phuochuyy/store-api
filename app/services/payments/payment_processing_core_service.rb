@@ -14,8 +14,7 @@ module Payments
         return { success: false, error: 'Order cannot be paid' } unless order.can_be_paid?
         return { success: false, error: 'Payment method is not active' } unless payment_method.is_active?
 
-        total_amount = payment_method.total_amount_with_fees(order.total_amount)
-        payment = create_payment_record(order, payment_method, total_amount, payment_data)
+        payment = create_payment_record(order, payment_method, order.total_amount, payment_data)
         result = process_with_gateway(payment, payment_data)
         update_payment_status(payment, result)
 
@@ -52,13 +51,13 @@ module Payments
 
       private
 
-      def create_payment_record(order, payment_method, total_amount, payment_data)
+      def create_payment_record(order, payment_method, order_total_amount, payment_data)
         Payment.create!(
           order: order,
           payment_method: payment_method,
-          amount: total_amount,
+          amount: order_total_amount,
           status: 'pending',
-          gateway_transaction_id: nil,
+          transaction_id: nil,
           gateway_response: nil,
           metadata: payment_data
         )
@@ -109,7 +108,6 @@ module Payments
 
       def update_refund_status(payment, result, refund_amount, reason)
         if result[:success]
-          # Update payment status to refunded or partially_refunded
           new_status = refund_amount == payment.amount ? 'refunded' : 'partially_refunded'
           payment.update!(
             status: new_status,
@@ -126,9 +124,7 @@ module Payments
         end
       end
 
-      # Gateway-specific payment processing methods
       def process_stripe_payment(_payment, _payment_data)
-        # Mock Stripe payment processing
         {
           success: true,
           transaction_id: "stripe_#{SecureRandom.hex(8)}",
@@ -137,7 +133,6 @@ module Payments
       end
 
       def process_paypal_payment(_payment, _payment_data)
-        # Mock PayPal payment processing
         {
           success: true,
           transaction_id: "paypal_#{SecureRandom.hex(8)}",
@@ -146,7 +141,6 @@ module Payments
       end
 
       def process_square_payment(_payment, _payment_data)
-        # Mock Square payment processing
         {
           success: true,
           transaction_id: "square_#{SecureRandom.hex(8)}",
@@ -155,7 +149,6 @@ module Payments
       end
 
       def process_stripe_refund(_payment, _refund_amount, _reason)
-        # Mock Stripe refund processing
         {
           success: true,
           transaction_id: "stripe_refund_#{SecureRandom.hex(8)}",
@@ -164,7 +157,6 @@ module Payments
       end
 
       def process_paypal_refund(_payment, _refund_amount, _reason)
-        # Mock PayPal refund processing
         {
           success: true,
           transaction_id: "paypal_refund_#{SecureRandom.hex(8)}",
@@ -173,7 +165,6 @@ module Payments
       end
 
       def process_square_refund(_payment, _refund_amount, _reason)
-        # Mock Square refund processing
         {
           success: true,
           transaction_id: "square_refund_#{SecureRandom.hex(8)}",

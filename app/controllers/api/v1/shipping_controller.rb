@@ -2,8 +2,8 @@
 
 module Api
   module V1
-    class ShippingController < ApplicationController
-      before_action :authenticate_user!
+    class ShippingController < Api::V1::BaseController
+      before_action :admin_only!, only: %i[zones]
 
       # GET /api/v1/shipping/calculate
       # Calculate shipping cost for cart items
@@ -27,7 +27,7 @@ module Api
           )
         end
 
-        result = Shipping::ShippingCostCalculatorService.calculate(
+        result = ::Shipping::ShippingCostCalculatorService.calculate(
           order_items,
           shipping_method_id: shipping_method_id,
           country_code: country_code,
@@ -61,7 +61,6 @@ module Api
       # GET /api/v1/shipping/zones
       # Get shipping zones (admin only)
       def zones
-        authorize! :read, ShippingZone
         zones = ShippingZone.all.order(:country_code, :region)
         render_success(zones.map { |z| shipping_zone_serializer(z) }, 'Shipping zones retrieved successfully')
       end

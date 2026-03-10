@@ -12,8 +12,8 @@ class ProductValidator
 
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :description, presence: true, length: { minimum: 10, maximum: 1000 }
-  validates :price, presence: true, numericality: { greater_than: 0 }
-  validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :price, presence: true, numericality: { greater_than: 0, less_than: 100_000 }
+  validates :stock_quantity, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 10_000 }
   validates :brand_id, presence: true
   validates :category_id, presence: true
 

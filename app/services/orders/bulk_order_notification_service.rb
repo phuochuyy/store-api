@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Orders
-  # rubocop:disable Metrics/MethodLength
   class BulkOrderNotificationService
     class << self
       # Send bulk order notifications
@@ -59,6 +58,5 @@ module Orders
         end
       end
     end
-    # rubocop:enable Metrics/MethodLength
   end
 end

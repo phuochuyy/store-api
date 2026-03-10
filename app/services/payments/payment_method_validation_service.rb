@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Payments
-  # rubocop:disable Metrics/MethodLength
   class PaymentMethodValidationService
     class << self
       # @param payment_method [PaymentMethod] Payment method to validate
@@ -150,6 +149,5 @@ module Payments
         }
       end
     end
-    # rubocop:enable Metrics/MethodLength
   end
 end

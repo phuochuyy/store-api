@@ -77,7 +77,6 @@ class JwtBlacklistToken < ApplicationRecord
     )
   end
 
-  # rubocop:disable Naming/PredicateMethod
   def self.blacklist_user_tokens(user_id, reason: 'User logout')
     return false if user_id.blank?
 
@@ -111,7 +110,6 @@ class JwtBlacklistToken < ApplicationRecord
     Rails.logger.error e.backtrace.join("\n")
     false
   end
-  # rubocop:enable Naming/PredicateMethod
 
   # Get blacklist statistics
   def self.stats

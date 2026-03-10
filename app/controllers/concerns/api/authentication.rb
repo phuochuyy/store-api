@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Api
+  # Authentication concern: before_action authenticate_user!, set @current_user from JWT (Authorization: Bearer).
   module Authentication
     extend ActiveSupport::Concern
 
@@ -10,9 +11,10 @@ module Api
 
     private
 
+    # Extract token from header, call TokenValidationService.authenticate; render 401 if missing/invalid; set @current_user.
     def authenticate_user!
       token = extract_token
-      return render_error('Token not provided', :unauthorized) unless token
+      return render_error('Token missing', :unauthorized) unless token
 
       result = Auth::TokenValidationService.authenticate(token)
       return render_error(result[:error], :unauthorized) unless result[:success]

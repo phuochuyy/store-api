@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::Jwt::BlacklistService, type: :service do
   let(:user) { create(:user) }
   let(:valid_token) do
@@ -291,4 +290,3 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

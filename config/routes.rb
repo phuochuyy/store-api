@@ -142,7 +142,7 @@ Rails.application.routes.draw do
           patch :cancel
           patch :approve
           patch :reject
-          patch :process
+          patch :complete
         end
       end
 

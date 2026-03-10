@@ -23,7 +23,7 @@ default: &default
   username: store_api
   password: userpw
   host: <%= ENV.fetch("DATABASE_HOST", "127.0.0.1") %>
-  port: <%= ENV.fetch("DATABASE_PORT", "5432") %>
+  port: <%= ENV.fetch("DATABASE_PORT", "5433") %>
 
 development:
   <<: *default
@@ -59,9 +59,12 @@ development:
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
+# Override with TEST_DATABASE_USER, TEST_DATABASE_PASSWORD, or DATABASE_URL.
 test:
   <<: *default
-  database: store_api_test
+  database: <%= ENV.fetch("TEST_DATABASE_NAME", "store_api_test") %>
+  username: <%= ENV.fetch("TEST_DATABASE_USER", "store_api") %>
+  password: <%= ENV.fetch("TEST_DATABASE_PASSWORD", "userpw") %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is

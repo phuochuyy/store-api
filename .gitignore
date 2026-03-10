@@ -327,3 +327,6 @@ config/local_*.yml
 # Keep keep files
 !.keep
 !.gitkeep
+
+
+docs/

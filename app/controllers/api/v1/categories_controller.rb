@@ -32,6 +32,11 @@ module Api
       def create
         return unless ensure_admin!
 
+        validator = CategoryValidator.new(category_params)
+        unless validator.valid?
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
+        end
+
         @category = Category.new(category_params)
 
         if @category.save
@@ -44,6 +49,11 @@ module Api
 
       def update
         return unless ensure_admin!
+
+        validator = CategoryValidator.new(category_params)
+        unless validator.valid?
+          return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
+        end
 
         if @category.update(category_params)
           data = { category: category_serializer(@category) }
@@ -63,15 +73,15 @@ module Api
       private
 
       def ensure_admin!
-        return if current_user&.admin?
+        return true if current_user&.admin?
 
-        render_error('Admin access required', :forbidden)
+        render_error('Admin access required', :forbidden) && return
         false
       end
 
       def set_category
         @category = Category.find_by(id: params[:id])
-        render_error('Category not found', :not_found) unless @category
+        return render_error('Category not found', :not_found) unless @category
       end
 
       def category_params

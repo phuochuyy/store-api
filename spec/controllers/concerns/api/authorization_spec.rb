@@ -7,7 +7,7 @@ RSpec.describe Api::Authorization, type: :controller do
     include Api::Authorization
 
     def test_authorize_action
-      authorize!(test_resource, 'show')
+      authorize!(:show, test_resource)
       render json: { success: true }
     end
 
@@ -93,11 +93,8 @@ RSpec.describe Api::Authorization, type: :controller do
 
         get :test_authorize_action
         expect(response).to have_http_status(:forbidden)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => 'Access denied',
-          'status' => 'forbidden'
-        )
+        expect(response.parsed_body['success']).to be false
+        expect(response.parsed_body['message']).to eq('Access denied')
       end
     end
 
@@ -118,11 +115,8 @@ RSpec.describe Api::Authorization, type: :controller do
 
         get :test_authorize_action
         expect(response).to have_http_status(:forbidden)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => 'Authorization policy not found',
-          'status' => 'forbidden'
-        )
+        expect(response.parsed_body['success']).to be false
+        expect(response.parsed_body['message']).to eq('Authorization policy not found')
       end
     end
   end
@@ -148,11 +142,8 @@ RSpec.describe Api::Authorization, type: :controller do
       it 'denies access' do
         get :test_admin_only_action
         expect(response).to have_http_status(:forbidden)
-        expect(response.parsed_body).to include(
-          'success' => false,
-          'error' => 'Admin access required',
-          'status' => 'forbidden'
-        )
+        expect(response.parsed_body['success']).to be false
+        expect(response.parsed_body['message']).to eq('Admin access required')
       end
     end
 

@@ -5,7 +5,6 @@
 module Api
   module V1
     module Payments
-      # rubocop:disable Metrics/ClassLength
       class PaymentsController < Api::V1::BaseController
       before_action :set_payment, only: %i[show update destroy refund]
       before_action :set_order, only: %i[create]
@@ -164,11 +163,15 @@ module Api
 
       def set_payment
         @payment = Payment.find_by(id: params[:id])
-        render_error('Payment not found', :not_found) unless @payment
+        return render_error('Payment not found', :not_found) unless @payment
       end
 
       def set_order
         @order = Order.find_by(id: params[:order_id])
+        return unless @order
+        # Customer can only pay for their own order; admin can pay for any
+        return if current_user&.admin?
+        return render_error('Order not found', :not_found) if @order.user_id != current_user&.id
       end
 
       def payment_params
@@ -255,7 +258,6 @@ module Api
         }
       end
       end
-      # rubocop:enable Metrics/ClassLength
     end
   end
 end

@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 module StockAlerts
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
   class StockNotificationService
     class << self
       # Send notifications for stock alerts to admin users
@@ -205,8 +202,5 @@ module StockAlerts
         message
       end
     end
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Metrics/CyclomaticComplexity
   end
 end

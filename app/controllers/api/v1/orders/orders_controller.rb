@@ -3,15 +3,16 @@
 module Api
   module V1
     module Orders
-      # rubocop:disable Metrics/ClassLength
-      # rubocop:disable Metrics/AbcSize
       class OrdersController < Api::V1::BaseController
-      before_action :set_order, only: %i[show update destroy confirm cancel ship deliver]
-      before_action :admin_only!, only: %i[index update destroy confirm cancel ship deliver]
+      before_action :set_order, only: %i[show update destroy confirm cancel ship deliver apply_discount remove_discount]
+      before_action :admin_only!, only: %i[update destroy confirm cancel ship deliver]
+      before_action :ensure_order_owner_or_admin!, only: %i[show apply_discount remove_discount]
       skip_before_action :authenticate_user!, only: [:track]
 
       def index
-        @orders = Order.includes(:order_items, :products).recent
+        # Admin: all orders. Customer: only their orders (e-commerce standard)
+        base = current_user.admin? ? Order : current_user.orders
+        @orders = base.includes(:order_items, :products).recent
         @orders = @orders.page(params[:page]).per(params[:per_page] || 10)
 
         render json: {
@@ -33,7 +34,9 @@ module Api
       end
 
       def create
-        result = Orders::OrderCreationService.create_order(order_params, params[:order_items])
+        attrs = order_params.to_h.symbolize_keys
+        attrs[:user_id] = current_user&.id if current_user
+        result = Orders::OrderCreationService.create_order(attrs, params[:order_items])
 
         if result[:success]
           render json: {
@@ -143,23 +146,41 @@ module Api
         render_success({ order: order_data }, 'Order tracking information retrieved successfully')
       end
 
-      def refund
-        result = refund_order_with_service
+      def apply_discount
+        discount_code = params[:discount_code]
+        return render_error('Discount code is required', :unprocessable_content) if discount_code.blank?
+
+        result = @order.apply_discount(discount_code)
 
         if result[:success]
-          render json: {
-            success: true,
-            message: 'Order refunded successfully',
-            data: {
-              order: order_serializer(@order.reload)
-            }
-          }
+          render_success({
+                           order: order_serializer(@order.reload),
+                           discount: result[:discount],
+                           discount_amount: result[:discount_amount]
+                         }, 'Discount applied successfully')
         else
-          render_error(result[:error], :unprocessable_content, result[:details])
+          render_error(result[:error], :unprocessable_content)
+        end
+      end
+
+      def remove_discount
+        result = @order.remove_discount
+
+        if result[:success]
+          render_success({
+                           order: order_serializer(@order.reload)
+                         }, 'Discount removed successfully')
+        else
+          render_error('Failed to remove discount', :unprocessable_content)
         end
       end
 
       private
+
+      def ensure_order_owner_or_admin!
+        return if current_user&.admin?
+        return render_error('Order not found', :not_found) if @order.user_id != current_user&.id
+      end
 
       def ship_order_with_service
         Orders::ShippingService.ship_order(
@@ -212,7 +233,8 @@ module Api
       end
 
       def set_order
-        @order = Order.find(params[:id])
+        @order = Order.find_by(id: params[:id])
+        return render_error('Order not found', :not_found) unless @order
       end
 
       def order_params
@@ -226,38 +248,7 @@ module Api
       def order_item_serializer(item)
         Orders::OrderSerializerService.serialize_order_item(item)
       end
-
-      def apply_discount
-        discount_code = params[:discount_code]
-        return render_error('Discount code is required', :unprocessable_content) if discount_code.blank?
-
-        result = @order.apply_discount(discount_code)
-
-        if result[:success]
-          render_success({
-                           order: order_serializer(@order.reload),
-                           discount: result[:discount],
-                           discount_amount: result[:discount_amount]
-                         }, 'Discount applied successfully')
-        else
-          render_error(result[:error], :unprocessable_content)
-        end
       end
-
-      def remove_discount
-        result = @order.remove_discount
-
-        if result[:success]
-          render_success({
-                           order: order_serializer(@order.reload)
-                         }, 'Discount removed successfully')
-        else
-          render_error('Failed to remove discount', :unprocessable_content)
-        end
-      end
-      end
-      # rubocop:enable Metrics/ClassLength
-      # rubocop:enable Metrics/AbcSize
     end
   end
 end

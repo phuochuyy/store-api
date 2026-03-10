@@ -1,4 +1,3 @@
-# rubocop:disable Metrics/ClassLength
 # == Schema Information
 #
 # Table name: orders
@@ -131,19 +130,20 @@ class Order < ApplicationRecord
     shipped_at + 4.days
   end
 
-  private
-
-  def discount_code_matches_discount_id
-    return unless discount_id.present? && discount_code.present?
-
-    discount = Discount.find_by(id: discount_id)
-    if discount.nil?
-      errors.add(:discount_id, 'does not exist')
-    elsif discount.code.upcase != discount_code.upcase
-      errors.add(:discount_code, 'does not match the selected discount')
-    end
+  def delivered?
+    status == 'delivered'
   end
 
+  def can_be_returned?
+    # Order can be returned if delivered and within return period (typically 30 days)
+    return false unless delivered?
+    return false if delivered_at.nil?
+
+    return_period = 30.days
+    delivered_at + return_period >= Time.current
+  end
+
+  # Discount (called from OrdersController)
   def apply_discount(discount_code)
     discount = Discount.available.find_by(code: discount_code.upcase)
     return { success: false, error: 'Invalid discount code' } unless discount
@@ -226,16 +226,6 @@ class Order < ApplicationRecord
     %w[paid].include?(status) && successful_payments.any?
   end
 
-  def can_be_returned?
-    # Order can be returned if delivered and within return period (typically 30 days)
-    return false unless delivered?
-    return false if delivered_at.nil?
-
-    # Check if within return period (30 days)
-    return_period = 30.days
-    delivered_at + return_period >= Time.current
-  end
-
   def payment_methods_used
     payments.joins(:payment_method).pluck('payment_methods.name').uniq
   end
@@ -248,8 +238,16 @@ class Order < ApplicationRecord
     status == 'shipped'
   end
 
-  def delivered?
-    status == 'delivered'
+  private
+
+  def discount_code_matches_discount_id
+    return unless discount_id.present? && discount_code.present?
+
+    discount = Discount.find_by(id: discount_id)
+    if discount.nil?
+      errors.add(:discount_id, 'does not exist')
+    elsif discount.code.upcase != discount_code.upcase
+      errors.add(:discount_code, 'does not match the selected discount')
+    end
   end
 end
-# rubocop:enable Metrics/ClassLength

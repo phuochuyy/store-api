@@ -2,8 +2,7 @@
 
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
-RSpec.describe Api::V1::PaymentsController, type: :controller do
+RSpec.describe Api::V1::Payments::PaymentsController, type: :controller do
   let(:user) { create(:user) }
   let(:admin_user) { create(:user, :admin) }
   let(:order) { create(:order, user: user, status: 'pending', total_amount: 100.00) }
@@ -704,4 +703,3 @@ RSpec.describe Api::V1::PaymentsController, type: :controller do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

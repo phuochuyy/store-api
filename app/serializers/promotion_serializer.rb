@@ -3,18 +3,26 @@ class PromotionSerializer < ActiveModel::Serializer
              :start_date, :end_date, :is_active, :usage_limit, :used_count,
              :priority, :stackable, :created_at, :updated_at
 
-  attribute :available, key: :is_available
-  attribute :current, key: :is_current
-  attribute :expired, key: :is_expired
+  attribute :is_available, key: :is_available
+  attribute :is_current, key: :is_current
+  attribute :is_expired, key: :is_expired
   attribute :within_usage_limit, key: :within_usage_limit
 
-  delegate :available?, to: :object
+  def is_available
+    object.available?
+  end
 
-  delegate :current?, to: :object
+  def is_current
+    object.current?
+  end
 
-  delegate :expired?, to: :object
+  def is_expired
+    object.expired?
+  end
 
-  delegate :within_usage_limit?, to: :object
+  def within_usage_limit
+    object.within_usage_limit?
+  end
 
   def conditions
     return nil if object.conditions.blank?

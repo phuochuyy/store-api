@@ -4,7 +4,6 @@ require 'digest'
 
 module Auth
   module Jwt
-    # rubocop:disable Metrics/ClassLength
     class CacheService
       class << self
         # Cache namespace for JWT tokens
@@ -296,6 +295,5 @@ module Auth
         end
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end

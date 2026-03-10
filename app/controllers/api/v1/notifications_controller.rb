@@ -2,10 +2,6 @@
 
 module Api
   module V1
-    # rubocop:disable Metrics/ClassLength
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Metrics/CyclomaticComplexity
     class NotificationsController < Api::V1::BaseController
       before_action :set_notification, only: %i[show update destroy mark_read mark_unread]
       before_action :authenticate_user!
@@ -114,7 +110,7 @@ module Api
 
       def statistics
         period = params[:period] || 'week'
-        result = StockAlerts::StockNotificationService.get_notification_statistics(period)
+        result = ::StockAlerts::StockNotificationService.get_notification_statistics(period)
 
         if result[:success]
           render_success(result, 'Notification statistics retrieved successfully')
@@ -133,7 +129,7 @@ module Api
         stock_alerts = StockAlert.where(id: alert_ids)
         return render_error('No valid stock alerts found', :not_found) if stock_alerts.empty?
 
-        result = StockAlerts::StockNotificationService.send_bulk_stock_alert_notifications(stock_alerts)
+        result = ::StockAlerts::StockNotificationService.send_bulk_stock_alert_notifications(stock_alerts)
 
         if result[:success]
           render_success(result, result[:message])
@@ -143,7 +139,7 @@ module Api
       end
 
       def send_daily_summary
-        result = StockAlerts::StockNotificationService.send_daily_stock_alert_summary
+        result = ::StockAlerts::StockNotificationService.send_daily_stock_alert_summary
 
         if result[:success]
           render_success(result, result[:message])
@@ -153,7 +149,7 @@ module Api
       end
 
       def send_pending
-        result = StockAlerts::StockNotificationService.send_pending_notifications
+        result = ::StockAlerts::StockNotificationService.send_pending_notifications
 
         if result[:success]
           render_success(result, result[:message])
@@ -166,7 +162,7 @@ module Api
 
       def set_notification
         @notification = current_user.notifications.find_by(id: params[:id])
-        render_error('Notification not found', :not_found) unless @notification
+        return render_error('Notification not found', :not_found) unless @notification
       end
 
       def notification_params
@@ -181,28 +177,8 @@ module Api
       end
 
       def notification_serializer(notification)
-        {
-          id: notification.id,
-          notification_type: notification.notification_type,
-          title: notification.title,
-          message: notification.message,
-          read: notification.read,
-          read_at: notification.read_at,
-          sent_at: notification.sent_at,
-          metadata: notification.metadata,
-          created_at: notification.created_at,
-          updated_at: notification.updated_at,
-          user: {
-            id: notification.user.id,
-            name: notification.user.name,
-            email: notification.user.email
-          }
-        }
+        NotificationSerializer.serialize(notification)
       end
     end
-    # rubocop:enable Metrics/ClassLength
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Metrics/CyclomaticComplexity
   end
 end

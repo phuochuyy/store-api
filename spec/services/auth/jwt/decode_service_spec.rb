@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::Jwt::DecodeService, type: :service do
   let(:user) { create(:user, email: 'test@example.com', role: 'admin') }
 
@@ -378,4 +377,3 @@ RSpec.describe Auth::Jwt::DecodeService, type: :service do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

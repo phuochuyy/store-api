@@ -6,13 +6,13 @@ module Api
 
       def index
         pagination = extract_pagination
-        result = Brands::BrandService.list_brands(pagination: pagination)
+        result = ::Brands::BrandService.list_brands(pagination: pagination)
 
         render_success(result, 'Brands retrieved successfully')
       end
 
       def show
-        result = Brands::BrandService.find_brand(@brand.id)
+        result = ::Brands::BrandService.find_brand(@brand.id)
         render_success(result, 'Brand retrieved successfully')
       end
 
@@ -23,7 +23,7 @@ module Api
           return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
-        result = Brands::BrandService.create_brand(brand_params)
+        result = ::Brands::BrandService.create_brand(brand_params)
 
         if result[:success]
           render_success(result[:brand], 'Brand created successfully', :created)
@@ -39,7 +39,7 @@ module Api
           return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
-        result = Brands::BrandService.update_brand(@brand.id, brand_params)
+        result = ::Brands::BrandService.update_brand(@brand.id, brand_params)
 
         if result[:success]
           render_success(result[:brand], 'Brand updated successfully')
@@ -49,7 +49,7 @@ module Api
       end
 
       def destroy
-        Brands::BrandService.delete_brand(@brand.id)
+        ::Brands::BrandService.delete_brand(@brand.id)
         render_success(nil, 'Brand deleted successfully')
       end
 

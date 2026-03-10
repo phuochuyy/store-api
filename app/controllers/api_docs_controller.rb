@@ -1,6 +1,6 @@
 class ApiDocsController < ApplicationController
   def index
-    render html: swagger_ui_html.html_safe # rubocop:disable Rails/OutputSafety
+    render html: swagger_ui_html.html_safe
   end
 
   def swagger_yaml

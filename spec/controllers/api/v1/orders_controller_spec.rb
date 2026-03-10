@@ -2,8 +2,7 @@
 
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
-RSpec.describe Api::V1::OrdersController, type: :controller do
+RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
   let(:user) { create(:user) }
   let(:admin_user) { create(:user, :admin) }
   let(:product) { create(:product, stock_quantity: 10, price: 99.99) }
@@ -624,4 +623,3 @@ RSpec.describe Api::V1::OrdersController, type: :controller do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

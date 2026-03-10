@@ -132,9 +132,12 @@ class Notification < ApplicationRecord
   end
 
   def self.mark_all_as_read_for_user(user)
+    count = 0
     where(user: user, read: false).find_each do |notification|
       notification.update!(read: true, read_at: Time.current)
+      count += 1
     end
+    count
   end
 
   def self.get_unread_count_for_user(user)

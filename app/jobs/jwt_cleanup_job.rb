@@ -38,21 +38,13 @@ class JwtCleanupJob < ApplicationJob
   end
 
   def cleanup_cache_tokens
-    # Cleanup expired cache entries
-    # Note: Redis TTL handles expiration automatically, but we can clean up
-    # any stale entries that might exist
-    stats_before = Auth::Jwt::CacheService.stats
-    total_keys_before = stats_before[:total_keys]
-
-    # Redis automatically expires keys based on TTL, so we don't need to manually delete
-    # But we can log the stats
-    stats_after = Auth::Jwt::CacheService.stats
-    total_keys_after = stats_after[:total_keys]
-
-    # Return the difference (keys that expired)
-    [total_keys_before - total_keys_after, 0].max
+    # Redis JWT keys use TTL; expiration is automatic. We do not delete cache here.
+    # Optionally log current cache stats for monitoring.
+    stats = Auth::Jwt::CacheService.stats
+    Rails.logger.info "JWT cache stats: #{stats[:total_keys]} keys (blacklist: #{stats[:blacklist_keys]})"
+    0
   rescue StandardError => e
-    Rails.logger.error "Cache cleanup failed: #{e.message}"
+    Rails.logger.error "Cache stats failed: #{e.message}"
     0
   end
 end

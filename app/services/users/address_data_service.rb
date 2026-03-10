@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module Users
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
+  # Reads user addresses: list (with filters), default address, set default.
   class AddressDataService
     class << self
       # @param user [User] User to get addresses for
@@ -148,7 +147,5 @@ module Users
         AddressCreationService.create_address(user: user, **address_data)
       end
     end
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
   end
 end

@@ -12,7 +12,7 @@ services:
       POSTGRES_USER: store_api
       POSTGRES_PASSWORD: userpw
     ports:
-      - "5432:5432"  # Default PostgreSQL port
+      - "5433:5432"  # Host 5433 to avoid conflict with other Postgres on 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

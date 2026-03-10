@@ -30,7 +30,7 @@ module Api
       def sales
         date_range = calculate_date_range
         sales_stats = build_sales_stats(date_range)
-        render json: sales_stats
+        render_success(sales_stats, 'Sales statistics retrieved successfully')
       end
 
       def calculate_date_range
@@ -53,11 +53,14 @@ module Api
       end
 
       def calculate_sales_by_day(orders)
-        orders.group('DATE(created_at)').sum(:total_amount)
+        # PostgreSQL: use ::date; MySQL/SQLite: DATE(created_at)
+        date_expr = Order.connection.adapter_name.match?(/PostgreSQL/i) ? '(orders.created_at)::date' : 'DATE(orders.created_at)'
+        orders.reorder(nil).group(date_expr).sum(:total_amount)
       end
 
       def calculate_top_customers(orders)
-        orders.joins('LEFT JOIN users ON orders.customer_email = users.email')
+        orders.reorder(nil)
+              .joins('LEFT JOIN users ON orders.customer_email = users.email')
               .group(:customer_email, :customer_name)
               .sum(:total_amount)
               .sort_by { |_, amount| -amount }

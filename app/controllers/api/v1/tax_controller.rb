@@ -2,8 +2,8 @@
 
 module Api
   module V1
-    class TaxController < ApplicationController
-      before_action :authenticate_user!
+    class TaxController < Api::V1::BaseController
+      before_action :admin_only!, only: %i[rates]
 
       # GET /api/v1/tax/calculate
       # Calculate tax for cart items
@@ -25,7 +25,7 @@ module Api
           )
         end
 
-        result = Tax::TaxCalculatorService.calculate(
+        result = ::Tax::TaxCalculatorService.calculate(
           order_items,
           country_code: country_code,
           region: region
@@ -50,7 +50,6 @@ module Api
       # GET /api/v1/tax/rates
       # Get tax rates (admin only)
       def rates
-        authorize! :read, TaxRate
         country_code = params[:country_code]
         region = params[:region]
 

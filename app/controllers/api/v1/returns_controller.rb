@@ -2,9 +2,8 @@
 
 module Api
   module V1
-    class ReturnsController < ApplicationController
-      before_action :authenticate_user!
-      before_action :set_return_request, only: %i[show update cancel approve reject process]
+    class ReturnsController < Api::V1::BaseController
+      before_action :set_return_request, only: %i[show cancel approve reject complete]
 
       # GET /api/v1/returns
       def index
@@ -22,7 +21,7 @@ module Api
         order = Order.find_by(id: params[:order_id], user_id: current_user.id)
         return render_error('Order not found', :not_found) unless order
 
-        result = Returns::ReturnProcessingService.create_return_request(
+        result = ::Returns::ReturnProcessingService.create_return_request(
           order,
           current_user,
           params[:return_items] || [],
@@ -71,11 +70,11 @@ module Api
         end
       end
 
-      # PATCH /api/v1/returns/:id/process (admin only)
-      def process
+      # PATCH /api/v1/returns/:id/complete (admin only)
+      def complete
         authorize! :update, @return_request
 
-        result = Returns::ReturnProcessingService.process_return(@return_request, processed_by: current_user)
+        result = ::Returns::ReturnProcessingService.process_return(@return_request, processed_by: current_user)
 
         if result[:success]
           render_success(return_request_serializer(result[:return_request]), result[:message])

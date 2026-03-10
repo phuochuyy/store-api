@@ -1,3 +1,4 @@
+# User shipping/billing address. A user can have many addresses; one default per address_type.
 class UserAddress < ApplicationRecord
   belongs_to :user
 

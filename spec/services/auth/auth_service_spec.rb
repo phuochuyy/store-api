@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::AuthService, type: :service do
   let(:user) { create(:user, email: 'test@example.com', password: 'password123') }
 
@@ -325,4 +324,3 @@ RSpec.describe Auth::AuthService, type: :service do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

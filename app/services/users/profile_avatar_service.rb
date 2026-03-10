@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Users
+  # Upload/remove user avatar: validate file, attach/detach Active Storage, return profile or error.
   class ProfileAvatarService
     class << self
       # Upload user avatar

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 # == Schema Information
 #
 # Table name: payments
@@ -303,4 +302,3 @@ class Payment < ApplicationRecord
     # Silently skip if PaymentHistory doesn't exist
   end
 end
-# rubocop:enable Metrics/ClassLength

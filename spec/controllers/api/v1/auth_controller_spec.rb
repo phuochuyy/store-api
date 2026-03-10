@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Api::V1::AuthController, type: :controller do
   let(:secret_key) { Rails.application.credentials.secret_key_base || 'fallback_secret_key' }
   let(:user) { create(:user, email: 'test@example.com', password: 'password123') }
@@ -1724,4 +1723,3 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

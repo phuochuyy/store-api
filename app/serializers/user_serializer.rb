@@ -1,3 +1,4 @@
+# Serializes User to hash for API (auth login/register/me): id, name, email, role, created_at, updated_at.
 class UserSerializer
   def initialize(user)
     @user = user

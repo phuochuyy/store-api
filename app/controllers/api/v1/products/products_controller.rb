@@ -13,13 +13,13 @@ module Api
           filters = extract_filters
           pagination = extract_pagination
 
-          result = Products::ProductService.list_products(filters: filters, pagination: pagination)
+          result = ::Products::ProductService.list_products(filters: filters, pagination: pagination)
 
           render_success(result, 'Products retrieved successfully')
         end
 
         def show
-          result = Products::ProductService.find_product(@product.id)
+          result = ::Products::ProductService.find_product(@product.id)
           render_success(result, 'Product retrieved successfully')
         end
 
@@ -27,7 +27,7 @@ module Api
           filters = extract_filters
           pagination = extract_pagination
 
-          result = Products::ProductService.search_products(filters: filters, pagination: pagination)
+          result = ::Products::ProductService.search_products(filters: filters, pagination: pagination)
 
           render_success(result, 'Products search completed successfully')
         end
@@ -39,7 +39,7 @@ module Api
             return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
           end
 
-          result = Products::ProductService.create_product(product_params)
+          result = ::Products::ProductService.create_product(product_params)
 
           if result[:success]
             render_success(result, 'Product created successfully', :created)
@@ -55,7 +55,7 @@ module Api
             return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
           end
 
-          result = Products::ProductService.update_product(@product.id, product_params)
+          result = ::Products::ProductService.update_product(@product.id, product_params)
 
           if result[:success]
             render_success(result, 'Product updated successfully')
@@ -65,7 +65,7 @@ module Api
         end
 
         def destroy
-          result = Products::ProductService.delete_product(@product.id)
+          result = ::Products::ProductService.delete_product(@product.id)
 
           if result[:success]
             render_success({}, 'Product deleted successfully')
@@ -116,11 +116,18 @@ module Api
 
         def set_product
           @product = Product.find_by(id: params[:id])
-          render_error('Product not found', :not_found) unless @product
+          return render_error('Product not found', :not_found) unless @product
         end
 
         def authorize_product
-          authorize @product || Product.new, policy_class: ProductPolicy
+          resource = @product || Product.new
+          action = case action_name
+                   when 'create' then :create
+                   when 'update', 'upload_image', 'remove_image' then :update
+                   when 'destroy' then :destroy
+                   else :show
+                   end
+          authorize! action, resource
         end
 
         def product_params

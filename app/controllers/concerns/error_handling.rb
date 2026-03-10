@@ -28,7 +28,7 @@ module ErrorHandling
     Rails.logger.error "Internal Server Error: #{exception.message}"
     Rails.logger.error exception.backtrace.join("\n")
 
-    message = Rails.env.development? ? exception.message : 'Something went wrong'
+    message = (Rails.env.development? || Rails.env.test?) ? exception.message : 'Something went wrong'
     render_error(message, :internal_server_error)
   end
 

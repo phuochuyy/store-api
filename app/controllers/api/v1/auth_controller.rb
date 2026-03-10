@@ -1,15 +1,13 @@
 module Api
   module V1
-    # rubocop:disable Metrics/ClassLength
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Metrics/CyclomaticComplexity
-    # rubocop:disable Metrics/PerceivedComplexity
+    # Auth and user management API: register, login, logout, me, refresh token,
+    # email verification, password reset/change, revoke tokens (admin).
     class AuthController < Api::V1::BaseController
       skip_before_action :authenticate_user!,
                          only: %i[login register password_reset password_reset_confirm verify_email resend_verification
                                   refresh_token]
 
+      # POST /api/v1/auth/login — Login with email/password; returns token, refresh_token and user.
       def login
         email = params[:email]
         password = params[:password]
@@ -55,6 +53,7 @@ module Api
         end
       end
 
+      # POST /api/v1/auth/register — Register new user. Admin token can pass role.
       def register
         # Try to authenticate if token is provided (for admin role setting)
         if extract_token
@@ -87,6 +86,7 @@ module Api
         end
       end
 
+      # POST /api/v1/auth/refresh_token — Exchange refresh_token for new access token (token rotation).
       def refresh_token
         # Allow refresh_token via params or Authorization header
         current_token = extract_token
@@ -115,6 +115,7 @@ module Api
         end
       end
 
+      # POST /api/v1/auth/logout — Logout: blacklist token and (if user_id present) all tokens for that user.
       def logout
         token = extract_token
         user_id = current_user&.id
@@ -122,6 +123,7 @@ module Api
         render_success(nil, result[:message])
       end
 
+      # GET /api/v1/auth/me — Return current user info (requires Authorization).
       def me
         result = Auth::AuthService.get_current_user(current_user)
 
@@ -132,6 +134,7 @@ module Api
         end
       end
 
+      # GET /api/v1/auth/verify_email?token=... — Verify email using token from link.
       def verify_email
         token = params[:token]
 
@@ -147,6 +150,7 @@ module Api
         render_success({ user: user }, 'Email verified successfully')
       end
 
+      # POST /api/v1/auth/resend_verification — Resend verification email (params: email).
       def resend_verification
         email = params[:email]
 
@@ -171,6 +175,7 @@ module Api
         render_success(nil, 'Verification email sent successfully')
       end
 
+      # POST /api/v1/auth/revoke_all_tokens — Revoke all tokens for a user (admin only, params: user_id).
       def revoke_all_tokens
         return render_error('Admin access required', :forbidden) unless current_user&.admin?
 
@@ -188,6 +193,7 @@ module Api
         render_success(nil, 'All tokens for user have been revoked')
       end
 
+      # POST /api/v1/auth/password/reset — Request password reset (params: email); returns reset_token.
       def password_reset
         email = params[:email]
         return render_error('Email is required', :bad_request) if email.blank?
@@ -205,6 +211,7 @@ module Api
         render_success({ reset_token: token.token }, 'Password reset email sent successfully')
       end
 
+      # POST /api/v1/auth/password/reset/confirm — Confirm password reset (token, new_password, password_confirmation).
       def password_reset_confirm
         token = params[:token]
         new_password = params[:new_password]
@@ -230,6 +237,7 @@ module Api
         end
       end
 
+      # POST /api/v1/auth/password/change — Change password when logged in (current_password, new_password, password_confirmation).
       def password_change
         current_password = params[:current_password]
         new_password = params[:new_password]
@@ -255,6 +263,7 @@ module Api
 
       private
 
+      # Permitted params for user registration/update; admin can also set :role.
       def user_params
         permitted_params = %i[name first_name last_name email password password_confirmation]
         permitted_params << :role if current_user&.admin?
@@ -265,6 +274,7 @@ module Api
         end
       end
 
+      # Extract JWT from Authorization: Bearer <token> header.
       def extract_token
         request.headers['Authorization']&.split&.last
       end
@@ -284,10 +294,5 @@ module Api
         Digest::SHA256.hexdigest(user_agent)[0..31]
       end
     end
-    # rubocop:enable Metrics/ClassLength
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Metrics/CyclomaticComplexity
-    # rubocop:enable Metrics/PerceivedComplexity
   end
 end

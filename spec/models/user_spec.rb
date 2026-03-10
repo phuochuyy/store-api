@@ -1,7 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
-# rubocop:disable Rails/SkipsModelValidations
 RSpec.describe User, type: :model do
   describe 'associations' do
     it { should have_many(:carts).dependent(:destroy) }
@@ -587,7 +585,7 @@ RSpec.describe User, type: :model do
       end
 
       it 'is case insensitive' do
-        found_user = User.find_by(email: 'FIND@EXAMPLE.COM')
+        found_user = User.find_by_email('FIND@EXAMPLE.COM')
         expect(found_user).to eq(user)
       end
 
@@ -601,17 +599,17 @@ RSpec.describe User, type: :model do
       it 'finds user by verification token' do
         user = create(:user)
         token = user.email_verification_token
-        found_user = User.find_by(verification_token: token)
+        found_user = User.find_by_verification_token(token)
         expect(found_user).to eq(user)
       end
 
       it 'returns nil when token is blank' do
-        expect(User.find_by(verification_token: '')).to be_nil
-        expect(User.find_by(verification_token: nil)).to be_nil
+        expect(User.find_by_verification_token('')).to be_nil
+        expect(User.find_by_verification_token(nil)).to be_nil
       end
 
       it 'returns nil when token not found' do
-        found_user = User.find_by(verification_token: 'nonexistent-token')
+        found_user = User.find_by_verification_token('nonexistent-token')
         expect(found_user).to be_nil
       end
     end
@@ -633,5 +631,3 @@ RSpec.describe User, type: :model do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength
-# rubocop:enable Rails/SkipsModelValidations

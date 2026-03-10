@@ -1,6 +1,4 @@
 module Carts
-  # rubocop:disable Metrics/ClassLength
-  # rubocop:disable Metrics/MethodLength
   class CartService
     class << self
       def get_or_create_cart(user: nil, session_id: nil)
@@ -133,23 +131,35 @@ module Carts
       end
 
       def merge_carts(guest_cart, user_cart)
-        return { success: true, cart: user_cart } if guest_cart.empty?
+        return { success: true, cart: user_cart, cart_items: user_cart.cart_items.includes(:product), message: 'Carts merged successfully' } if guest_cart.empty?
 
-        guest_cart.cart_items.each do |guest_item|
-          existing_item = user_cart.cart_items.find_by(product: guest_item.product)
+        guest_cart.cart_items.includes(:product, :product_variant).each do |guest_item|
+          existing_item = user_cart.cart_items.find_by(
+            product_id: guest_item.product_id,
+            product_variant_id: guest_item.product_variant_id
+          )
 
           if existing_item
-            # Merge quantities
             new_quantity = existing_item.quantity + guest_item.quantity
-            user_cart.update_product_quantity?(guest_item.product, new_quantity)
+            max_qty = guest_item.product_variant.present? ? guest_item.product_variant.stock_quantity : guest_item.product.stock_quantity
+            new_quantity = max_qty if max_qty.present? && new_quantity > max_qty
+            existing_item.update!(quantity: new_quantity)
           else
-            # Add new item
-            user_cart.add_product(guest_item.product, guest_item.quantity)
+            if guest_item.product_variant_id.present?
+              user_cart.cart_items.create!(
+                product: guest_item.product,
+                product_variant: guest_item.product_variant,
+                quantity: guest_item.quantity,
+                unit_price: guest_item.unit_price
+              )
+            else
+              user_cart.add_product(guest_item.product, guest_item.quantity)
+            end
           end
         end
 
-        # Mark guest cart as abandoned
         guest_cart.update!(status: 'abandoned')
+        user_cart.calculate_total_amount
 
         {
           success: true,
@@ -182,7 +192,5 @@ module Carts
         end
       end
     end
-    # rubocop:enable Metrics/ClassLength
-    # rubocop:enable Metrics/MethodLength
   end
 end

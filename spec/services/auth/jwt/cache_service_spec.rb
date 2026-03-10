@@ -2,7 +2,6 @@
 
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Auth::Jwt::CacheService, type: :service do
   let(:user) { create(:user) }
   let(:token) { Auth::Jwt::EncodeService.encode(user) }
@@ -276,4 +275,3 @@ RSpec.describe Auth::Jwt::CacheService, type: :service do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

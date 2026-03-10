@@ -19,7 +19,6 @@
 #  updated_at       :datetime         not null
 #
 
-# rubocop:disable Metrics/ClassLength
 class StockAlert < ApplicationRecord
   # Associations
   belongs_to :product
@@ -267,4 +266,3 @@ class StockAlert < ApplicationRecord
 
   private_class_method :check_and_create_alerts_for_product, :resolve_alerts_for_product
 end
-# rubocop:enable Metrics/ClassLength

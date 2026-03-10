@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Product, type: :model do
   let(:brand) { create(:brand) }
   let(:category) { create(:category) }
@@ -334,4 +333,3 @@ RSpec.describe Product, type: :model do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

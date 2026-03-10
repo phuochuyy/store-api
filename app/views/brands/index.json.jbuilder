@@ -2,7 +2,7 @@ json.brands @brands do |brand|
   json.id brand.id
   json.name brand.name
   json.description brand.description
-  json.phones_count brand.phones.count
+  json.products_count brand.products.count
   json.created_at brand.created_at
   json.updated_at brand.updated_at
 end

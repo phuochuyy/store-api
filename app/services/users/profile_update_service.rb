@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Users
+  # Updates user profile: validate params, filter allowed fields, update and return new profile.
   class ProfileUpdateService
     class << self
       # @param user [User] User to update

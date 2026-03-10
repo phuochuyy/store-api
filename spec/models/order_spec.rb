@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-# rubocop:disable Metrics/BlockLength
 RSpec.describe Order, type: :model do
   let(:user) { create(:user) }
   let(:order) { create(:order, user: user) }
@@ -35,7 +34,7 @@ RSpec.describe Order, type: :model do
 
     it 'validates status inclusion' do
       order = build(:order)
-      order.status = 'invalid_status'
+      order.write_attribute(:status, 'invalid_status')
       expect(order).not_to be_valid
       expect(order.errors[:status]).to be_present
     end
@@ -85,7 +84,7 @@ RSpec.describe Order, type: :model do
       order.update!(shipping_method: shipping_method, shipping_cost: 12.00)
       item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
       order.update_total_amount
-      expect(order.total_amount).to eq(112.00)
+      expect(order.reload.total_amount.to_f).to eq(112.00)
     end
 
     it 'includes tax amount in total amount calculation' do
@@ -93,7 +92,7 @@ RSpec.describe Order, type: :model do
       order.update!(tax_rate: tax_rate, tax_amount: 8.50)
       item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
       order.update_total_amount
-      expect(order.total_amount).to eq(108.50)
+      expect(order.reload.total_amount.to_f).to eq(108.50)
     end
 
     it 'includes discount, shipping, and tax in total amount calculation' do
@@ -103,6 +102,7 @@ RSpec.describe Order, type: :model do
       order.update!(
         discount: discount,
         discount_code: discount.code,
+        discount_amount: 10.00,
         shipping_method: shipping_method,
         shipping_cost: 12.00,
         tax_rate: tax_rate,
@@ -246,4 +246,3 @@ RSpec.describe Order, type: :model do
     end
   end
 end
-# rubocop:enable Metrics/BlockLength

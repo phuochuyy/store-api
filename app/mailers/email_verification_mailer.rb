@@ -7,7 +7,8 @@ class EmailVerificationMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: I18n.t('mailers.email_verification.subject')
+      subject: I18n.t('mailers.email_verification.subject'),
+      layout: false
     )
   end
 
@@ -17,7 +18,8 @@ class EmailVerificationMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: I18n.t('mailers.email_verification.resend_subject')
+      subject: I18n.t('mailers.email_verification.resend_subject'),
+      layout: false
     )
   end
 

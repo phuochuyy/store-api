@@ -1,20 +1,20 @@
 module Api
   module V1
     class DiscountsController < Api::V1::BaseController
-      before_action :set_discount, only: %i[show update destroy stats]
-      before_action :admin_only!, only: %i[create update destroy stats]
+      before_action :set_discount, only: %i[show update destroy stats generate_codes]
+      before_action :admin_only!, only: %i[create update destroy stats generate_codes]
 
       def index
         filters = extract_filters
         pagination = extract_pagination
 
-        result = Discounts::DiscountService.list_discounts(filters: filters, pagination: pagination)
+        result = ::Discounts::DiscountService.list_discounts(filters: filters, pagination: pagination)
 
         render_success(result, 'Discounts retrieved successfully')
       end
 
       def show
-        result = Discounts::DiscountService.find_discount(@discount.id)
+        result = ::Discounts::DiscountService.find_discount(@discount.id)
 
         if result[:error]
           render_error(result[:error], :not_found)
@@ -30,7 +30,7 @@ module Api
           return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
-        result = Discounts::DiscountService.create_discount(discount_params)
+        result = ::Discounts::DiscountService.create_discount(discount_params)
 
         if result[:success]
           render_success(result[:discount], 'Discount created successfully', :created)
@@ -46,7 +46,7 @@ module Api
           return render_error('Validation failed', :unprocessable_content, validator.errors.full_messages)
         end
 
-        result = Discounts::DiscountService.update_discount(@discount, discount_params)
+        result = ::Discounts::DiscountService.update_discount(@discount, discount_params)
 
         if result[:success]
           render_success(result[:discount], 'Discount updated successfully')
@@ -56,7 +56,7 @@ module Api
       end
 
       def destroy
-        result = Discounts::DiscountService.delete_discount(@discount)
+        result = ::Discounts::DiscountService.delete_discount(@discount)
 
         if result[:success]
           render_success(nil, 'Discount deleted successfully')
@@ -66,7 +66,7 @@ module Api
       end
 
       def stats
-        stats = Discounts::DiscountService.get_discount_stats(@discount)
+        stats = ::Discounts::DiscountService.get_discount_stats(@discount)
         render_success(stats, 'Discount statistics retrieved successfully')
       end
 
@@ -74,7 +74,7 @@ module Api
         quantity = params[:quantity]&.to_i || 1
         return render_error('Invalid quantity', :unprocessable_content) if quantity <= 0 || quantity > 100
 
-        result = Discounts::DiscountService.generate_discount_codes(@discount, quantity)
+        result = ::Discounts::DiscountService.generate_discount_codes(@discount, quantity)
 
         if result[:success]
           render_success({ codes: result[:codes] }, "#{quantity} discount codes generated successfully")
@@ -90,7 +90,7 @@ module Api
 
         return render_error('Discount code is required', :unprocessable_content) if code.blank?
 
-        result = Discounts::DiscountService.validate_discount_code(code, order_amount, order_items)
+        result = ::Discounts::DiscountService.validate_discount_code(code, order_amount, order_items)
 
         if result[:valid]
           render_success(result, 'Discount code is valid')

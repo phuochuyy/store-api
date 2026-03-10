@@ -29,7 +29,7 @@ module StockAlerts
       private
 
       def build_base_query
-        StockAlert.includes(:product, :user)
+        StockAlert.includes(:product)
                   .order(created_at: :desc)
       end
 

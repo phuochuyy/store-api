@@ -11,10 +11,10 @@ end
 
 json.order_items @order.order_items do |item|
   json.id item.id
-  json.phone do
-    json.id item.phone.id
-    json.name item.phone.name
-    json.price item.phone.price
+  json.product do
+    json.id item.product.id
+    json.name item.product.name
+    json.price item.product.price
   end
   json.quantity item.quantity
   json.unit_price item.unit_price

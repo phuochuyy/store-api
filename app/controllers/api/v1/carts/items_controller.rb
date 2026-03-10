@@ -25,7 +25,7 @@ module Api
       end
 
       def create
-        result = Carts::CartService.add_to_cart(
+        result = ::Carts::CartService.add_to_cart(
           @cart,
           cart_item_params[:product_id],
           cart_item_params[:quantity] || 1
@@ -42,7 +42,7 @@ module Api
       end
 
       def update
-        result = Carts::CartService.update_cart_item_quantity(
+        result = ::Carts::CartService.update_cart_item_quantity(
           @cart,
           @cart_item.product_id,
           cart_item_params[:quantity]
@@ -59,7 +59,7 @@ module Api
       end
 
       def destroy
-        result = Carts::CartService.remove_from_cart(
+        result = ::Carts::CartService.remove_from_cart(
           @cart,
           @cart_item.product_id
         )

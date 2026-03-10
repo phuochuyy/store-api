@@ -112,15 +112,21 @@ module Returns
       end
 
       def create_return_item(return_request, item_params)
-        order_item = OrderItem.find(item_params[:order_item_id])
+        p = if item_params.respond_to?(:to_unsafe_h)
+              item_params.to_unsafe_h
+            else
+              item_params.to_h
+            end
+        params = p.with_indifferent_access
+        order_item = OrderItem.find(params[:order_item_id])
         return unless order_item.order_id == return_request.order_id
 
         ReturnItem.create!(
           return_request: return_request,
           order_item: order_item,
-          quantity: item_params[:quantity].to_i,
-          reason: item_params[:reason],
-          condition: item_params[:condition] || 'unopened'
+          quantity: params[:quantity].to_i,
+          reason: params[:reason],
+          condition: params[:condition] || 'unopened'
         )
       end
 

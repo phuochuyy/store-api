@@ -2,7 +2,6 @@
 
 module Api
   module V1
-    # rubocop:disable Metrics/ClassLength
     class StockAlertsController < Api::V1::BaseController
       before_action :set_stock_alert, only: %i[show update destroy resolve dismiss]
       before_action :admin_only!, only: %i[index show update destroy resolve dismiss bulk_operation statistics]
@@ -31,7 +30,7 @@ module Api
       end
 
       def fetch_stock_alerts(filters)
-        StockAlerts::StockAlertService.get_alerts(
+        ::StockAlerts::StockAlertService.get_alerts(
           filters: filters,
           page: params[:page] || 1,
           per_page: params[:per_page] || 20
@@ -50,7 +49,7 @@ module Api
       def update
         update_params = stock_alert_params.except(:resolved_by, :resolution_notes, :dismissed_by, :dismissal_reason)
 
-        result = StockAlerts::StockAlertService.update_alert(@stock_alert, update_params)
+        result = ::StockAlerts::StockAlertService.update_alert(@stock_alert, update_params)
 
         if result[:success]
           data = { alert: alert_serializer(result[:alert]) }
@@ -69,7 +68,7 @@ module Api
       end
 
       def resolve
-        result = StockAlerts::StockAlertService.resolve_alert(
+        result = ::StockAlerts::StockAlertService.resolve_alert(
           @stock_alert,
           resolved_by: current_user&.name || 'System',
           resolution_notes: params[:resolution_notes]
@@ -84,7 +83,7 @@ module Api
       end
 
       def dismiss
-        result = StockAlerts::StockAlertService.dismiss_alert(
+        result = ::StockAlerts::StockAlertService.dismiss_alert(
           @stock_alert,
           dismissed_by: current_user&.name || 'System',
           dismissal_reason: params[:dismissal_reason]
@@ -103,7 +102,7 @@ module Api
         action = params[:action]
         operation_params = params[:operation_params] || {}
 
-        result = StockAlerts::StockAlertService.bulk_operation(alert_ids, action, operation_params)
+        result = ::StockAlerts::StockAlertService.bulk_operation(alert_ids, action, operation_params)
 
         if result[:success]
           render_success({ count: result[:count] }, result[:message])
@@ -114,7 +113,7 @@ module Api
 
       def statistics
         period = params[:period] || 'month'
-        result = StockAlerts::StockAlertService.get_alert_statistics(period)
+        result = ::StockAlerts::StockAlertService.get_alert_statistics(period)
 
         if result[:success]
           render_success(result, 'Stock alert statistics retrieved successfully')
@@ -124,7 +123,7 @@ module Api
       end
 
       def critical
-        alerts = StockAlerts::StockMonitoringService.get_critical_alerts
+        alerts = ::StockAlerts::StockMonitoringService.get_critical_alerts
         data = {
           alerts: alerts.map { |alert| alert_serializer(alert) },
           count: alerts.count
@@ -134,7 +133,7 @@ module Api
       end
 
       def low_stock
-        alerts = StockAlerts::StockMonitoringService.get_low_stock_alerts
+        alerts = ::StockAlerts::StockMonitoringService.get_low_stock_alerts
         data = {
           alerts: alerts.map { |alert| alert_serializer(alert) },
           count: alerts.count
@@ -144,7 +143,7 @@ module Api
       end
 
       def pending_notifications
-        alerts = StockAlerts::StockMonitoringService.get_alerts_pending_notification
+        alerts = ::StockAlerts::StockMonitoringService.get_alerts_pending_notification
         data = {
           alerts: alerts.map { |alert| alert_serializer(alert) },
           count: alerts.count
@@ -157,7 +156,7 @@ module Api
         alert_ids = params[:alert_ids]
         return render_error('Alert IDs are required', :bad_request) if alert_ids.blank?
 
-        updated_count = StockAlerts::StockMonitoringService.mark_notifications_sent(alert_ids)
+        updated_count = ::StockAlerts::StockMonitoringService.mark_notifications_sent(alert_ids)
 
         render_success(
           { count: updated_count },
@@ -166,7 +165,7 @@ module Api
       end
 
       def summary
-        summary_data = StockAlerts::StockMonitoringService.get_alert_summary
+        summary_data = ::StockAlerts::StockMonitoringService.get_alert_summary
         render_success(summary_data, 'Stock alert summary retrieved successfully')
       end
 
@@ -235,6 +234,5 @@ module Api
         }
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end
