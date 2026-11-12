@@ -76,7 +76,7 @@ module Products
       def apply_search_filter(products, search_term)
         return products if search_term.blank?
 
-        products.where('name ILIKE ?', "%#{search_term}%")
+        products.where(Search::Like.contains(Product.arel_table[:name], search_term))
       end
 
       def apply_brand_filter(products, brand_id)
@@ -114,11 +114,9 @@ module Products
       def apply_full_text_search(products, search_term)
         return products if search_term.blank?
 
-        search_pattern = "%#{search_term}%"
-        products.left_joins(:brand, :category).where(
-          'products.name ILIKE ? OR products.description ILIKE ? OR brands.name ILIKE ? OR categories.name ILIKE ?',
-          search_pattern, search_pattern, search_pattern, search_pattern
-        )
+        columns = [Product.arel_table[:name], Product.arel_table[:description],
+                   Brand.arel_table[:name], Category.arel_table[:name]]
+        products.left_joins(:brand, :category).where(Search::Like.contains(columns, search_term))
       end
 
       def paginate(products, pagination)
