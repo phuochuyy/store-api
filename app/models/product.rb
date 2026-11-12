@@ -38,6 +38,25 @@ class Product < ApplicationRecord
   # Active Storage for image uploads
   has_one_attached :image
 
+  # Elasticsearch index (Searchkick). Index updates are queued through Active Job so a save
+  # never waits on Elasticsearch; with the default SQL search backend no callbacks run.
+  searchkick callbacks: (Search::Backend.elasticsearch? ? :async : false)
+
+  scope :search_import, -> { includes(:brand, :category) }
+
+  def search_data
+    {
+      name: name,
+      description: description,
+      brand_name: brand&.name,
+      category_name: category&.name,
+      brand_id: brand_id,
+      category_id: category_id,
+      price: price.to_f,
+      in_stock: stock_quantity.to_i.positive?
+    }
+  end
+
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :description, presence: true, length: { minimum: 10, maximum: 1000 }
   validates :price, presence: true, numericality: { greater_than: 0, less_than: 100_000 }
