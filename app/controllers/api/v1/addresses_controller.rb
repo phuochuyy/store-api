@@ -12,11 +12,11 @@ module Api
 
         if result[:success]
           render_success({
-            valid: result[:valid],
-            normalized_address: result[:normalized_address],
-            errors: result[:errors] || [],
-            suggestions: result[:suggestions] || []
-          }, result[:valid] ? 'Address is valid' : 'Address validation failed')
+                           valid: result[:valid],
+                           normalized_address: result[:normalized_address],
+                           errors: result[:errors] || [],
+                           suggestions: result[:suggestions] || []
+                         }, result[:valid] ? 'Address is valid' : 'Address validation failed')
         else
           render_error(result[:error], :unprocessable_entity, result[:details])
         end
@@ -34,8 +34,8 @@ module Api
 
         if result[:success]
           render_success({
-            suggestions: result[:suggestions] || []
-          }, 'Address suggestions retrieved successfully')
+                           suggestions: result[:suggestions] || []
+                         }, 'Address suggestions retrieved successfully')
         else
           render_error(result[:error], :unprocessable_entity, result[:details])
         end
@@ -49,4 +49,3 @@ module Api
     end
   end
 end
-

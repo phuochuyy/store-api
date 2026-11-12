@@ -50,6 +50,16 @@ RSpec.describe Auth::Jwt::DecodeService, type: :service do
         expect(result).to be_nil
       end
 
+      # Regression: the signing key used to fall back to this public string whenever
+      # credentials could not be read, which let anyone forge tokens.
+      it 'rejects a token signed with the old hard-coded fallback secret' do
+        forged = JWT.encode({ user_id: user.id, role: 'admin', exp: 1.hour.from_now.to_i }, 'fallback_secret_key',
+                            'HS256')
+
+        expect(Auth::Jwt::Config::SECRET_KEY).not_to eq('fallback_secret_key')
+        expect(described_class.decode(forged)).to be_nil
+      end
+
       it 'returns nil for expired token' do
         expired_payload = {
           user_id: user.id,
@@ -58,14 +68,14 @@ RSpec.describe Auth::Jwt::DecodeService, type: :service do
           iat: 2.days.ago.to_i,
           exp: 1.day.ago.to_i
         }
-        expired_token = JWT.encode(expired_payload, Rails.application.credentials.secret_key_base, 'HS256')
+        expired_token = JWT.encode(expired_payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
 
         result = described_class.decode(expired_token)
         expect(result).to be_nil
       end
 
       it 'returns nil for token with invalid algorithm' do
-        invalid_algo_token = JWT.encode({ user_id: user.id }, Rails.application.credentials.secret_key_base, 'HS512')
+        invalid_algo_token = JWT.encode({ user_id: user.id }, Auth::Jwt::Config::SECRET_KEY, 'HS512')
         result = described_class.decode(invalid_algo_token)
         expect(result).to be_nil
       end
@@ -162,7 +172,7 @@ RSpec.describe Auth::Jwt::DecodeService, type: :service do
         iat: Time.current.to_i,
         exp: 1.hour.from_now.to_i
       }
-      token = JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+      token = JWT.encode(payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
 
       result = described_class.decode_refresh_token(token)
       expect(result).to be_nil
@@ -370,7 +380,7 @@ RSpec.describe Auth::Jwt::DecodeService, type: :service do
         iat: 2.days.ago.to_i,
         exp: 1.day.ago.to_i
       }
-      expired_token = JWT.encode(expired_payload, Rails.application.credentials.secret_key_base, 'HS256')
+      expired_token = JWT.encode(expired_payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
 
       result = described_class.expired?(expired_token)
       expect(result).to be true

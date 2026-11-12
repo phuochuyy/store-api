@@ -25,7 +25,8 @@ module Api
         end
 
         def show
-          render_success({ comparison: comparison_serializer(@comparison) }, 'Product comparison retrieved successfully')
+          render_success({ comparison: comparison_serializer(@comparison) },
+                         'Product comparison retrieved successfully')
         end
 
         def create
@@ -169,4 +170,3 @@ module Api
     end
   end
 end
-

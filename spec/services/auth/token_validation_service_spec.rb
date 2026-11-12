@@ -49,7 +49,7 @@ RSpec.describe Auth::TokenValidationService, type: :service do
           iat: 2.days.ago.to_i,
           exp: 1.day.ago.to_i
         }
-        expired_token = JWT.encode(expired_payload, Rails.application.credentials.secret_key_base, 'HS256')
+        expired_token = JWT.encode(expired_payload, Auth::Jwt::Config::SECRET_KEY, 'HS256')
 
         result = described_class.authenticate(expired_token)
 

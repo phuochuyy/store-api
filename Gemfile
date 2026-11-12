@@ -5,7 +5,7 @@ gem 'bootsnap', require: false
 gem 'ostruct'
 gem 'pg', '~> 1.1'
 gem 'puma', '>= 5.0'
-gem 'rails', '~> 8.0.2', '>= 8.0.2.1'
+gem 'rails', '~> 8.1.4'
 gem 'tzinfo-data', platforms: %i[windows jruby]
 
 # Authentication
@@ -60,6 +60,7 @@ group :development, :test do
   gem 'rswag-specs'
   # Code Quality & Security
   gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
   # Development Tools

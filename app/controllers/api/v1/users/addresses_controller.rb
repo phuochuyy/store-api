@@ -48,7 +48,7 @@ module Api
           return render_error('You can only update your own addresses', :forbidden) unless @address.user == current_user
 
           result = ::Users::AddressCreationService.update_address(address: @address,
-                                                                   **address_params.to_h.symbolize_keys)
+                                                                  **address_params.to_h.symbolize_keys)
 
           if result[:success]
             render_success({ address: result[:address] }, 'Address updated successfully')

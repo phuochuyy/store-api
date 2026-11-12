@@ -76,9 +76,7 @@ module Returns
           end
 
           # Process refund if return type is refund
-          if return_request.return_type == 'refund'
-            process_refund(return_request)
-          end
+          process_refund(return_request) if return_request.return_type == 'refund'
 
           # Mark as completed
           return_request.complete!
@@ -152,4 +150,3 @@ module Returns
     end
   end
 end
-

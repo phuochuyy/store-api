@@ -255,6 +255,10 @@ spec/factories/**/*.rb
 !spec/factories/categories.rb
 !spec/factories/jwt_blacklist_tokens.rb
 !spec/factories/password_reset_tokens.rb
+!spec/factories/discounts.rb
+!spec/factories/product_reviews.rb
+!spec/factories/shipping_methods.rb
+!spec/factories/tax_rates.rb
 
 # Temporary files
 *.tmp
