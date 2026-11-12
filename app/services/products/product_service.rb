@@ -98,9 +98,14 @@ module Products
       end
 
       def apply_stock_filter(products, in_stock)
-        return products unless in_stock == true
+        return products unless in_stock_requested?(in_stock)
 
         products.where('stock_quantity > 0')
+      end
+
+      # Query params arrive as strings ("true"), so cast instead of comparing with `true`.
+      def in_stock_requested?(value)
+        ActiveModel::Type::Boolean.new.cast(value) == true
       end
 
       def apply_search_filters(products, filters)
