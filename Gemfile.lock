@@ -95,6 +95,9 @@ GEM
     brakeman (7.1.0)
       racc
     builder (3.3.0)
+    bundler-audit (0.9.3)
+      bundler (>= 1.2.0)
+      thor (~> 1.0)
     case_transform (0.2)
       activesupport
     childprocess (5.1.0)
@@ -383,6 +386,7 @@ DEPENDENCIES
   binding_of_caller
   bootsnap
   brakeman
+  bundler-audit
   database_cleaner-active_record
   debug
   factory_bot_rails

@@ -60,6 +60,7 @@ group :development, :test do
   gem 'rswag-specs'
   # Code Quality & Security
   gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
   # Development Tools
