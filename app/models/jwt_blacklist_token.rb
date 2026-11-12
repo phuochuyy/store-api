@@ -52,7 +52,7 @@ class JwtBlacklistToken < ApplicationRecord
   end
 
   def self.extract_token_expiry(token)
-    payload = JWT.decode(token, Rails.application.credentials.secret_key_base, true, { algorithm: 'HS256' }).first
+    payload = JWT.decode(token, Auth::Jwt::Config::SECRET_KEY, true, { algorithm: Auth::Jwt::Config::ALGORITHM }).first
     Time.zone.at(payload['exp']) if payload['exp']
   rescue JWT::DecodeError
     24.hours.from_now
