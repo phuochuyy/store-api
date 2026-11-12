@@ -23,6 +23,32 @@ services:
     networks:
       - store_api_network
 
+  # Optional MySQL 8.4 LTS to run the app and its specs against MySQL
+  # (DB_ADAPTER=trilogy). Not started by default:
+  #   docker compose --profile mysql up -d mysql
+  mysql:
+    image: mysql:8.4
+    profiles: ["mysql"]
+    container_name: store_api_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_DATABASE: store_api_development
+      MYSQL_USER: store_api
+      MYSQL_PASSWORD: userpw
+    ports:
+      - "3307:3306"  # Host 3307 to avoid conflict with a local MySQL on 3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u store_api -puserpw --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - store_api_network
+
   redis:
     image: redis:7-alpine
     container_name: store_api_redis
@@ -41,6 +67,8 @@ services:
       - store_api_network
 
 volumes:
+  mysql_data:
+    driver: local
   postgres_data:
     driver: local
   redis_data:

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_25_095917) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -574,7 +574,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_25_095917) do
     t.string "gender"
     t.string "avatar"
     t.text "bio"
-    t.json "preferences", default: {}
+    t.json "preferences"
     t.index ["date_of_birth"], name: "index_users_on_date_of_birth"
     t.index ["email"], name: "index_users_on_email_unique", unique: true
     t.index ["email_verification_token"], name: "index_users_on_email_verification_token", unique: true
