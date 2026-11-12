@@ -50,6 +50,22 @@ bundle exec rspec
 
 Text search goes through `Search::Like`, which builds `ILIKE` on PostgreSQL and `LIKE` on MySQL and escapes `%` / `_` in user input. Do not write raw `ILIKE` in queries.
 
+### Product search with Elasticsearch
+
+`GET /api/v1/products/search` runs on SQL by default. With Elasticsearch it gains typo tolerance (`iphnoe` finds iPhone) and relevance ranking: name > brand > category > description.
+
+```bash
+docker compose --profile search up -d elasticsearch     # Elasticsearch 9.5 on localhost:9200
+export SEARCH_BACKEND=elasticsearch ELASTICSEARCH_URL=http://localhost:9200
+bin/rails searchkick:reindex CLASS=Product               # full rebuild behind an alias, no downtime
+ELASTICSEARCH_URL=http://localhost:9200 bundle exec rspec spec/services/products/elasticsearch_search_spec.rb
+```
+
+How it behaves:
+- **Index updates:** product saves queue an index update through Active Job (Sidekiq), so a save never waits on Elasticsearch. Renaming a brand or category reindexes its products.
+- **Outages:** if the cluster is down or slower than 2 s, search falls back to SQL and logs `[search] Elasticsearch unavailable`. Results lose typo tolerance, but requests keep succeeding.
+- **Default:** with `SEARCH_BACKEND` unset, no index callbacks run and Elasticsearch is not needed.
+
 ### Production Setup
 
 For production deployment with full Docker stack:
