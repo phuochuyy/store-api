@@ -47,6 +47,10 @@ gem 'rswag-ui'
 # Pagination
 gem 'kaminari'
 
+# Search (Elasticsearch, SEARCH_BACKEND=elasticsearch)
+gem 'elasticsearch', '~> 9.5'
+gem 'searchkick', '~> 6.2'
+
 group :development, :test do
   # Testing
   gem 'database_cleaner-active_record'

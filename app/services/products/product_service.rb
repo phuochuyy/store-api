@@ -1,5 +1,10 @@
 module Products
   class ProductService
+    # Relevance boosts for Elasticsearch: a hit in the name outranks a hit in the description.
+    ELASTICSEARCH_FIELDS = %w[name^5 brand_name^3 category_name^2 description].freeze
+    # Raised when the cluster is down, slow or rejects the request.
+    ELASTICSEARCH_ERRORS = [Searchkick::Error, Elastic::Transport::Transport::Error, Faraday::Error].freeze
+
     class << self
       def list_products(filters: {}, pagination: {})
         products = Product.includes(:brand, :category)
@@ -21,9 +26,8 @@ module Products
       end
 
       def search_products(filters: {}, pagination: {})
-        products = Product.includes(:brand, :category)
-        products = apply_search_filters(products, filters)
-        products = paginate(products, pagination)
+        products = search_with_elasticsearch(filters, pagination) if Search::Backend.elasticsearch?
+        products ||= paginate(apply_search_filters(Product.includes(:brand, :category), filters), pagination)
 
         {
           products: products.map { |product| ProductSerializer.new(product).as_json },
@@ -122,6 +126,38 @@ module Products
         columns = [Product.arel_table[:name], Product.arel_table[:description],
                    Brand.arel_table[:name], Category.arel_table[:name]]
         products.left_joins(:brand, :category).where(Search::Like.contains(columns, search_term))
+      end
+
+      # Relevance-ranked, typo-tolerant search with the same filters as the SQL search.
+      # Returns nil when Elasticsearch cannot answer, and the caller falls back to SQL: an
+      # outage of the search cluster degrades search instead of failing the request.
+      def search_with_elasticsearch(filters, pagination)
+        results = Product.search(
+          filters[:search].presence || '*',
+          fields: ELASTICSEARCH_FIELDS,
+          where: elasticsearch_where(filters),
+          includes: %i[brand category],
+          page: pagination[:page] || 1,
+          per_page: pagination[:per_page] || 10
+        )
+        results.to_a # run the query here so connection errors are rescued below
+        results
+      rescue *ELASTICSEARCH_ERRORS => e
+        Rails.logger.warn("[search] Elasticsearch unavailable (#{e.class}: #{e.message}); using SQL search")
+        nil
+      end
+
+      def elasticsearch_where(filters)
+        {
+          brand_id: filters[:brand_id].presence&.to_i,
+          category_id: filters[:category_id].presence&.to_i,
+          price: elasticsearch_price_range(filters),
+          in_stock: (true if in_stock_requested?(filters[:in_stock]))
+        }.compact
+      end
+
+      def elasticsearch_price_range(filters)
+        { gte: filters[:min_price].presence&.to_f, lte: filters[:max_price].presence&.to_f }.compact.presence
       end
 
       def paginate(products, pagination)
