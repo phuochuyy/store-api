@@ -37,6 +37,19 @@ Development environment runs Rails server locally with Docker containers for DB 
    - Health Check: http://localhost:3000/api/v1/health
    - Documentation: http://localhost:3000/api-docs
 
+### Running on MySQL
+
+PostgreSQL is the default. The app and its test suite also run on MySQL 8 (Trilogy adapter), and CI runs every spec on both:
+
+```bash
+docker compose --profile mysql up -d mysql   # MySQL 8.4 on localhost:3307
+export DB_ADAPTER=trilogy DATABASE_PORT=3307
+bin/rails db:prepare
+bundle exec rspec
+```
+
+Text search goes through `Search::Like`, which builds `ILIKE` on PostgreSQL and `LIKE` on MySQL and escapes `%` / `_` in user input. Do not write raw `ILIKE` in queries.
+
 ### Production Setup
 
 For production deployment with full Docker stack:
