@@ -127,8 +127,12 @@ module Discounts
       def apply_filters(discounts, filters)
         discounts = discounts.where(discount_type: filters[:discount_type]) if filters[:discount_type].present?
         discounts = discounts.where(is_active: filters[:is_active]) if filters[:is_active].present?
-        discounts = discounts.where('name ILIKE ?', "%#{filters[:search]}%") if filters[:search].present?
-        discounts = discounts.where('code ILIKE ?', "%#{filters[:code]}%") if filters[:code].present?
+        if filters[:search].present?
+          discounts = discounts.where(Search::Like.contains(Discount.arel_table[:name], filters[:search]))
+        end
+        if filters[:code].present?
+          discounts = discounts.where(Search::Like.contains(Discount.arel_table[:code], filters[:code]))
+        end
 
         discounts = discounts.where(created_at: (filters[:date_from])..) if filters[:date_from].present?
 
