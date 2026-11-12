@@ -113,4 +113,3 @@ class ReturnRequest < ApplicationRecord
     self.requested_at ||= Time.current
   end
 end
-

@@ -43,9 +43,7 @@ module Address
         return { success: false, error: 'Query is required' } if query.blank?
 
         # If external API is configured, use it for autocomplete
-        if external_api_configured?
-          return external_api_autocomplete(query, country_code: country_code)
-        end
+        return external_api_autocomplete(query, country_code: country_code) if external_api_configured?
 
         # Basic fallback: return empty suggestions
         {
@@ -71,10 +69,8 @@ module Address
         errors << 'Country code is required' if address_params[:country_code].blank?
 
         # Validate country code format (ISO 3166-1 alpha-2)
-        if address_params[:country_code].present?
-          unless address_params[:country_code].match?(/\A[A-Z]{2}\z/)
-            errors << 'Country code must be a valid ISO 3166-1 alpha-2 code (e.g., US, GB, FR)'
-          end
+        if address_params[:country_code].present? && !address_params[:country_code].match?(/\A[A-Z]{2}\z/)
+          errors << 'Country code must be a valid ISO 3166-1 alpha-2 code (e.g., US, GB, FR)'
         end
 
         # Validate postal code format (basic check)
@@ -129,7 +125,7 @@ module Address
         # For Google Maps API
         ENV['GOOGLE_MAPS_API_KEY'].present? ||
           # For SmartyStreets API
-          ENV['SMARTYSTREETS_AUTH_ID'].present? && ENV['SMARTYSTREETS_AUTH_TOKEN'].present?
+          (ENV['SMARTYSTREETS_AUTH_ID'].present? && ENV['SMARTYSTREETS_AUTH_TOKEN'].present?)
       end
 
       def external_api_validation(address_params)
@@ -148,4 +144,3 @@ module Address
     end
   end
 end
-

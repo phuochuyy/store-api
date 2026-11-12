@@ -131,7 +131,10 @@ module Carts
       end
 
       def merge_carts(guest_cart, user_cart)
-        return { success: true, cart: user_cart, cart_items: user_cart.cart_items.includes(:product), message: 'Carts merged successfully' } if guest_cart.empty?
+        if guest_cart.empty?
+          return { success: true, cart: user_cart, cart_items: user_cart.cart_items.includes(:product),
+                   message: 'Carts merged successfully' }
+        end
 
         guest_cart.cart_items.includes(:product, :product_variant).each do |guest_item|
           existing_item = user_cart.cart_items.find_by(
@@ -144,17 +147,15 @@ module Carts
             max_qty = guest_item.product_variant.present? ? guest_item.product_variant.stock_quantity : guest_item.product.stock_quantity
             new_quantity = max_qty if max_qty.present? && new_quantity > max_qty
             existing_item.update!(quantity: new_quantity)
+          elsif guest_item.product_variant_id.present?
+            user_cart.cart_items.create!(
+              product: guest_item.product,
+              product_variant: guest_item.product_variant,
+              quantity: guest_item.quantity,
+              unit_price: guest_item.unit_price
+            )
           else
-            if guest_item.product_variant_id.present?
-              user_cart.cart_items.create!(
-                product: guest_item.product,
-                product_variant: guest_item.product_variant,
-                quantity: guest_item.quantity,
-                unit_price: guest_item.unit_price
-              )
-            else
-              user_cart.add_product(guest_item.product, guest_item.quantity)
-            end
+            user_cart.add_product(guest_item.product, guest_item.quantity)
           end
         end
 

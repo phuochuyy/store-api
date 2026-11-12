@@ -36,6 +36,7 @@ class OrderItem < ApplicationRecord
 
   def variant_display_name
     return product.name unless product_variant
+
     product_variant.variant_display_name
   end
 
@@ -52,9 +53,9 @@ class OrderItem < ApplicationRecord
   def variant_belongs_to_product
     return unless product_variant && product
 
-    unless product_variant.product_id == product.id
-      errors.add(:product_variant, 'must belong to the selected product')
-    end
+    return if product_variant.product_id == product.id
+
+    errors.add(:product_variant, 'must belong to the selected product')
   end
 
   def update_order_total

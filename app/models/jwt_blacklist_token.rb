@@ -89,7 +89,6 @@ class JwtBlacklistToken < ApplicationRecord
     # Find all active tokens for this user that haven't been blacklisted yet
     # We'll blacklist tokens that are in the database (from previous logouts)
     # and mark all future tokens as invalid via logout timestamp
-    blacklisted_count = 0
 
     # Blacklist all existing tokens in database for this user
     # Note: We can only blacklist tokens we know about (already in database)

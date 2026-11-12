@@ -20,7 +20,7 @@ class CartItem < ApplicationRecord
   validates :unit_price, presence: true, numericality: { greater_than: 0 }
   # Uniqueness should include variant if present
   validates :product_id, uniqueness: {
-    scope: [:cart_id, :product_variant_id],
+    scope: %i[cart_id product_variant_id],
     message: 'Product with same variant already in cart'
   }
   validate :variant_belongs_to_product, if: -> { product_variant.present? }
@@ -50,6 +50,7 @@ class CartItem < ApplicationRecord
 
   def variant_display_name
     return product.name unless product_variant
+
     product_variant.variant_display_name
   end
 
@@ -66,9 +67,9 @@ class CartItem < ApplicationRecord
   def variant_belongs_to_product
     return unless product_variant && product
 
-    unless product_variant.product_id == product.id
-      errors.add(:product_variant, 'must belong to the selected product')
-    end
+    return if product_variant.product_id == product.id
+
+    errors.add(:product_variant, 'must belong to the selected product')
   end
 
   def update_cart_total

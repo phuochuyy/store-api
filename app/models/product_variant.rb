@@ -65,4 +65,3 @@ class ProductVariant < ApplicationRecord
     true
   end
 end
-

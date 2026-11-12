@@ -71,7 +71,8 @@ module Api
 
           if @review.update(review_params)
             @review.update(status: 'pending') # Re-approval required after update
-            render_success({ review: review_serializer(@review) }, 'Review updated successfully. Pending admin approval.')
+            render_success({ review: review_serializer(@review) },
+                           'Review updated successfully. Pending admin approval.')
           else
             render_error('Review could not be updated', :unprocessable_content, @review.errors.full_messages)
           end
@@ -150,4 +151,3 @@ module Api
     end
   end
 end
-
