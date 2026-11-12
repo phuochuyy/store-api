@@ -187,6 +187,7 @@ yarn.lock
 # PostgreSQL
 *.pgsql
 *.sql
+!docker/mysql/init/*.sql
 backup_*.sql
 *.dump
 

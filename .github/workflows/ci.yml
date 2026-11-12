@@ -7,7 +7,12 @@ on:
 
 jobs:
   test:
+    name: test (${{ matrix.database }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [ postgresql, mysql ]
 
     services:
       postgres:
@@ -22,6 +27,19 @@ jobs:
           --health-cmd "pg_isready -U store_api -d store_api_test"
           --health-interval 10s --health-timeout 5s --health-retries 5
 
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: store_api_test
+          MYSQL_USER: store_api
+          MYSQL_PASSWORD: userpw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u store_api -puserpw --silent"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+
       redis:
         image: redis:7-alpine
         ports:
@@ -32,8 +50,9 @@ jobs:
 
     env:
       RAILS_ENV: test
+      DB_ADAPTER: ${{ matrix.database == 'mysql' && 'trilogy' || 'postgresql' }}
       DATABASE_HOST: 127.0.0.1
-      DATABASE_PORT: 5432
+      DATABASE_PORT: ${{ matrix.database == 'mysql' && '3306' || '5432' }}
       REDIS_URL: redis://localhost:6379/0
 
     steps:
@@ -56,7 +75,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-${{ matrix.database }}
           path: coverage/
           if-no-files-found: ignore
 

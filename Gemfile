@@ -6,6 +6,7 @@ gem 'ostruct'
 gem 'pg', '~> 1.1'
 gem 'puma', '>= 5.0'
 gem 'rails', '~> 8.1.4'
+gem 'trilogy' # MySQL 8 adapter (DB_ADAPTER=trilogy)
 gem 'tzinfo-data', platforms: %i[windows jruby]
 
 # Authentication

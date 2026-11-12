@@ -14,6 +14,10 @@ class User < ApplicationRecord
 
   has_secure_password
 
+  # The {} default lives here rather than in the schema: MySQL does not allow a
+  # literal default on a JSON column, and the app runs on PostgreSQL and MySQL.
+  attribute :preferences, :json, default: -> { {} }
+
   # Associations
   has_many :carts, dependent: :destroy
 
