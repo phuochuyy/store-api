@@ -44,7 +44,7 @@ class Order < ApplicationRecord
     payment_failed: 'payment_failed',
     refunded: 'refunded',
     partially_refunded: 'partially_refunded'
-  }
+  }, default: :pending
 
   scope :recent, -> { order(created_at: :desc) }
 

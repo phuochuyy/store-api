@@ -335,8 +335,8 @@ RSpec.describe Api::V1::Payments::PaymentsController, type: :controller do
           order_id: order.id
         }
 
-        # May return 500 if params.expect fails
-        expect([422, 500]).to include(response.status)
+        expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body['message']).to eq('Missing parameter')
       end
     end
 

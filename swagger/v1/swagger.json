@@ -4664,7 +4664,7 @@
         }
       }
     },
-    "/api/v1/carts/{cart_id}/cart_items": {
+    "/api/v1/carts/{cart_id}/items": {
       "get:": null,
       "tags": [
         "Shopping Cart"
@@ -4791,7 +4791,7 @@
         }
       }
     },
-    "/api/v1/carts/{cart_id}/cart_items/{id}": {
+    "/api/v1/carts/{cart_id}/items/{id}": {
       "patch:": null,
       "tags": [
         "Shopping Cart"
@@ -4923,7 +4923,7 @@
         }
       }
     },
-    "/api/v1/cart_items/{id}": {
+    "/api/v1/carts/items/{id}": {
       "patch:": null,
       "tags": [
         "Shopping Cart"
@@ -7080,7 +7080,7 @@
         }
       }
     },
-    "/api/v1/orders/{order_id}/order_items": {
+    "/api/v1/orders/{order_id}/items": {
       "get:": null,
       "tags": [
         "Orders"
@@ -7199,7 +7199,7 @@
         }
       }
     },
-    "/api/v1/order_items/{id}": {
+    "/api/v1/orders/items/{id}": {
       "get:": null,
       "tags": [
         "Orders"
@@ -12263,7 +12263,7 @@
         }
       }
     },
-    "/api/v1/payment_methods": {
+    "/api/v1/payments/methods": {
       "get": {
         "tags": [
           "Payment Methods"
@@ -13220,7 +13220,7 @@
         }
       }
     },
-    "/api/v1/payment_methods/{id}": {
+    "/api/v1/payments/methods/{id}": {
       "get:": null,
       "tags": [
         "Payment Methods"
@@ -13344,7 +13344,7 @@
         }
       }
     },
-    "/api/v1/payment_methods/{id}/stats": {
+    "/api/v1/payments/methods/{id}/stats": {
       "get:": null,
       "tags": [
         "Payment Methods"
@@ -13436,7 +13436,7 @@
         }
       }
     },
-    "/api/v1/payment_methods/{id}/validate_config": {
+    "/api/v1/payments/methods/{id}/validate_config": {
       "post:": null,
       "tags": [
         "Payment Methods"
@@ -13539,7 +13539,7 @@
         }
       }
     },
-    "/api/v1/payment_methods/calculate_fees": {
+    "/api/v1/payments/methods/calculate_fees": {
       "post:": null,
       "tags": [
         "Payment Methods"
@@ -15272,8 +15272,9 @@
             "example": 1
           },
           "total_amount": {
-            "type": "number",
-            "example": 1999.98
+            "type": "string",
+            "example": "1999.98",
+            "format": "decimal"
           },
           "cart_items": {
             "type": "array",
@@ -15311,12 +15312,14 @@
             "example": 2
           },
           "unit_price": {
-            "type": "number",
-            "example": 999.99
+            "type": "string",
+            "example": "999.99",
+            "format": "decimal"
           },
           "total_price": {
-            "type": "number",
-            "example": 1999.98
+            "type": "string",
+            "example": "1999.98",
+            "format": "decimal"
           },
           "product": {
             "$ref": "#/components/schemas/Product"
@@ -15360,23 +15363,30 @@
             "enum": [
               "pending",
               "confirmed",
+              "paid",
+              "payment_failed",
               "shipped",
               "delivered",
-              "cancelled"
+              "cancelled",
+              "refunded",
+              "partially_refunded"
             ],
             "example": "pending"
           },
           "total_amount": {
-            "type": "number",
-            "example": 1999.98
+            "type": "string",
+            "example": "1999.98",
+            "format": "decimal"
           },
           "discount_amount": {
-            "type": "number",
-            "example": 200.0
+            "type": "string",
+            "example": "200.0",
+            "format": "decimal"
           },
           "final_amount": {
-            "type": "number",
-            "example": 1799.98
+            "type": "string",
+            "example": "1799.98",
+            "format": "decimal"
           },
           "order_items": {
             "type": "array",
@@ -15414,12 +15424,14 @@
             "example": 2
           },
           "unit_price": {
-            "type": "number",
-            "example": 999.99
+            "type": "string",
+            "example": "999.99",
+            "format": "decimal"
           },
           "total_price": {
-            "type": "number",
-            "example": 1999.98
+            "type": "string",
+            "example": "1999.98",
+            "format": "decimal"
           },
           "product": {
             "$ref": "#/components/schemas/Product"
@@ -15458,16 +15470,19 @@
             "example": "percentage"
           },
           "discount_value": {
-            "type": "number",
-            "example": 20.0
+            "type": "string",
+            "example": "20.0",
+            "format": "decimal"
           },
           "minimum_amount": {
-            "type": "number",
-            "example": 100.0
+            "type": "string",
+            "example": "100.0",
+            "format": "decimal"
           },
           "maximum_discount": {
-            "type": "number",
-            "example": 50.0
+            "type": "string",
+            "example": "50.0",
+            "format": "decimal"
           },
           "start_date": {
             "type": "string",
@@ -15516,8 +15531,9 @@
             "example": "buy_x_get_y"
           },
           "promotion_value": {
-            "type": "number",
-            "example": 1.0
+            "type": "string",
+            "example": "1.0",
+            "format": "decimal"
           },
           "minimum_quantity": {
             "type": "integer",
@@ -15659,12 +15675,14 @@
             "example": "credit_card"
           },
           "processing_fee_percentage": {
-            "type": "number",
-            "example": 2.5
+            "type": "string",
+            "example": "2.5",
+            "format": "decimal"
           },
           "processing_fee_fixed": {
-            "type": "number",
-            "example": 0.3
+            "type": "string",
+            "example": "0.3",
+            "format": "decimal"
           },
           "enabled": {
             "type": "boolean",
@@ -15696,16 +15714,19 @@
             "example": 1
           },
           "amount": {
-            "type": "number",
-            "example": 199.99
+            "type": "string",
+            "example": "199.99",
+            "format": "decimal"
           },
           "processing_fee": {
-            "type": "number",
-            "example": 5.3
+            "type": "string",
+            "example": "5.3",
+            "format": "decimal"
           },
           "total_amount": {
-            "type": "number",
-            "example": 205.29
+            "type": "string",
+            "example": "205.29",
+            "format": "decimal"
           },
           "status": {
             "type": "string",
@@ -15714,7 +15735,9 @@
               "processing",
               "completed",
               "failed",
-              "refunded"
+              "cancelled",
+              "refunded",
+              "partially_refunded"
             ],
             "example": "completed"
           },
@@ -15791,18 +15814,35 @@
       },
       "ErrorResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
             "example": false
           },
-          "error": {
+          "message": {
             "type": "string",
-            "example": "Error message"
+            "example": "Validation failed"
           },
-          "status": {
-            "type": "string",
-            "example": "error_status"
+          "errors": {
+            "description": "Optional details, usually a list of validation messages.",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": [
+              "Quantity must be greater than 0"
+            ]
           }
         }
       }

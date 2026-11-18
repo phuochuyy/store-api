@@ -16,76 +16,56 @@ module Api
           @orders = base.includes(:order_items, :products).recent
           @orders = @orders.page(params[:page]).per(params[:per_page] || 10)
 
-          render json: {
-            orders: @orders.map { |order| order_serializer(order) },
-            pagination: {
-              current_page: @orders.current_page,
-              total_pages: @orders.total_pages,
-              total_count: @orders.total_count,
-              per_page: @orders.limit_value
-            }
-          }
+          render_success({
+                           orders: @orders.map { |order| order_serializer(order) },
+                           pagination: {
+                             current_page: @orders.current_page,
+                             total_pages: @orders.total_pages,
+                             total_count: @orders.total_count,
+                             per_page: @orders.limit_value
+                           }
+                         }, 'Orders retrieved successfully')
         end
 
         def show
-          render json: {
-            order: order_serializer(@order),
-            order_items: @order.order_items.map { |item| order_item_serializer(item) }
-          }
+          render_success({
+                           order: order_serializer(@order),
+                           order_items: @order.order_items.map { |item| order_item_serializer(item) }
+                         }, 'Order retrieved successfully')
         end
 
         def create
-          attrs = order_params.to_h.symbolize_keys
-          attrs[:user_id] = current_user&.id if current_user
+          attrs = order_create_params.to_h.symbolize_keys
+          attrs[:user_id] = current_user.id
           result = ::Orders::OrderCreationService.create_order(attrs, params[:order_items])
 
           if result[:success]
-            render json: {
-              message: result[:message],
-              order: order_serializer(result[:order])
-            }, status: :created
+            render_success({ order: order_serializer(result[:order]) }, result[:message], :created)
           else
-            render json: {
-              errors: result[:details]
-            }, status: :unprocessable_content
+            render_error(result[:error], :unprocessable_content, Array(result[:details]))
           end
         end
 
         def update
           if @order.update(order_params)
-            render json: {
-              message: 'Order updated successfully',
-              order: order_serializer(@order)
-            }
+            render_success({ order: order_serializer(@order) }, 'Order updated successfully')
           else
-            render json: {
-              errors: @order.errors.full_messages
-            }, status: :unprocessable_content
+            render_error('Order could not be updated', :unprocessable_content, @order.errors.full_messages)
           end
         end
 
         def destroy
           @order.destroy
-          render json: { message: 'Order deleted successfully' }
+          render_success(nil, 'Order deleted successfully')
         end
 
         def confirm
           result = ::Orders::OrderConfirmationService.confirm_order(@order, current_user)
 
           if result[:success]
-            render json: {
-              success: true,
-              message: 'Order confirmed successfully',
-              data: {
-                order: order_serializer(@order.reload)
-              }
-            }
+            render_success({ order: order_serializer(@order.reload) }, 'Order confirmed successfully')
           else
-            render json: {
-              success: false,
-              error: result[:error],
-              details: result[:details]
-            }, status: :unprocessable_content
+            render_error(result[:error], :unprocessable_content, Array(result[:details]).presence)
           end
         end
 
@@ -93,19 +73,9 @@ module Api
           result = ::Orders::OrderCancellationService.cancel_order(@order, current_user, params[:reason])
 
           if result[:success]
-            render json: {
-              success: true,
-              message: 'Order cancelled successfully',
-              data: {
-                order: order_serializer(@order.reload)
-              }
-            }
+            render_success({ order: order_serializer(@order.reload) }, 'Order cancelled successfully')
           else
-            render json: {
-              success: false,
-              error: result[:error],
-              details: result[:details]
-            }, status: :unprocessable_content
+            render_error(result[:error], :unprocessable_content, Array(result[:details]).presence)
           end
         end
 
@@ -195,17 +165,9 @@ module Api
 
         def render_ship_response(result)
           if result[:success]
-            render json: {
-              success: true,
-              message: 'Order shipped successfully',
-              data: { order: order_serializer(@order.reload) }
-            }
+            render_success({ order: order_serializer(@order.reload) }, 'Order shipped successfully')
           else
-            render json: {
-              success: false,
-              error: result[:error],
-              details: result[:details]
-            }, status: :unprocessable_content
+            render_error(result[:error], :unprocessable_content, Array(result[:details]).presence)
           end
         end
 
@@ -220,17 +182,9 @@ module Api
 
         def render_deliver_response(result)
           if result[:success]
-            render json: {
-              success: true,
-              message: 'Order delivered successfully',
-              data: { order: order_serializer(@order.reload) }
-            }
+            render_success({ order: order_serializer(@order.reload) }, 'Order delivered successfully')
           else
-            render json: {
-              success: false,
-              error: result[:error],
-              details: result[:details]
-            }, status: :unprocessable_content
+            render_error(result[:error], :unprocessable_content, Array(result[:details]).presence)
           end
         end
 
@@ -239,8 +193,13 @@ module Api
           render_error('Order not found', :not_found) unless @order
         end
 
+        # Admin updates may change status; customers creating an order may not (it always starts pending).
         def order_params
           params.expect(order: %i[customer_name customer_email customer_phone status])
+        end
+
+        def order_create_params
+          params.expect(order: %i[customer_name customer_email customer_phone])
         end
 
         def order_serializer(order)

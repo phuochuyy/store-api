@@ -73,8 +73,11 @@ Rails.application.routes.draw do
       resources :categories
 
       # Shopping Cart namespace
+      # `path: ''` mounts these at /api/v1/carts (not /api/v1/carts/carts), like products.
+      # Sibling resources come first so `/:id` does not shadow them.
       namespace :carts do
-        resources :carts, controller: 'carts' do
+        resources :items, only: %i[index show create update destroy], controller: 'items'
+        resources :carts, controller: 'carts', path: '' do
           member do
             delete :clear
           end
@@ -83,12 +86,12 @@ Rails.application.routes.draw do
           end
           resources :items, only: %i[index show create update destroy], controller: 'items'
         end
-        resources :items, only: %i[index show create update destroy], controller: 'items'
       end
 
       # Orders namespace
       namespace :orders do
-        resources :orders, controller: 'orders' do
+        resources :items, only: %i[show update destroy], controller: 'items'
+        resources :orders, controller: 'orders', path: '' do
           member do
             post :confirm
             post :cancel
@@ -99,7 +102,6 @@ Rails.application.routes.draw do
           end
           resources :items, only: %i[index show create update destroy], controller: 'items'
         end
-        resources :items, only: %i[show update destroy], controller: 'items'
       end
 
       # Discount & Promotion routes
@@ -152,12 +154,6 @@ Rails.application.routes.draw do
 
       # Payments namespace
       namespace :payments do
-        resources :payments, controller: 'payments' do
-          member do
-            post :refund
-          end
-        end
-
         resources :methods, controller: 'methods' do
           member do
             get :stats
@@ -165,6 +161,12 @@ Rails.application.routes.draw do
           end
           collection do
             post :calculate_fees
+          end
+        end
+
+        resources :payments, controller: 'payments', path: '' do
+          member do
+            post :refund
           end
         end
       end
