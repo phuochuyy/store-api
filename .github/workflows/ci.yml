@@ -67,6 +67,7 @@ jobs:
       DATABASE_HOST: 127.0.0.1
       DATABASE_PORT: ${{ matrix.database == 'mysql' && '3306' || '5432' }}
       REDIS_URL: redis://localhost:6379/0
+      COVERAGE: 'true'
 
     steps:
       - name: Checkout code
