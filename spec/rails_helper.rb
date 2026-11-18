@@ -46,7 +46,10 @@ RSpec.configure do |config|
     DatabaseCleaner.clean_with(:truncation)
   end
 
+  # Examples tagged `:concurrency` run code on several threads (and DB connections), which cannot
+  # see data inside the per-example transaction, so they commit for real and clean up by deletion.
   config.around(:each) do |example|
+    DatabaseCleaner.strategy = example.metadata[:concurrency] ? :deletion : :transaction
     DatabaseCleaner.cleaning do
       example.run
     end

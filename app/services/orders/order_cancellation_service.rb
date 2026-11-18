@@ -60,15 +60,19 @@ module Orders
 
       # Restore stock quantities for cancelled order
       # @param order [Order] The order being cancelled
+      # Stock goes back to whatever was reduced at checkout: the variant if the item has one,
+      # otherwise the product. A failed restore aborts the cancellation (the caller's transaction
+      # rolls back) instead of silently losing inventory.
       def restore_stock_quantities(order)
-        order.order_items.each do |item|
-          product = item.product
-          next unless product
+        order.order_items.includes(:product, :product_variant).find_each do |item|
+          restored = if item.product_variant
+                       item.product_variant.add_stock(item.quantity, reason: 'order_cancelled')
+                     else
+                       item.product.add_stock(item.quantity, reason: 'order_cancelled', reference: order)
+                     end
+          raise StandardError, "Failed to restore stock for order item #{item.id}" unless restored
 
-          # Restore the stock quantity
-          product.add_stock(item.quantity)
-
-          Rails.logger.info "Restored #{item.quantity} units of #{product.name} to stock"
+          Rails.logger.info "Restored #{item.quantity} units for order item #{item.id}"
         end
       end
 

@@ -79,37 +79,18 @@ class Product < ApplicationRecord
     stock_quantity.positive?
   end
 
+  # Stock changes take a row lock (SELECT ... FOR UPDATE) and re-read the quantity before
+  # checking it, so concurrent checkouts are serialized per product and cannot oversell or
+  # lose updates. Inside a caller's transaction the lock is held until that transaction ends.
   def reduce_stock(quantity, reason: nil, user: nil, reference: nil)
     return false if quantity <= 0
-    return false if stock_quantity < quantity
 
-    previous_quantity = stock_quantity
-    new_quantity = stock_quantity - quantity
+    with_lock do
+      next false if stock_quantity < quantity
 
-    ActiveRecord::Base.transaction do
-      # Update stock quantity
-      update!(stock_quantity: new_quantity)
-
-      # Create stock movement record
-      movement_params = {
-        movement_type: 'order_created',
-        quantity: -quantity,
-        previous_quantity: previous_quantity,
-        new_quantity: new_quantity,
-        reason: reason,
-        user: user
-      }
-
-      # Handle polymorphic reference if provided
-      if reference.present?
-        movement_params[:reference_type] = reference.class.name
-        movement_params[:reference_id] = reference.id
-      end
-
-      stock_movements.create!(movement_params)
+      change_stock!(-quantity, 'order_created', reason: reason, user: user, reference: reference)
+      true
     end
-
-    true
   rescue StandardError => e
     Rails.logger.error "Error reducing stock for product #{id}: #{e.message}"
     false
@@ -118,33 +99,10 @@ class Product < ApplicationRecord
   def add_stock(quantity, reason: nil, user: nil, reference: nil)
     return false if quantity <= 0
 
-    previous_quantity = stock_quantity
-    new_quantity = stock_quantity + quantity
-
-    ActiveRecord::Base.transaction do
-      # Update stock quantity
-      update!(stock_quantity: new_quantity)
-
-      # Create stock movement record
-      movement_params = {
-        movement_type: 'order_cancelled',
-        quantity: quantity,
-        previous_quantity: previous_quantity,
-        new_quantity: new_quantity,
-        reason: reason,
-        user: user
-      }
-
-      # Handle polymorphic reference if provided
-      if reference.present?
-        movement_params[:reference_type] = reference.class.name
-        movement_params[:reference_id] = reference.id
-      end
-
-      stock_movements.create!(movement_params)
+    with_lock do
+      change_stock!(quantity, 'order_cancelled', reason: reason, user: user, reference: reference)
+      true
     end
-
-    true
   rescue StandardError => e
     Rails.logger.error "Error adding stock for product #{id}: #{e.message}"
     false
@@ -320,5 +278,24 @@ class Product < ApplicationRecord
   def recommended_products(limit = 5)
     # Simple recommendation based on category and brand
     similar_products(limit)
+  end
+
+  private
+
+  # Caller must hold the row lock (see #reduce_stock / #add_stock).
+  def change_stock!(delta, movement_type, reason:, user:, reference:)
+    previous_quantity = stock_quantity
+    update!(stock_quantity: previous_quantity + delta)
+
+    stock_movements.create!(
+      movement_type: movement_type,
+      quantity: delta,
+      previous_quantity: previous_quantity,
+      new_quantity: stock_quantity,
+      reason: reason,
+      user: user,
+      reference_type: reference&.class&.name,
+      reference_id: reference&.id
+    )
   end
 end
