@@ -3,17 +3,20 @@
 module ErrorHandling
   extend ActiveSupport::Concern
 
+  # rescue_from handlers are matched from the LAST declared to the first, so the catch-all
+  # StandardError handler must come first; otherwise it shadows every specific handler below.
   included do
+    rescue_from StandardError, with: :internal_server_error
     rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
     rescue_from ActiveRecord::RecordInvalid, with: :record_invalid
     rescue_from ActionController::ParameterMissing, with: :parameter_missing
-    rescue_from StandardError, with: :internal_server_error
   end
 
   private
 
+  # The exception message contains the SQL conditions, so it is not echoed to the client.
   def record_not_found(exception)
-    render_error('Record not found', :not_found, exception.message)
+    render_error("#{exception.model || 'Record'} not found", :not_found)
   end
 
   def record_invalid(exception)

@@ -50,18 +50,24 @@ class ProductVariant < ApplicationRecord
     options.any? ? "#{product.name} - #{options.join(', ')}" : name
   end
 
+  # Row-locked like Product#reduce_stock so concurrent checkouts cannot oversell a variant.
   def reduce_stock(quantity, reason: nil)
     return false if quantity <= 0
-    return false if stock_quantity < quantity
 
-    update!(stock_quantity: stock_quantity - quantity)
-    true
+    with_lock do
+      next false if stock_quantity < quantity
+
+      update!(stock_quantity: stock_quantity - quantity)
+      true
+    end
   end
 
   def add_stock(quantity, reason: nil)
     return false if quantity <= 0
 
-    update!(stock_quantity: stock_quantity + quantity)
-    true
+    with_lock do
+      update!(stock_quantity: stock_quantity + quantity)
+      true
+    end
   end
 end

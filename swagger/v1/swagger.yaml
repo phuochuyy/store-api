@@ -105,11 +105,11 @@ paths:
     "$ref": "./paths/carts.yaml#/carts/cart_by_id"
   "/api/v1/carts/{id}/clear":
     "$ref": "./paths/carts.yaml#/carts/clear_cart"
-  "/api/v1/carts/{cart_id}/cart_items":
+  "/api/v1/carts/{cart_id}/items":
     "$ref": "./paths/carts.yaml#/carts/cart_items"
-  "/api/v1/carts/{cart_id}/cart_items/{id}":
+  "/api/v1/carts/{cart_id}/items/{id}":
     "$ref": "./paths/carts.yaml#/carts/cart_item_by_id"
-  "/api/v1/cart_items/{id}":
+  "/api/v1/carts/items/{id}":
     "$ref": "./paths/carts.yaml#/carts/cart_item_by_id"
   "/api/v1/orders":
     "$ref": "./paths/orders.yaml#/orders"
@@ -123,9 +123,9 @@ paths:
     "$ref": "./paths/orders.yaml#/orders/apply_discount"
   "/api/v1/orders/{id}/remove_discount":
     "$ref": "./paths/orders.yaml#/orders/remove_discount"
-  "/api/v1/orders/{order_id}/order_items":
+  "/api/v1/orders/{order_id}/items":
     "$ref": "./paths/orders.yaml#/orders/order_items"
-  "/api/v1/order_items/{id}":
+  "/api/v1/orders/items/{id}":
     "$ref": "./paths/orders.yaml#/orders/order_item_by_id"
   "/api/v1/discounts":
     "$ref": "./paths/discounts.yaml#/discounts"
@@ -159,15 +159,15 @@ paths:
     "$ref": "./paths/stock_alerts.yaml#/stock_alerts"
   "/api/v1/stock_alerts/{id}":
     "$ref": "./paths/stock_alerts.yaml#/stock_alerts/stock_alert_by_id"
-  "/api/v1/payment_methods":
+  "/api/v1/payments/methods":
     "$ref": "./paths/payment_methods.yaml#/payment_methods"
-  "/api/v1/payment_methods/{id}":
+  "/api/v1/payments/methods/{id}":
     "$ref": "./paths/payment_methods.yaml#/payment_methods/payment_method_by_id"
-  "/api/v1/payment_methods/{id}/stats":
+  "/api/v1/payments/methods/{id}/stats":
     "$ref": "./paths/payment_methods.yaml#/payment_methods/payment_method_stats"
-  "/api/v1/payment_methods/{id}/validate_config":
+  "/api/v1/payments/methods/{id}/validate_config":
     "$ref": "./paths/payment_methods.yaml#/payment_methods/validate_config"
-  "/api/v1/payment_methods/calculate_fees":
+  "/api/v1/payments/methods/calculate_fees":
     "$ref": "./paths/payment_methods.yaml#/payment_methods/calculate_fees"
   "/api/v1/payments":
     "$ref": "./paths/payments.yaml#/payments"

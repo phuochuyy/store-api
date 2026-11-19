@@ -114,8 +114,9 @@ Cart:
       type: integer
       example: 1
     total_amount:
-      type: number
-      example: 1999.98
+      type: string
+      format: decimal
+      example: "1999.98"
     cart_items:
       type: array
       items:
@@ -143,11 +144,13 @@ CartItem:
       type: integer
       example: 2
     unit_price:
-      type: number
-      example: 999.99
+      type: string
+      format: decimal
+      example: "999.99"
     total_price:
-      type: number
-      example: 1999.98
+      type: string
+      format: decimal
+      example: "1999.98"
     product:
       $ref: '#/components/schemas/Product'
     created_at:
@@ -179,17 +182,20 @@ Order:
       example: "1234567890"
     status:
       type: string
-      enum: [pending, confirmed, shipped, delivered, cancelled]
+      enum: [pending, confirmed, paid, payment_failed, shipped, delivered, cancelled, refunded, partially_refunded]
       example: "pending"
     total_amount:
-      type: number
-      example: 1999.98
+      type: string
+      format: decimal
+      example: "1999.98"
     discount_amount:
-      type: number
-      example: 200.00
+      type: string
+      format: decimal
+      example: "200.00"
     final_amount:
-      type: number
-      example: 1799.98
+      type: string
+      format: decimal
+      example: "1799.98"
     order_items:
       type: array
       items:
@@ -217,11 +223,13 @@ OrderItem:
       type: integer
       example: 2
     unit_price:
-      type: number
-      example: 999.99
+      type: string
+      format: decimal
+      example: "999.99"
     total_price:
-      type: number
-      example: 1999.98
+      type: string
+      format: decimal
+      example: "1999.98"
     product:
       $ref: '#/components/schemas/Product'
     created_at:
@@ -249,14 +257,17 @@ Discount:
       enum: [percentage, fixed_amount]
       example: "percentage"
     discount_value:
-      type: number
-      example: 20.0
+      type: string
+      format: decimal
+      example: "20.0"
     minimum_amount:
-      type: number
-      example: 100.0
+      type: string
+      format: decimal
+      example: "100.0"
     maximum_discount:
-      type: number
-      example: 50.0
+      type: string
+      format: decimal
+      example: "50.0"
     start_date:
       type: string
       format: date-time
@@ -290,8 +301,9 @@ Promotion:
       enum: [percentage, fixed_amount, buy_x_get_y]
       example: "buy_x_get_y"
     promotion_value:
-      type: number
-      example: 1.0
+      type: string
+      format: decimal
+      example: "1.0"
     minimum_quantity:
       type: integer
       example: 2
@@ -394,11 +406,13 @@ PaymentMethod:
       enum: [credit_card, debit_card, bank_transfer, digital_wallet, cash_on_delivery]
       example: "credit_card"
     processing_fee_percentage:
-      type: number
-      example: 2.5
+      type: string
+      format: decimal
+      example: "2.5"
     processing_fee_fixed:
-      type: number
-      example: 0.30
+      type: string
+      format: decimal
+      example: "0.30"
     enabled:
       type: boolean
       example: true
@@ -422,17 +436,20 @@ Payment:
       type: integer
       example: 1
     amount:
-      type: number
-      example: 199.99
+      type: string
+      format: decimal
+      example: "199.99"
     processing_fee:
-      type: number
-      example: 5.30
+      type: string
+      format: decimal
+      example: "5.30"
     total_amount:
-      type: number
-      example: 205.29
+      type: string
+      format: decimal
+      example: "205.29"
     status:
       type: string
-      enum: [pending, processing, completed, failed, refunded]
+      enum: [pending, processing, completed, failed, cancelled, refunded, partially_refunded]
       example: "completed"
     payment_reference:
       type: string
@@ -489,15 +506,22 @@ AuthResponse:
 
 ErrorResponse:
   type: object
+  required: [success, message]
   properties:
     success:
       type: boolean
       example: false
-    error:
+    message:
       type: string
-      example: "Error message"
-    status:
-      type: string
+      example: "Validation failed"
+    errors:
+      description: Optional details, usually a list of validation messages.
+      oneOf:
+        - type: array
+          items:
+            type: string
+        - type: string
+      example: ["Quantity must be greater than 0"]
 
 # Product Variants
 ProductVariant:
@@ -516,9 +540,9 @@ ProductVariant:
       type: string
       example: "IP15P-256-BLUE"
     price:
-      type: number
+      type: string
       format: decimal
-      example: 1099.99
+      example: "1099.99"
     stock_quantity:
       type: integer
       example: 25
@@ -574,17 +598,17 @@ ShippingMethod:
       type: string
       example: "Standard delivery in 3-5 business days"
     base_cost:
-      type: number
+      type: string
       format: decimal
-      example: 5.00
+      example: "5.00"
     handling_fee:
-      type: number
+      type: string
       format: decimal
-      example: 2.00
+      example: "2.00"
     total_cost:
-      type: number
+      type: string
       format: decimal
-      example: 7.00
+      example: "7.00"
     estimated_days:
       type: integer
       example: 3
@@ -606,15 +630,15 @@ ShippingZone:
       nullable: true
       example: "CA"
     base_cost:
-      type: number
+      type: string
       format: decimal
-      example: 5.00
+      example: "5.00"
     cost_per_kg:
-      type: number
+      type: string
       format: decimal
-      example: 2.50
+      example: "2.50"
     free_shipping_threshold:
-      type: number
+      type: string
       format: decimal
       nullable: true
       example: 100.00
@@ -641,9 +665,9 @@ TaxRate:
       nullable: true
       example: 1
     tax_rate:
-      type: number
+      type: string
       format: decimal
-      example: 8.5
+      example: "8.5"
     tax_type:
       type: string
       enum: [VAT, GST, Sales]
@@ -674,9 +698,9 @@ ReturnRequest:
       type: string
       example: "Product does not match description"
     refund_amount:
-      type: number
+      type: string
       format: decimal
-      example: 99.99
+      example: "99.99"
     total_quantity:
       type: integer
       example: 1
@@ -718,7 +742,7 @@ ReturnRequest:
             type: string
             enum: [unopened, opened, damaged, defective]
           refund_amount:
-            type: number
+            type: string
             format: decimal
 
 # User Profile & Addresses

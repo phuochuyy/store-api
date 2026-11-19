@@ -44,8 +44,8 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         json_response = response.parsed_body
-        expect(json_response['orders']).to be_an(Array)
-        expect(json_response['pagination']).to be_present
+        expect(json_response['data']['orders']).to be_an(Array)
+        expect(json_response['data']['pagination']).to be_present
       end
 
       it 'supports pagination' do
@@ -53,8 +53,8 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         json_response = response.parsed_body
-        expect(json_response['pagination']['current_page']).to eq(1)
-        expect(json_response['pagination']['per_page']).to eq(5)
+        expect(json_response['data']['pagination']['current_page']).to eq(1)
+        expect(json_response['data']['pagination']['per_page']).to eq(5)
       end
     end
 
@@ -69,9 +69,9 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
         # Controller allows index for customers but scopes to current_user.orders
         expect(response).to have_http_status(:ok)
         json_response = response.parsed_body
-        expect(json_response['orders']).to be_an(Array)
+        expect(json_response['data']['orders']).to be_an(Array)
         # All returned orders should belong to the current user
-        order_ids = json_response['orders'].map { |o| o['id'] }
+        order_ids = json_response['data']['orders'].map { |o| o['id'] }
         expect(Order.where(id: order_ids).where.not(user_id: user.id).count).to eq(0)
       end
     end
@@ -88,9 +88,9 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         json_response = response.parsed_body
-        expect(json_response['order']).to be_present
-        expect(json_response['order']['id']).to eq(order.id)
-        expect(json_response['order_items']).to be_an(Array)
+        expect(json_response['data']['order']).to be_present
+        expect(json_response['data']['order']['id']).to eq(order.id)
+        expect(json_response['data']['order_items']).to be_an(Array)
       end
     end
 
@@ -131,8 +131,8 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
         expect(response).to have_http_status(:created)
         json_response = response.parsed_body
         expect(json_response['message']).to eq('Order created successfully')
-        expect(json_response['order']).to be_present
-        expect(json_response['order']['customer_name']).to eq('John Doe')
+        expect(json_response['data']['order']).to be_present
+        expect(json_response['data']['order']['customer_name']).to eq('John Doe')
       end
 
       it 'creates order items' do
@@ -368,7 +368,7 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
         expect(response).to have_http_status(:unprocessable_content)
         json_response = response.parsed_body
         expect(json_response['success']).to be false
-        expect(json_response['error']).to be_present
+        expect(json_response['message']).to be_present
       end
     end
 

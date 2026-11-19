@@ -262,6 +262,9 @@ spec/factories/**/*.rb
 !spec/factories/product_reviews.rb
 !spec/factories/shipping_methods.rb
 !spec/factories/tax_rates.rb
+!spec/factories/carts.rb
+!spec/factories/cart_items.rb
+!spec/factories/product_variants.rb
 
 # Temporary files
 *.tmp
