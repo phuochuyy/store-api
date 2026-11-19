@@ -41,9 +41,9 @@ class ReturnItem < ApplicationRecord
   def quantity_not_exceeding_order_item
     return unless order_item && quantity
 
-    if quantity > order_item.quantity
-      errors.add(:quantity, "cannot exceed order item quantity (#{order_item.quantity})")
-    end
+    return unless quantity > order_item.quantity
+
+    errors.add(:quantity, "cannot exceed order item quantity (#{order_item.quantity})")
   end
 
   def condition_refund_percentage
@@ -61,4 +61,3 @@ class ReturnItem < ApplicationRecord
     end
   end
 end
-

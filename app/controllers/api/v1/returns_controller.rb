@@ -8,7 +8,9 @@ module Api
       # GET /api/v1/returns
       def index
         return_requests = current_user.return_requests.includes(:order, :return_items).order(created_at: :desc)
-        render_success(return_requests.map { |r| return_request_serializer(r) }, 'Return requests retrieved successfully')
+        render_success(return_requests.map do |r|
+          return_request_serializer(r)
+        end, 'Return requests retrieved successfully')
       end
 
       # GET /api/v1/returns/:id
@@ -125,4 +127,3 @@ module Api
     end
   end
 end
-

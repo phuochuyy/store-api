@@ -81,7 +81,7 @@ module Api
 
       def set_category
         @category = Category.find_by(id: params[:id])
-        return render_error('Category not found', :not_found) unless @category
+        render_error('Category not found', :not_found) unless @category
       end
 
       def category_params

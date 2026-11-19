@@ -52,7 +52,7 @@ class JwtBlacklistToken < ApplicationRecord
   end
 
   def self.extract_token_expiry(token)
-    payload = JWT.decode(token, Rails.application.credentials.secret_key_base, true, { algorithm: 'HS256' }).first
+    payload = JWT.decode(token, Auth::Jwt::Config::SECRET_KEY, true, { algorithm: Auth::Jwt::Config::ALGORITHM }).first
     Time.zone.at(payload['exp']) if payload['exp']
   rescue JWT::DecodeError
     24.hours.from_now
@@ -89,7 +89,6 @@ class JwtBlacklistToken < ApplicationRecord
     # Find all active tokens for this user that haven't been blacklisted yet
     # We'll blacklist tokens that are in the database (from previous logouts)
     # and mark all future tokens as invalid via logout timestamp
-    blacklisted_count = 0
 
     # Blacklist all existing tokens in database for this user
     # Note: We can only blacklist tokens we know about (already in database)

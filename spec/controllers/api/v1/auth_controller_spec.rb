@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Api::V1::AuthController, type: :controller do
-  let(:secret_key) { Rails.application.credentials.secret_key_base || 'fallback_secret_key' }
+  let(:secret_key) { Auth::Jwt::Config::SECRET_KEY }
   let(:user) { create(:user, email: 'test@example.com', password: 'password123') }
   let(:valid_credentials) { { email: 'test@example.com', password: 'password123' } }
   let(:invalid_credentials) { { email: 'test@example.com', password: 'wrongpassword' } }

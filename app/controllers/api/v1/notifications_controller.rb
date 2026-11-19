@@ -162,7 +162,7 @@ module Api
 
       def set_notification
         @notification = current_user.notifications.find_by(id: params[:id])
-        return render_error('Notification not found', :not_found) unless @notification
+        render_error('Notification not found', :not_found) unless @notification
       end
 
       def notification_params

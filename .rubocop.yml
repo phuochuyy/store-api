@@ -1,9 +1,11 @@
+inherit_from: .rubocop_todo.yml
+
 plugins:
   - rubocop-rails
 
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.3
+  TargetRubyVersion: 3.4
   Exclude:
     - 'db/schema.rb'
     - 'db/migrate/*'
@@ -34,6 +36,15 @@ Metrics/AbcSize:
 
 Metrics/ClassLength:
   Max: 150
+
+# RSpec `describe`/`context` blocks, routes and seed scripts are long by nature.
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'config/routes.rb'
+    - 'config/environments/*'
+    - 'lib/tasks/**/*'
+    - 'db/seeds/**/*'
 
 Layout/EmptyLinesAroundBlockBody:
   Enabled: false

@@ -5,7 +5,8 @@ module Api
     module Products
       class ProductsController < Api::V1::BaseController
         skip_before_action :authenticate_user!, only: %i[index show search]
-        before_action :authenticate_user!, only: %i[create update destroy upload_image remove_image add_to_wishlist remove_from_wishlist]
+        before_action :authenticate_user!,
+                      only: %i[create update destroy upload_image remove_image add_to_wishlist remove_from_wishlist]
         before_action :set_product,
                       only: %i[show update destroy upload_image remove_image add_to_wishlist remove_from_wishlist]
         before_action :authorize_product, only: %i[create update destroy upload_image remove_image]
@@ -117,7 +118,7 @@ module Api
 
         def set_product
           @product = Product.find_by(id: params[:id])
-          return render_error('Product not found', :not_found) unless @product
+          render_error('Product not found', :not_found) unless @product
         end
 
         def authorize_product
@@ -180,4 +181,3 @@ module Api
     end
   end
 end
-

@@ -3,7 +3,10 @@
 module Auth
   module Jwt
     module Config
-      SECRET_KEY = Rails.application.credentials.secret_key_base || 'fallback_secret_key'
+      # Fail closed: sign with a dedicated JWT_SECRET_KEY, or else the app's secret_key_base.
+      # Rails.application.secret_key_base raises at boot in production when no secret is
+      # configured, instead of silently signing tokens with a string anyone can read.
+      SECRET_KEY = ENV['JWT_SECRET_KEY'].presence || Rails.application.secret_key_base
       ALGORITHM = 'HS256'
 
       # Access token expires in 30 minutes (shorter for better security)

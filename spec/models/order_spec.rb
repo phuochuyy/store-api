@@ -81,7 +81,7 @@ RSpec.describe Order, type: :model do
     it 'includes shipping cost in total amount calculation' do
       shipping_method = create(:shipping_method, base_cost: 10.00, handling_fee: 2.00)
       order.update!(shipping_method: shipping_method, shipping_cost: 12.00)
-      item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
+      create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
       order.update_total_amount
       expect(order.reload.total_amount.to_f).to eq(112.00)
     end
@@ -89,7 +89,7 @@ RSpec.describe Order, type: :model do
     it 'includes tax amount in total amount calculation' do
       tax_rate = create(:tax_rate, tax_rate: 8.5)
       order.update!(tax_rate: tax_rate, tax_amount: 8.50)
-      item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
+      create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
       order.update_total_amount
       expect(order.reload.total_amount.to_f).to eq(108.50)
     end
@@ -107,7 +107,7 @@ RSpec.describe Order, type: :model do
         tax_rate: tax_rate,
         tax_amount: 8.50
       )
-      item = create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
+      create(:order_item, order: order, product: product, quantity: 1, unit_price: 100.00)
       order.update_total_amount
       # 100 - 10 (discount) + 12 (shipping) + 8.50 (tax) = 110.50
       expect(order.reload.total_amount.to_f).to eq(110.50)
@@ -151,7 +151,9 @@ RSpec.describe Order, type: :model do
   end
 
   describe '#apply_discount (private method)' do
-    let(:discount) { create(:discount, code: 'TEST10', discount_type: 'percentage', value: 10, minimum_amount: 0, applies_to: 'all') }
+    let(:discount) do
+      create(:discount, code: 'TEST10', discount_type: 'percentage', value: 10, minimum_amount: 0, applies_to: 'all')
+    end
     let(:order_with_items) do
       o = create(:order, user: user)
       item = build(:order_item, order: o, product: product, quantity: 2, unit_price: 100.00)

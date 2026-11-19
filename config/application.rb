@@ -32,6 +32,11 @@ module StoreApi
     # Add Rack::Attack middleware for rate limiting
     config.middleware.use Rack::Attack
 
+    # Product images are stored as uploaded; no variants are generated. Without this,
+    # Rails 8.1 warns at boot that image_processing is missing. Add the
+    # image_processing gem and remove this line before calling `image.variant`.
+    config.active_storage.variant_processor = :disabled
+
     # Set default URL options for general URL generation
     config.default_url_options = { host: 'localhost', port: 3000, protocol: 'http' }
 

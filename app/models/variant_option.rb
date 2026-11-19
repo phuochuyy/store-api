@@ -22,4 +22,3 @@ class VariantOption < ApplicationRecord
 
   scope :by_type, ->(type) { where(option_type: type) }
 end
-
