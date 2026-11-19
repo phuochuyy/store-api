@@ -15,7 +15,7 @@ gem 'jwt'
 
 # Redis (for caching and background jobs)
 gem 'hiredis-client'
-gem 'redis', '~> 5.0'
+gem 'redis', '~> 6.0'
 
 # Rate Limiting
 gem 'rack-attack'
