@@ -187,6 +187,7 @@ yarn.lock
 # PostgreSQL
 *.pgsql
 *.sql
+!docker/mysql/init/*.sql
 backup_*.sql
 *.dump
 
@@ -236,6 +237,7 @@ spec/**/*_spec.rb
 !spec/services/auth/jwt/decode_service_spec.rb
 !spec/services/auth/jwt/encode_service_spec.rb
 !spec/services/auth/token_validation_service_spec.rb
+!spec/services/text_search_spec.rb
 
 # ============================================================================
 # Factories - Keep Important Factories on GitHub, Others Local Only

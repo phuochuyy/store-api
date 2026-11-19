@@ -12,18 +12,28 @@
 # Configure Using Gemfile
 # gem "pg"
 #
+# The app runs on PostgreSQL (default) or MySQL 8 via Trilogy: set DB_ADAPTER=trilogy.
+# `docker compose up -d db` starts PostgreSQL on 5433;
+# `docker compose --profile mysql up -d mysql` starts MySQL on 3307.
+<% mysql = ENV.fetch("DB_ADAPTER", "postgresql") == "trilogy" %>
 default: &default
+<% if mysql %>
+  adapter: trilogy
+  encoding: utf8mb4
+  port: <%= ENV.fetch("DATABASE_PORT", "3307") %>
+<% else %>
   adapter: postgresql
   encoding: unicode
+  connect_timeout: 5
+  port: <%= ENV.fetch("DATABASE_PORT", "5433") %>
+<% end %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
-  connect_timeout: 5
   checkout_timeout: 5
   reaping_frequency: 10
   username: store_api
   password: userpw
   host: <%= ENV.fetch("DATABASE_HOST", "127.0.0.1") %>
-  port: <%= ENV.fetch("DATABASE_PORT", "5433") %>
 
 development:
   <<: *default
