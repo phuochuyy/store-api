@@ -48,8 +48,21 @@ jobs:
           --health-cmd "redis-cli ping"
           --health-interval 10s --health-timeout 5s --health-retries 5
 
+      elasticsearch:
+        image: elasticsearch:9.5.5
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ports:
+          - 9200:9200
+        options: >-
+          --health-cmd "curl -fs 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s'"
+          --health-interval 10s --health-timeout 10s --health-retries 12
+
     env:
       RAILS_ENV: test
+      ELASTICSEARCH_URL: http://localhost:9200
       DB_ADAPTER: ${{ matrix.database == 'mysql' && 'trilogy' || 'postgresql' }}
       DATABASE_HOST: 127.0.0.1
       DATABASE_PORT: ${{ matrix.database == 'mysql' && '3306' || '5432' }}

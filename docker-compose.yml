@@ -66,7 +66,33 @@ services:
     networks:
       - store_api_network
 
+  # Optional Elasticsearch for product search (SEARCH_BACKEND=elasticsearch).
+  # Not started by default:  docker compose --profile search up -d elasticsearch
+  # Security is disabled because this container is for local development only.
+  elasticsearch:
+    image: elasticsearch:9.5.5
+    profiles: ["search"]
+    container_name: store_api_elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' > /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    networks:
+      - store_api_network
+
 volumes:
+  elasticsearch_data:
+    driver: local
   mysql_data:
     driver: local
   postgres_data:

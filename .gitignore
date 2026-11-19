@@ -238,6 +238,7 @@ spec/**/*_spec.rb
 !spec/services/auth/jwt/encode_service_spec.rb
 !spec/services/auth/token_validation_service_spec.rb
 !spec/services/text_search_spec.rb
+!spec/services/products/elasticsearch_search_spec.rb
 
 # ============================================================================
 # Factories - Keep Important Factories on GitHub, Others Local Only
