@@ -9,9 +9,10 @@ module Address
       def validate(address_params)
         return { success: false, error: 'Address parameters are required' } if address_params.blank?
 
-        # Basic validation
+        # Basic validation. It always succeeds and reports problems through :valid/:errors,
+        # so an invalid address must stop here rather than fall through to "valid: true".
         validation_result = basic_validation(address_params)
-        return validation_result unless validation_result[:success]
+        return validation_result unless validation_result[:valid]
 
         # If external API is configured, use it for advanced validation
         if external_api_configured?
