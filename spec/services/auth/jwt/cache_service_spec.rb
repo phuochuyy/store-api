@@ -53,7 +53,7 @@ RSpec.describe Auth::Jwt::CacheService, type: :service do
     context 'when token is blacklisted' do
       before do
         JwtBlacklistToken.create!(
-          token: token,
+          token_digest: JwtBlacklistToken.digest(token),
           expires_at: 1.hour.from_now,
           token_type: 'access'
         )

@@ -56,7 +56,7 @@ module Auth
           return false if token.blank?
 
           # Remove from database
-          JwtBlacklistToken.where(token: token).delete_all
+          JwtBlacklistToken.for_token(token).delete_all
           # Remove from Redis cache
           CacheService.whitelist_token(token)
           # Invalidate validation cache

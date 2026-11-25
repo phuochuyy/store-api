@@ -175,6 +175,8 @@ paths:
     "$ref": "./paths/payments.yaml#/payments/payment_by_id"
   "/api/v1/payments/{id}/refund":
     "$ref": "./paths/payments.yaml#/payments/refund_payment"
+  "/api/v1/payments/{id}/confirm":
+    "$ref": "./paths/payments.yaml#/payments/confirm_payment"
   "/api/v1/statistics/dashboard":
     "$ref": "./paths/statistics.yaml#/statistics/dashboard"
   "/api/v1/statistics/inventory":
