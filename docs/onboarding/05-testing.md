@@ -1,6 +1,6 @@
 # 05 · Testing
 
-> Cập nhật theo commit: `15319f3` · Kết quả gần nhất: 696 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
+> Cập nhật theo commit: `c3a3853` · Kết quả gần nhất: 706 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
 
 Mọi file trong `spec/` đều được git theo dõi. Trước #47, spec và factory mới bị `.gitignore` ẩn mà không có cảnh báo nào ([KI-020](../known-issues.md#ki-020)). Giờ `bin/check-gitignore` chạy trong CI và trong `bin/ci` để chặn lỗi này quay lại.
 
@@ -26,13 +26,13 @@ ELASTICSEARCH_URL=http://localhost:9200 bundle exec rspec spec/services/products
 | Thư mục | File | Examples (ước tính) | Nội dung |
 |---|---|---|---|
 | `spec/controllers/` | 6 | 229 | auth, orders, payments; các concern authentication và authorization; kiểm tra kế thừa của controller v1 |
-| `spec/models/` | 6 | 211 | order, payment, product, user, jwt_blacklist_token, stock_concurrency |
-| `spec/services/` | 8 | 151 | `auth/*`, `auth/jwt/*`, text search, Elasticsearch search |
-| `spec/requests/` | 10 | 101 | rswag cho carts, orders, order items, payments, product variants, addresses, returns; luồng đơn hàng đầu cuối (order_lifecycle); thu hồi token với token thật (auth_revocation); error_handling |
+| `spec/models/` | 7 | 213 | order, payment, product, user, jwt_blacklist_token; spec đồng thời cho tồn kho (stock_concurrency) và lượt dùng mã (usage_limit_concurrency) |
+| `spec/services/` | 9 | 154 | `auth/*`, `auth/jwt/*`, `discounts/promotion_service`, text search, Elasticsearch search |
+| `spec/requests/` | 11 | 106 | rswag cho carts, orders, order items, payments, product variants, addresses, returns; luồng đơn hàng đầu cuối (order_lifecycle); thu hồi token với token thật (auth_revocation); mã giảm giá trên đơn (order_discounts); error_handling |
 | `spec/lib/` | 1 | 4 | Lọc dữ liệu nhạy cảm của Sentry, cho event đi qua pipeline thật của SDK |
 
-- **Coverage gần nhất:** 47,47% số dòng và 30,09% số nhánh. Trước giai đoạn 0 là 37,42% và 25,81%.
-- **Ngưỡng tối thiểu:** 37% số dòng, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống. **Ngưỡng chưa được nâng theo** mức 47% hiện tại; nên nâng lên khoảng 45%.
+- **Coverage gần nhất:** 48,65% số dòng và 31,48% số nhánh. Trước giai đoạn 0 là 37,42% và 25,81%.
+- **Ngưỡng tối thiểu:** 37% số dòng, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống. **Ngưỡng chưa được nâng theo** mức 49% hiện tại; nên nâng lên khoảng 47%.
 
 **Hoàn toàn chưa có test:**
 - **Controller:** brands, categories, products, discounts, promotions, shipping, tax, users.
@@ -86,4 +86,4 @@ end
 - 422 khi input sai.
 
 ## Spec cho tình huống đồng thời
-[stock_concurrency_spec.rb](../../spec/models/stock_concurrency_spec.rb) là mẫu để kiểm tra `with_lock` bằng nhiều thread. Dùng cùng cách này cho bộ đếm lượt dùng discount ([KI-010](../known-issues.md#ki-010)) và cho thao tác hủy đơn hai lần.
+[stock_concurrency_spec.rb](../../spec/models/stock_concurrency_spec.rb) là mẫu để kiểm tra `with_lock` bằng nhiều thread. [usage_limit_concurrency_spec.rb](../../spec/models/usage_limit_concurrency_spec.rb) dùng cùng cách này cho bộ đếm lượt dùng discount và promotion ([KI-010](../known-issues.md#ki-010)). Nên viết thêm một spec như vậy cho thao tác hủy đơn hai lần.

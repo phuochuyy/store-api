@@ -1,6 +1,6 @@
 # 02 · Bản đồ domain
 
-> Cập nhật theo commit: `1286f04`
+> Cập nhật theo commit: `c3a3853`
 
 Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu, nó gọi sang domain nào, và nếu tách thành microservice thì đường ranh giới nằm ở đâu.
 
@@ -15,7 +15,7 @@ Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu,
 | **Cart** | `Cart` (`active` / `abandoned` / `completed`), `CartItem` | `carts/cart_service` | Không có code nào đặt `completed`. Cart không liên kết với Order |
 | **Order** | `Order`, `OrderItem` | `orders/order_{creation,confirmation,cancellation}_service`, `shipping_service`, `delivery_service` | Domain trung tâm |
 | **Payment** | `Payment`, `PaymentMethod` | `payments/payment_processing_core_service` (+ facade, webhook, `payment_method_*`) | **Toàn bộ là giả lập** ([KI-011](../known-issues.md#ki-011)) |
-| **Pricing** | `Discount`, `Coupon`, `Promotion` | `discounts/*`, `validators/promotion_validator` | Giới hạn lượt dùng không có tác dụng ([KI-010](../known-issues.md#ki-010)) |
+| **Pricing** | `Discount`, `Coupon`, `Promotion` | `discounts/*`, `validators/promotion_validator` | Giới hạn lượt dùng được đếm nguyên tử (#58, [KI-010](../known-issues.md#ki-010)). Apply promotion qua API đang hỏng ([KI-030](../known-issues.md#ki-030)) |
 | **Fulfilment** | `ShippingZone`, `ShippingMethod`, `ShippingZoneMethod`, `TaxRate` | `shipping/shipping_cost_calculator_service`, `tax/tax_calculator_service` | |
 | **Returns** | `ReturnRequest`, `ReturnItem` | `returns/return_processing_service` | Chưa có hoàn tiền ([KI-012](../known-issues.md#ki-012)) |
 | **Notification** | `Notification` (21 loại) | Không có module riêng | Mỗi domain tự gọi `Notification.create!` |
