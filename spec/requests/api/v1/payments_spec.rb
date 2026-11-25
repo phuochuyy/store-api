@@ -41,7 +41,7 @@ RSpec.describe 'Payments API (checkout)', type: :request do
           payment = order.payments.sole
           expect(payment).to have_attributes(status: 'completed', amount: 100.00)
           expect(payment.transaction_id).to be_present
-          expect(order.reload.status).to eq('paid')
+          expect(order.reload).to have_attributes(payment_status: 'paid', status: 'pending')
         end
       end
 
@@ -187,7 +187,7 @@ RSpec.describe 'Payments API (checkout)', type: :request do
 
         run_test! do
           expect(payment.reload.status).to eq('refunded')
-          expect(order.reload.status).to eq('refunded')
+          expect(order.reload).to have_attributes(payment_status: 'refunded', status: 'pending')
         end
       end
 

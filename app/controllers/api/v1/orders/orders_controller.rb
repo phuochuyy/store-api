@@ -8,6 +8,7 @@ module Api
                       only: %i[show update destroy confirm cancel ship deliver apply_discount remove_discount]
         before_action :admin_only!, only: %i[update destroy confirm cancel ship deliver]
         before_action :ensure_order_owner_or_admin!, only: %i[show apply_discount remove_discount]
+        before_action :reject_status_change, only: %i[update]
         skip_before_action :authenticate_user!, only: [:track]
 
         def index
@@ -193,9 +194,20 @@ module Api
           render_error('Order not found', :not_found) unless @order
         end
 
-        # Admin updates may change status; customers creating an order may not (it always starts pending).
+        # Contact details only. status moves through confirm/ship/deliver/cancel and payment_status
+        # through payments (see reject_status_change).
         def order_params
-          params.expect(order: %i[customer_name customer_email customer_phone status])
+          params.expect(order: %i[customer_name customer_email customer_phone])
+        end
+
+        # Setting a status directly skipped the transition rules, stock restoration and
+        # notifications, so it is refused rather than silently ignored.
+        def reject_status_change
+          order = params[:order]
+          return unless order.respond_to?(:key?) && (order.key?(:status) || order.key?(:payment_status))
+
+          render_error('Order status cannot be set directly', :unprocessable_content,
+                       ['Use the confirm, ship, deliver or cancel actions; payment_status follows the payments'])
         end
 
         def order_create_params
