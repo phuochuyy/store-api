@@ -15,10 +15,12 @@ module Payments
         return { success: false, error: 'Payment method is not active' } unless payment_method.is_active?
 
         payment = create_payment_record(order, payment_method, order.total_amount, payment_data)
+        return { success: true, payment: payment, message: 'Payment awaiting confirmation' } if payment_method.offline?
+
         result = process_with_gateway(payment, payment_data)
         update_payment_status(payment, result)
 
-        result
+        result.merge(payment: payment)
       rescue StandardError => e
         Rails.logger.error "Payment processing error: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
@@ -69,8 +71,8 @@ module Payments
           process_stripe_payment(payment, payment_data)
         when 'paypal'
           process_paypal_payment(payment, payment_data)
-        when 'square'
-          process_square_payment(payment, payment_data)
+        when 'wallet'
+          process_wallet_payment(payment, payment_data)
         else
           { success: false, error: "Unsupported gateway type: #{payment.payment_method.gateway_type}" }
         end
@@ -82,8 +84,8 @@ module Payments
           process_stripe_refund(payment, refund_amount, reason)
         when 'paypal'
           process_paypal_refund(payment, refund_amount, reason)
-        when 'square'
-          process_square_refund(payment, refund_amount, reason)
+        when 'wallet'
+          process_wallet_refund(payment, refund_amount, reason)
         else
           { success: false, error: "Unsupported gateway type: #{payment.payment_method.gateway_type}" }
         end
@@ -140,10 +142,10 @@ module Payments
         }
       end
 
-      def process_square_payment(_payment, _payment_data)
+      def process_wallet_payment(_payment, _payment_data)
         {
           success: true,
-          transaction_id: "square_#{SecureRandom.hex(8)}",
+          transaction_id: "wallet_#{SecureRandom.hex(8)}",
           gateway_response: { status: 'approved' }
         }
       end
@@ -164,10 +166,10 @@ module Payments
         }
       end
 
-      def process_square_refund(_payment, _refund_amount, _reason)
+      def process_wallet_refund(_payment, _refund_amount, _reason)
         {
           success: true,
-          transaction_id: "square_refund_#{SecureRandom.hex(8)}",
+          transaction_id: "wallet_refund_#{SecureRandom.hex(8)}",
           gateway_response: { status: 'approved' }
         }
       end

@@ -1,7 +1,8 @@
 module Api
   module V1
     class PromotionsController < Api::V1::BaseController
-      before_action :set_promotion, only: %i[show update destroy stats]
+      before_action :set_promotion, only: %i[show update destroy stats apply]
+      before_action :set_order, only: %i[applicable apply]
       before_action :admin_only!, only: %i[create update destroy stats]
 
       def index
@@ -71,31 +72,19 @@ module Api
       end
 
       def applicable
-        order_id = params[:order_id]
-        return render_error('Order ID is required', :unprocessable_content) if order_id.blank?
-
-        order = Order.find(order_id)
-        result = ::Discounts::PromotionService.get_applicable_promotions(order)
+        result = ::Discounts::PromotionService.get_applicable_promotions(@order)
 
         render_success(result, 'Applicable promotions retrieved successfully')
-      rescue ActiveRecord::RecordNotFound
-        render_error('Order not found', :not_found)
       end
 
       def apply
-        order_id = params[:order_id]
-        return render_error('Order ID is required', :unprocessable_content) if order_id.blank?
-
-        order = Order.find(order_id)
-        result = ::Discounts::PromotionService.apply_promotion_to_order(order, @promotion.id)
+        result = ::Discounts::PromotionService.apply_promotion_to_order(@order, @promotion.id)
 
         if result[:success]
           render_success(result, 'Promotion applied successfully')
         else
           render_error(result[:error], :unprocessable_content)
         end
-      rescue ActiveRecord::RecordNotFound
-        render_error('Order not found', :not_found)
       end
 
       private
@@ -104,6 +93,15 @@ module Api
         @promotion = Promotion.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render_error('Promotion not found', :not_found)
+      end
+
+      # Customers only reach their own orders. Another user's order answers 404, not 403, so its
+      # existence is not confirmed. Admins reach any order.
+      def set_order
+        return render_error('Order ID is required', :unprocessable_content) if params[:order_id].blank?
+
+        @order = (current_user.admin? ? Order : current_user.orders).find_by(id: params[:order_id])
+        render_error('Order not found', :not_found) unless @order
       end
 
       def promotion_params

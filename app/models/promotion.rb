@@ -1,4 +1,6 @@
 class Promotion < ApplicationRecord
+  include UsageLimited
+
   # Validations
   validates :name, presence: true
   validates :promotion_type, presence: true, inclusion: {
@@ -30,10 +32,6 @@ class Promotion < ApplicationRecord
   def current?
     (start_date.nil? || start_date <= Time.current) &&
       (end_date.nil? || end_date >= Time.current)
-  end
-
-  def within_usage_limit?
-    usage_limit.nil? || used_count < usage_limit
   end
 
   def expired?
@@ -73,10 +71,6 @@ class Promotion < ApplicationRecord
     else
       { discount_amount: 0, free_items: [], free_shipping: false }
     end
-  end
-
-  def increment_usage!
-    update!(used_count: used_count + 1)
   end
 
   private

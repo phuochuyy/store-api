@@ -3,8 +3,7 @@
 module Api
   module V1
     module Products
-      class VariantsController < ApplicationController
-        before_action :authenticate_user!
+      class VariantsController < Api::V1::BaseController
         before_action :set_product
         before_action :set_variant, only: %i[show update destroy]
 
@@ -77,7 +76,7 @@ module Api
             id: variant.id,
             name: variant.name,
             sku: variant.sku,
-            price: variant.price.to_f,
+            price: variant.price, # BigDecimal, serialized as a string like Product#price
             stock_quantity: variant.stock_quantity,
             is_active: variant.is_active,
             in_stock: variant.in_stock?,

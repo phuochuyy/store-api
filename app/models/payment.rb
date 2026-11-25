@@ -51,7 +51,7 @@ class Payment < ApplicationRecord
 
   before_validation :set_defaults
   after_create :track_creation
-  after_update :update_order_status, if: :saved_change_to_status?
+  after_update :sync_order_payment_status, if: :saved_change_to_status?
   after_update :track_changes
 
   # Methods
@@ -251,16 +251,19 @@ class Payment < ApplicationRecord
     self.status ||= 'pending'
   end
 
-  def update_order_status
+  # Keeps Order#payment_status in step with this payment. It never touches the order's
+  # fulfillment status: paying or refunding does not move an order along or back.
+  def sync_order_payment_status
+    new_order_payment_status = order_payment_status_after_change
+    order.update!(payment_status: new_order_payment_status) if new_order_payment_status
+  end
+
+  # The order payment status this payment's new status leads to, or nil to leave it as is.
+  def order_payment_status_after_change
     case status
-    when 'completed'
-      order.update!(status: 'paid') if order.pending?
-    when 'failed', 'cancelled'
-      order.update!(status: 'payment_failed') if order.pending?
-    when 'refunded'
-      order.update!(status: 'refunded')
-    when 'partially_refunded'
-      order.update!(status: 'partially_refunded')
+    when 'completed' then 'paid' if order.unpaid? || order.payment_failed?
+    when 'failed', 'cancelled' then 'payment_failed' if order.unpaid?
+    when 'refunded', 'partially_refunded' then status
     end
   end
 
