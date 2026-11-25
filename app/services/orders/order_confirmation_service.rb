@@ -67,21 +67,14 @@ module Orders
         { success: true }
       end
 
+      # Stock is not checked again here: OrderCreationService already reserved it (under a lock)
+      # when the order was placed. Comparing the remaining stock with the order's quantities
+      # counted the order's own units twice, so an order for the last units in stock could
+      # never be confirmed.
       # @param order [Order] The order to check
-      # @return [Array] List of unavailable items
+      # @return [Array] Items whose product no longer exists
       def check_item_availability(order)
-        unavailable_items = []
-
-        order.order_items.each do |item|
-          product = item.product
-          if product.nil?
-            unavailable_items << "Product ID #{item.product_id}"
-          elsif product.stock_quantity < item.quantity
-            unavailable_items << product.name
-          end
-        end
-
-        unavailable_items
+        order.order_items.reject(&:product).map { |item| "Product ID #{item.product_id}" }
       end
 
       # @param order [Order] The confirmed order
