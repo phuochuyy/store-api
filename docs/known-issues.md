@@ -1,6 +1,6 @@
 # Known issues
 
-> Cập nhật theo commit: `0b570df` · Ngày: 2026-11-25
+> Cập nhật theo commit: `3593555` · Ngày: 2026-11-25
 
 Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ được mô tả ở đây.** Các tài liệu khác (roadmap, domain map) trỏ tới mã `KI-xxx` thay vì chép lại nội dung.
 
@@ -17,7 +17,7 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 
 Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
 
-**Tình hình hiện tại:** 23 lỗi đã ghi nhận, 6 đã sửa. Còn mở: 0 Critical, 4 High (KI-004…007), 6 Medium, 7 Low.
+**Tình hình hiện tại:** 24 lỗi đã ghi nhận, 8 đã sửa. Còn mở: 0 Critical, 2 High (KI-006, KI-007), 7 Medium, 7 Low.
 
 ## Tổng quan
 
@@ -26,8 +26,8 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-001](#ki-001) | Critical | Customer tự duyệt/từ chối/hoàn tất yêu cầu đổi trả | ✅ chạy thật | fixed (#48, test #50) |
 | [KI-002](#ki-002) | High | Toàn bộ API variants và addresses trả 500 | ✅ chạy thật | fixed (#49) |
 | [KI-003](#ki-003) | High | `authorize!` không dừng action; truyền class thì luôn 403 | ✅ chạy thật | fixed (#48) |
-| [KI-004](#ki-004) | High | IDOR: xem được payment của người khác | ✅ chạy thật | open |
-| [KI-005](#ki-005) | High | IDOR + crash ở order items controller | ✅ chạy thật / đọc code | open |
+| [KI-004](#ki-004) | High | IDOR: xem được payment của người khác | ✅ chạy thật | fixed (#52) |
+| [KI-005](#ki-005) | High | IDOR + crash ở order items controller | ✅ chạy thật | fixed (#52) |
 | [KI-006](#ki-006) | High | MySQL/Aurora: logout không thu hồi được token (JWT > 255 ký tự) | ✅ chạy thật (MySQL 8.4) | open |
 | [KI-007](#ki-007) | High | Đơn đã `paid` không thể confirm/ship (kẹt trạng thái) | ✅ chạy thật | open |
 | [KI-008](#ki-008) | Medium | Admin `PATCH` đặt `status` order/payment tùy ý, bỏ qua state machine | ✅ đọc code | open |
@@ -46,6 +46,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-021](#ki-021) | High | Ruby 3.4.5 dính CVE-2026-132825 (có thể dẫn tới RCE) | ✅ Brakeman 8.1.1 | fixed (#46) |
 | [KI-022](#ki-022) | Medium | `POST /addresses/validate` báo mọi địa chỉ là hợp lệ | ✅ chạy thật | fixed (#49) |
 | [KI-023](#ki-023) | Low | `db:schema:load` trên MySQL lỗi khi database đã có bảng | ✅ chạy thật | open |
+| [KI-024](#ki-024) | Medium | Admin sửa order item không cập nhật tồn kho, kể cả với đơn đã giao | ✅ đọc code | open |
 
 ---
 
@@ -87,6 +88,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 
 - **Ở đâu:** [payments_controller.rb:7-9, 17](../app/controllers/api/v1/payments/payments_controller.rb). `show` không nằm trong `admin_only!` và cũng không kiểm tra `payment.order.user_id`.
 - **Tái hiện:** customer A gọi `GET /api/v1/payments/:id` với payment của customer B và nhận 200, kèm thông tin order và payment method.
+- **Đã sửa:** #52. `set_payment` trả 404 nếu người gọi không phải admin và không sở hữu đơn của payment đó. Dùng 404 thay vì 403 để không xác nhận là payment tồn tại, giống quy ước của orders và returns. `admin_only!` giờ chạy trước `set_payment`, nên customer gọi update/destroy/refund nhận 403 mà không cần tra payment. Contract spec ở [payments_spec.rb](../spec/requests/api/v1/payments_spec.rb).
 
 ### KI-005
 **Order items controller: IDOR và crash** · High
@@ -96,6 +98,16 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - `create`/`update` gọi `@order_item.phone`, một association không tồn tại (tàn dư khi model còn tên "phone"), nên ném NoMethodError (✅ đọc code).
   - Controller dùng `render json:` thô, không theo envelope `render_success`/`render_error`.
 - **Hướng sửa:** scope theo `current_user.orders` (admin thì không cần), đổi sang `product`, dùng envelope chuẩn.
+- **Thực tế tệ hơn đã ghi** (chạy thật trên code cũ):
+  - Một customer khác **xóa được** item của đơn người khác (204).
+  - Một customer khác **đổi được** `quantity` thành 99: update đã lưu xuống DB rồi mới crash ở `phone`. Response là 500, nhưng tổng tiền đơn đã thành 4950.
+- **Đã sửa:** #52.
+  - Chủ đơn và admin được **đọc**. Người khác nhận 404.
+  - Chỉ admin được **sửa** (giống update và cancel của đơn). `admin_only!` chạy trước, nên customer nhận 403.
+  - Update chỉ nhận `quantity`, đúng như Swagger mô tả. Cho đổi `product_id` sẽ giữ nguyên `unit_price` cũ.
+  - Model `OrderItem` tự tính giá và tự cập nhật tổng tiền.
+  - Response dùng envelope chuẩn. `DELETE` trả 200 thay vì 204.
+  - Contract spec ở [order_items_spec.rb](../spec/requests/api/v1/order_items_spec.rb). Phần còn lại xem [KI-024](#ki-024).
 
 ### KI-006
 **MySQL/Aurora: logout không thu hồi được token** · High
@@ -166,7 +178,8 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - [swagger.yaml](../swagger/v1/swagger.yaml) có 88 path, còn [swagger.json](../swagger/v1/swagger.json) (do `rails swagger:merge` sinh ra, và là file `/api-docs` đang hiển thị) chỉ có 59.
 - 29 path bị thiếu gồm: variants, shipping, tax, returns, addresses, reviews, wishlists, comparisons, users/profile, users/addresses.
 - Swagger dùng `/api/v1/return_requests/...`, còn route thật là `/api/v1/returns/...`.
-- Chỉ 3 request spec (carts, orders, payments) kiểm tra response theo schema.
+- Lúc ghi nhận, chỉ 3 request spec (carts, orders, payments) kiểm tra response theo schema. Từ #49 đến #52 đã có thêm variants, addresses, returns và order items.
+- **Lỗi gõ `get::`** ở 17 operation trong 12 file `swagger/v1/paths/*.yaml`: YAML đọc thành key `"get:"`, nên các thao tác GET đó không có trong tài liệu. Tìm bằng `grep -rn 'get::' swagger/v1/paths`.
 - Lệnh kiểm tra: `ruby -ryaml -rjson -e 'y=YAML.load_file("swagger/v1/swagger.yaml");j=JSON.parse(File.read("swagger/v1/swagger.json"));p y["paths"].size, j["paths"].size'`
 
 ### KI-016
@@ -236,3 +249,13 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Vì sao:** MySQL không làm theo `force: :cascade` khi DROP TABLE có foreign key trỏ tới.
 - **Ảnh hưởng:** chỉ ở máy local. CI luôn nạp schema vào database trống.
 - **Tạm thời:** `bin/rails db:drop db:create db:schema:load`.
+
+### KI-024
+**Admin sửa order item không cập nhật tồn kho** · Medium
+
+- **Ở đâu:** [orders/items_controller.rb](../app/controllers/api/v1/orders/items_controller.rb) `create`/`update`/`destroy` (chỉ admin, từ #52).
+- **Lỗi:**
+  - Thêm, bớt hoặc đổi số lượng item **không đụng tới tồn kho**. Luồng tạo đơn ([order_creation_service.rb](../app/services/orders/order_creation_service.rb)) thì có trừ kho, trong `with_lock`.
+  - Sửa được cả đơn đã `shipped` hay `delivered`.
+- **Lỗi phụ:** route lồng `/api/v1/orders/:order_id/items/:id` bỏ qua `order_id`. Quyền sở hữu vẫn được kiểm tra theo đơn thật của item, nên không phải lỗ hổng.
+- **Hướng sửa:** chỉ cho sửa khi đơn còn `pending`, và đi qua `Product#reduce_stock` / `add_stock` như luồng tạo và hủy đơn.
