@@ -18,7 +18,7 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
       result = described_class.blacklist_token(valid_token, user_id: user.id.to_s)
 
       expect(result).to be true
-      expect(JwtBlacklistToken.exists?(token: valid_token)).to be true
+      expect(JwtBlacklistToken.for_token(valid_token)).to exist
     end
 
     it 'blacklists token with custom parameters' do
@@ -32,7 +32,7 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
 
       expect(result).to be true
 
-      blacklisted_token = JwtBlacklistToken.find_by(token: valid_token)
+      blacklisted_token = JwtBlacklistToken.for_token(valid_token).sole
       # Database stores user_id as bigint (integer)
       expect(blacklisted_token.user_id).to eq(user.id)
       expect(blacklisted_token.token_type).to eq('refresh')
@@ -104,7 +104,7 @@ RSpec.describe Auth::Jwt::BlacklistService, type: :service do
     end
 
     it 'handles database errors gracefully' do
-      allow(JwtBlacklistToken).to receive(:where).and_raise(StandardError, 'Database error')
+      allow(JwtBlacklistToken).to receive(:for_token).and_raise(StandardError, 'Database error')
 
       result = described_class.whitelist_token(valid_token)
       expect(result).to be false

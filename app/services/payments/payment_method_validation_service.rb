@@ -45,8 +45,10 @@ module Payments
           test_stripe_connectivity(payment_method)
         when 'paypal'
           test_paypal_connectivity(payment_method)
-        when 'square'
-          test_square_connectivity(payment_method)
+        when 'wallet'
+          { success: true, message: 'Wallet connectivity test successful', response_time: rand(100..500) }
+        when *PaymentMethod::OFFLINE_GATEWAY_TYPES
+          { success: true, message: 'Offline payment method: there is no gateway to test' }
         else
           {
             success: false,
@@ -80,8 +82,8 @@ module Payments
           errors.concat(validate_stripe_config(payment_method))
         when 'paypal'
           errors.concat(validate_paypal_config(payment_method))
-        when 'square'
-          errors.concat(validate_square_config(payment_method))
+        when 'wallet', *PaymentMethod::OFFLINE_GATEWAY_TYPES
+          nil # nothing gateway-specific to check
         else
           errors << "Unsupported gateway type: #{payment_method.gateway_type}"
         end
@@ -116,12 +118,6 @@ module Payments
         # errors << 'PayPal client ID is required' if payment_method.client_id.blank?
       end
 
-      def validate_square_config(_payment_method)
-        []
-        # Add Square-specific validation logic here
-        # errors << 'Square application ID is required' if payment_method.app_id.blank?
-      end
-
       def test_stripe_connectivity(_payment_method)
         # Mock Stripe connectivity test
         {
@@ -137,15 +133,6 @@ module Payments
           success: true,
           message: 'PayPal connectivity test successful',
           response_time: rand(150..600) # Mock response time in ms
-        }
-      end
-
-      def test_square_connectivity(_payment_method)
-        # Mock Square connectivity test
-        {
-          success: true,
-          message: 'Square connectivity test successful',
-          response_time: rand(120..550) # Mock response time in ms
         }
       end
     end
