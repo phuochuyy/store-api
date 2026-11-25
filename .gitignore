@@ -215,56 +215,8 @@ docker-compose.override.yml
 DEVELOPMENT_COMMANDS.md
 LOCAL_SETUP.md
 
-# ============================================================================
-# Test Files - Keep Important Tests on GitHub, Others Local Only
-# ============================================================================
-
-# Ignore all test files by default
-spec/**/*_spec.rb
-
-# But keep important test files on GitHub
-!spec/controllers/api/v1/auth_controller_spec.rb
-!spec/controllers/concerns/api/authentication_spec.rb
-!spec/controllers/concerns/api/authorization_spec.rb
-!spec/controllers/api/v1/orders_controller_spec.rb
-!spec/controllers/api/v1/payments_controller_spec.rb
-!spec/models/user_spec.rb
-!spec/models/order_spec.rb
-!spec/models/product_spec.rb
-!spec/services/auth/auth_service_spec.rb
-!spec/services/auth/jwt/blacklist_service_spec.rb
-!spec/services/auth/jwt/cache_service_spec.rb
-!spec/services/auth/jwt/decode_service_spec.rb
-!spec/services/auth/jwt/encode_service_spec.rb
-!spec/services/auth/token_validation_service_spec.rb
-!spec/services/text_search_spec.rb
-!spec/services/products/elasticsearch_search_spec.rb
-
-# ============================================================================
-# Factories - Keep Important Factories on GitHub, Others Local Only
-# ============================================================================
-
-# Ignore all factories by default
-spec/factories/**/*.rb
-
-# But keep important factories on GitHub (needed for critical tests)
-!spec/factories/users.rb
-!spec/factories/orders.rb
-!spec/factories/order_items.rb
-!spec/factories/products.rb
-!spec/factories/payments.rb
-!spec/factories/payment_methods.rb
-!spec/factories/brands.rb
-!spec/factories/categories.rb
-!spec/factories/jwt_blacklist_tokens.rb
-!spec/factories/password_reset_tokens.rb
-!spec/factories/discounts.rb
-!spec/factories/product_reviews.rb
-!spec/factories/shipping_methods.rb
-!spec/factories/tax_rates.rb
-!spec/factories/carts.rb
-!spec/factories/cart_items.rb
-!spec/factories/product_variants.rb
+# Specs and factories are source code: every file under spec/ is tracked.
+# Do not add ignore rules for *_spec.rb or spec/factories here; CI checks for it.
 
 # Temporary files
 *.tmp
