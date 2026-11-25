@@ -1,6 +1,6 @@
 # Tài liệu Store API
 
-> Cập nhật theo commit: `1286f04` · Ngày: 2026-11-25
+> Cập nhật theo commit: `15319f3` · Ngày: 2026-11-25
 
 Đây là tài liệu nội bộ để hiểu dự án và định hướng phát triển. Cách cài đặt và chạy dự án nằm ở [README gốc](../README.md).
 
@@ -21,8 +21,8 @@
 - **Dự án:** Rails 8.1 API-only, monolith một DB (PostgreSQL mặc định, MySQL qua Trilogy). Dùng Redis, Sidekiq, JWT, và Elasticsearch (tùy chọn).
 - **Các tầng:** controller → validator → policy → service → serializer. Response luôn theo khung `{ success, data, message }`.
 - **Sức khỏe hiện tại:**
-  - 684 test pass trên cả PostgreSQL và MySQL, coverage dòng 47%.
-  - **27 lỗi đã ghi nhận, 11 đã sửa** (#46–#53), gồm lỗi Critical duy nhất, hai lỗi IDOR và state machine của đơn hàng. Còn mở 2 lỗi High: logout trên MySQL và các cổng thanh toán `cash_on_delivery` / `bank_transfer` / `wallet`.
+  - 696 test pass trên cả PostgreSQL và MySQL, coverage dòng 47%.
+  - **29 lỗi đã ghi nhận, 13 đã sửa** (#46–#56), gồm lỗi Critical duy nhất, hai lỗi IDOR, state machine của đơn hàng và logout trên MySQL. Còn mở 1 lỗi High: các cổng thanh toán `cash_on_delivery` / `bank_transfer` / `wallet`.
 - **Hướng đi:** sửa lỗi → đồng nhất code → tương thích Aurora → observability → modular monolith → microservice đầu tiên (Notification) → DynamoDB → K8s và IaC trên local.
 
 ## Quy ước giữ tài liệu không bị cũ

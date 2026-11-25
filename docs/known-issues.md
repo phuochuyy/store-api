@@ -1,6 +1,6 @@
 # Known issues
 
-> Cập nhật theo commit: `1286f04` · Ngày: 2026-11-25
+> Cập nhật theo commit: `15319f3` · Ngày: 2026-11-25
 
 Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ được mô tả ở đây.** Các tài liệu khác (roadmap, domain map) trỏ tới mã `KI-xxx` thay vì chép lại nội dung.
 
@@ -17,7 +17,7 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 
 Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
 
-**Tình hình hiện tại:** 27 lỗi đã ghi nhận, 11 đã sửa. Còn mở: 0 Critical, 2 High (KI-006, KI-025), 6 Medium, 8 Low.
+**Tình hình hiện tại:** 29 lỗi đã ghi nhận, 13 đã sửa. Còn mở: 0 Critical, 1 High (KI-025), 5 Medium, 10 Low.
 
 ## Tổng quan
 
@@ -28,10 +28,10 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-003](#ki-003) | High | `authorize!` không dừng action; truyền class thì luôn 403 | ✅ chạy thật | fixed (#48) |
 | [KI-004](#ki-004) | High | IDOR: xem được payment của người khác | ✅ chạy thật | fixed (#52) |
 | [KI-005](#ki-005) | High | IDOR + crash ở order items controller | ✅ chạy thật | fixed (#52) |
-| [KI-006](#ki-006) | High | MySQL/Aurora: logout không thu hồi được token (JWT > 255 ký tự) | ✅ chạy thật (MySQL 8.4) | open |
+| [KI-006](#ki-006) | High | MySQL/Aurora: logout không thu hồi được token (JWT > 255 ký tự) | ✅ chạy thật (MySQL 8.4) | fixed (#55) |
 | [KI-007](#ki-007) | High | Đơn đã `paid` không thể confirm/ship (kẹt trạng thái) | ✅ chạy thật | fixed (#53) |
 | [KI-008](#ki-008) | Medium | Admin `PATCH` đặt `status` order/payment tùy ý, bỏ qua state machine | ✅ đọc code | fixed (#53) |
-| [KI-009](#ki-009) | Medium | Sentry không lọc password/token (`before_send` bị ghi đè) | ✅ đọc code | open |
+| [KI-009](#ki-009) | Low | Sentry không lọc password/token (`before_send` bị ghi đè) | ✅ chạy thật | fixed (#56) |
 | [KI-010](#ki-010) | Medium | Giới hạn lượt dùng discount không bao giờ được áp dụng | ✅ đọc code | open |
 | [KI-011](#ki-011) | Medium | Webhook thanh toán: không có route, chữ ký giả, cột không tồn tại | ✅ đọc code | open |
 | [KI-012](#ki-012) | Medium | Hoàn tất đổi trả / hủy đơn không hoàn tiền | ✅ đọc code | open |
@@ -50,6 +50,8 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-025](#ki-025) | High | Thanh toán `bank_transfer` / `cash_on_delivery` / `wallet` luôn thất bại | ✅ chạy thật | open |
 | [KI-026](#ki-026) | Low | `shipping_status` trả `not_shipped` cho đơn đã giao | ✅ chạy thật | open |
 | [KI-027](#ki-027) | Medium | Confirm đơn tính tồn kho đã giữ hai lần: đơn mua hết kho không confirm được | ✅ chạy thật | fixed (#53) |
+| [KI-028](#ki-028) | Low | CI: spec Elasticsearch thỉnh thoảng fail với "index already exists" | ✅ chạy thật (CI) | open |
+| [KI-029](#ki-029) | Low | "Logout mọi phiên" bỏ sót token cấp trong cùng giây với lúc logout | ✅ đọc code | open |
 
 ---
 
@@ -115,10 +117,18 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 ### KI-006
 **MySQL/Aurora: logout không thu hồi được token** · High
 
-- **Ở đâu:** `jwt_blacklist_tokens.token` là `t.string` ([schema.rb:134](../db/schema.rb)). Trên PostgreSQL kiểu này không giới hạn độ dài, nhưng trên MySQL nó thành `VARCHAR(255)`. Access token thật dài **272** ký tự, refresh token **257** (đo bằng `Auth::AuthService.generate_tokens` có `device_id` và `ip_address`).
+- **Ở đâu (trước #55):** `jwt_blacklist_tokens.token` là `t.string` ([schema.rb:134](../db/schema.rb)). Trên PostgreSQL kiểu này không giới hạn độ dài, nhưng trên MySQL nó thành `VARCHAR(255)`. Access token thật dài **272** ký tự, refresh token **257** (đo bằng `Auth::AuthService.generate_tokens` có `device_id` và `ip_address`).
 - **Tái hiện trên MySQL 8.4:** `JwtBlacklistToken.create!(token: <access token>)` → `ActiveRecord::ValueTooLong: 1406 Data too long for column 'token'`.
 - **Vì sao test không bắt được:** [BlacklistService](../app/services/auth/jwt/blacklist_service.rb) (dòng 33-35) nuốt exception và trả về `false`, nên logout vẫn trả về thành công nhưng token vẫn dùng được tới khi hết hạn. Helper trong spec ([jwt_helper.rb](../spec/support/jwt_helper.rb)) tạo token ngắn hơn (189 ký tự), nên CI MySQL vẫn xanh.
 - **Hướng sửa:** lưu `token_digest` (SHA256, 64 ký tự) thay vì token thô. Redis cache ([cache_service.rb](../app/services/auth/jwt/cache_service.rb)) đã làm như vậy. Cách khác là lưu `jti`. Kiểm tra luôn `password_reset_tokens.token` và `users.email_verification_token`.
+- **Hệ quả thật (phát hiện khi sửa):**
+  - Nặng nhất là **xoay vòng refresh token không có tác dụng**: refresh token cũ dùng lại được cho tới khi hết hạn.
+  - Access token vẫn dùng được sau khi logout nếu mốc logout trong Redis không che được nó: Redis sập, hoặc token được cấp trong cùng giây ([KI-029](#ki-029)).
+- **Đã sửa:** #55.
+  - Bảng chỉ lưu `token_digest` (SHA-256, 64 ký tự, unique index), không lưu token thô. Lộ bảng cũng không có token nào dùng được.
+  - Migration băm các token còn hạn và xóa các dòng đã hết hạn. Đã chạy `up` và `down` trên PostgreSQL và MySQL.
+  - [auth_revocation_spec.rb](../spec/requests/api/v1/auth_revocation_spec.rb) login qua API với device id dạng hash, nên token dài hơn 255 ký tự. Spec kiểm tra dùng lại refresh token và logout, khi có Redis và khi Redis sập. Trên MySQL, code cũ fail cả 4 test.
+  - Hai cột token còn lại lưu chuỗi ngẫu nhiên 43 ký tự (`SecureRandom.urlsafe_base64(32)`), không vướng giới hạn.
 
 ### KI-007
 **Đơn đã thanh toán bị kẹt trạng thái** · High
@@ -147,8 +157,15 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 ### KI-009
 **Sentry không lọc dữ liệu nhạy cảm** · Medium
 
-- **Ở đâu:** [config/initializers/sentry.rb](../config/initializers/sentry.rb). `config.before_send` được gán ở dòng 17 (lọc `password`, `token`) rồi **gán lại** ở dòng 38. Chỉ lambda thứ hai có hiệu lực.
+- **Ở đâu (trước #56):** [config/initializers/sentry.rb](../config/initializers/sentry.rb). `config.before_send` được gán ở dòng 17 (lọc `password`, `token`) rồi **gán lại** ở dòng 38. Chỉ lambda thứ hai có hiệu lực.
 - **Hệ quả:** ở production, password và token trong request body có thể bị gửi lên Sentry.
+- **Đánh giá lại khi sửa (Medium → Low):** đọc mã nguồn sentry-ruby 7.2 cho thấy với cấu hình mặc định (`send_default_pii = false`), SDK không gửi request body hay query string, và luôn che các key cấp ngoài cùng như `auth`, `token`, `password`. Vì vậy hiện chưa có dữ liệu nào bị lộ. Rủi ro còn lại:
+  - Bộ lọc của SDK chỉ xét key cấp ngoài cùng và không biết các term riêng của app. Khi bật thu thập body để debug, `user.password` lồng bên trong và `email` sẽ đi nguyên văn.
+  - Dữ liệu gắn vào `extra` và breadcrumb luôn được gửi, bất kể cấu hình.
+  - Lambda `before_send` thứ hai đọc `hint[:scope]`, nhưng SDK không bao giờ truyền key này, nên nó cũng không có tác dụng.
+- **Đã sửa:** #56.
+  - [sentry_scrubber.rb](../lib/sentry_scrubber.rb) che giá trị ở mọi độ sâu trong body, query, header, cookie, `extra`, `contexts` và breadcrumb. Danh sách term là `filter_parameters` của Rails (chính danh sách đang giữ cho log sạch), cộng thêm `authorization` và `cookie`.
+  - [sentry_scrubber_spec.rb](../spec/lib/sentry_scrubber_spec.rb) cho event đi qua pipeline thật của SDK, có bật thu thập body. Với initializer cũ, cả 4 test đều fail.
 
 ### KI-010
 **Giới hạn lượt dùng discount không có tác dụng** · Medium
@@ -311,3 +328,20 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Tái hiện:** tạo đơn mua đúng số còn trong kho, rồi admin gọi `POST /orders/:id/confirm`. Phát hiện khi viết spec luồng đơn hàng cho việc 0.6 của roadmap.
 - **Hướng sửa:** lúc confirm chỉ cần kiểm tra sản phẩm còn tồn tại, vì tồn kho đã được giữ khi tạo đơn.
 - **Đã sửa:** #53. Lúc confirm, service chỉ kiểm tra sản phẩm còn tồn tại. Mỗi luồng trong [order_lifecycle_spec.rb](../spec/requests/api/v1/order_lifecycle_spec.rb) đều mua đúng sản phẩm cuối cùng trong kho.
+
+### KI-028
+**CI: spec Elasticsearch thỉnh thoảng fail với "index already exists"** · Low
+
+- **Ở đâu:** [elasticsearch_search_spec.rb](../spec/services/products/elasticsearch_search_spec.rb) gọi `Product.reindex` trong `before`. [searchkick.rb](../config/initializers/searchkick.rb) đặt `request_timeout: 2` và `retry_on_failure: 1`.
+- **Vì sao:** Elasticsearch trên CI chỉ có 512 MB heap, nên lệnh tạo index đôi khi chạy quá 2 giây. Client hết thời gian chờ và gửi lại đúng lệnh đó, trong khi lần đầu thực ra đã tạo xong, nên ES trả `resource_already_exists_exception`.
+- **Đã gặp:** job `test (mysql)` của #54, một PR chỉ sửa docs. Chạy lại job thì xanh.
+- **Tạm thời:** chạy lại job bị fail.
+- **Hướng sửa:** trong môi trường test, tăng `request_timeout` và tắt retry cho các lệnh không idempotent như tạo index.
+
+### KI-029
+**"Logout mọi phiên" bỏ sót token cấp trong cùng giây với lúc logout** · Low
+
+- **Ở đâu:** [cache_service.rb](../app/services/auth/jwt/cache_service.rb) `set_user_logout_timestamp` lưu `Time.current.to_i`. [decode_service.rb](../app/services/auth/jwt/decode_service.rb) chỉ từ chối token khi `iat < logout_timestamp`. Cả hai đều chính xác tới giây.
+- **Hệ quả:** token của phiên khác được cấp trong cùng giây với lúc logout vẫn dùng được. Token của chính phiên logout thì đã nằm trong blacklist DB từ #55.
+- **Vì sao chưa đổi thành `<=`:** nếu đổi, người dùng logout rồi login lại ngay trong cùng giây sẽ bị từ chối token mới.
+- **Hướng sửa:** thêm `token_version` cho từng user trong DB và đưa nó vào claim của token. Logout chỉ cần tăng version, không phụ thuộc Redis hay độ chính xác của đồng hồ.

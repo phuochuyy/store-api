@@ -1,6 +1,6 @@
 # Roadmap (chạy hoàn toàn ở local)
 
-> Cập nhật theo commit: `1286f04` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
+> Cập nhật theo commit: `15319f3` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
 
 **Nguyên tắc**
 - Làm theo thứ tự giai đoạn. Mỗi giai đoạn gồm nhiều PR nhỏ trên nhánh riêng, PR nào cũng phải pass `bin/ci`.
@@ -36,14 +36,14 @@ flowchart LR
 | 0.x | (phát sinh) Ruby 3.4.5 → 3.4.13 và Brakeman 8.1.1, để job `security` xanh lại | [KI-021](../known-issues.md#ki-021) | Brakeman 0 cảnh báo, image Docker build được | ✅ #46 |
 | 0.5 | Kiểm tra chủ sở hữu ở payments#show và order items | [KI-004](../known-issues.md#ki-004), [KI-005](../known-issues.md#ki-005) | Truy cập tài nguyên của người khác trả 404 | ✅ #52 |
 | 0.6 | Tách `payment_status` khỏi `fulfillment_status` hoặc cho phép `paid → confirmed`; bỏ `status` khỏi params của admin, thay bằng action riêng | [KI-007](../known-issues.md#ki-007), [KI-008](../known-issues.md#ki-008) | Spec luồng pending → paid → confirmed → shipped → delivered | ✅ #53 |
-| 0.7 | Blacklist lưu `token_digest` hoặc `jti` | [KI-006](../known-issues.md#ki-006) | Spec logout pass trên **MySQL** với token thật | |
-| 0.8 | Sửa `before_send` của Sentry | [KI-009](../known-issues.md#ki-009) | Unit test lambda lọc `password` và `token` | |
+| 0.7 | Blacklist lưu `token_digest` hoặc `jti` | [KI-006](../known-issues.md#ki-006) | Spec logout pass trên **MySQL** với token thật | ✅ #55 |
+| 0.8 | Sửa `before_send` của Sentry | [KI-009](../known-issues.md#ki-009) | Unit test lambda lọc `password` và `token` | ✅ #56 |
 | 0.9 | Đếm lượt dùng discount một cách atomic, chặn khi vượt giới hạn | [KI-010](../known-issues.md#ki-010) | Spec đồng thời: N thread chạy song song, `used_count` ≤ giới hạn | |
 | 0.10 | Thanh toán `cash_on_delivery` / `bank_transfer`: tạo payment `pending`, admin xác nhận đã nhận tiền; bỏ `wallet` và nhánh `square`, hoặc làm cho đủ | [KI-025](../known-issues.md#ki-025) | Spec luồng COD: đặt hàng → giao → admin xác nhận → `paid`. Mọi `gateway_type` trong enum đều có spec thanh toán | |
 
 **Kỹ năng thể hiện:** phát hiện và sửa lỗi bảo mật, viết test cho tình huống đồng thời, thiết kế state machine.
 
-**Đã làm được (25/11/2026):** không còn lỗi Critical nào đang mở. Luồng đặt hàng → thanh toán → giao hàng chạy được đầu cuối qua API, cả trả trước lẫn trả sau, trừ ba cổng thanh toán ở [KI-025](../known-issues.md#ki-025). Mỗi bản sửa đều đi kèm spec fail trên code cũ. Coverage dòng tăng từ 37% lên 47%. Việc nên làm sớm: nâng ngưỡng coverage trong `spec_helper.rb` theo mức mới.
+**Đã làm được (25/11/2026):** không còn lỗi Critical nào đang mở. Luồng đặt hàng → thanh toán → giao hàng chạy được đầu cuối qua API, cả trả trước lẫn trả sau, trừ ba cổng thanh toán ở [KI-025](../known-issues.md#ki-025). Logout và xoay vòng refresh token hoạt động trên MySQL. Mỗi bản sửa đều đi kèm spec fail trên code cũ. Coverage dòng tăng từ 37% lên 47%. Việc nên làm sớm: nâng ngưỡng coverage trong `spec_helper.rb` theo mức mới.
 
 ## Giai đoạn 1 · Đồng nhất và làm sạch
 **Mục tiêu:** chỉ còn một cách làm cho mỗi việc, và Swagger là nguồn sự thật được CI kiểm tra.

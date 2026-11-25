@@ -1,6 +1,6 @@
 # 01 · Kiến trúc và quy ước code
 
-> Cập nhật theo commit: `0b570df`
+> Cập nhật theo commit: `15319f3`
 
 ## Tổng quan
 - **Store API** là API JSON (Rails 8.1, chế độ `api_only`) cho cửa hàng bán điện thoại.
@@ -73,7 +73,7 @@ ActionController::API
 - **Config** ([config.rb](../../app/services/auth/jwt/config.rb)): HS256, ký bằng `JWT_SECRET_KEY`, nếu không có thì dùng `secret_key_base`.
 - **Thời hạn:** access token 30 phút, refresh token 7 ngày. Claim `type` nhận một trong các giá trị `access`, `refresh`, `password_reset`, `email_verification`.
 - **Thu hồi token:** dùng hai lớp lưu trữ.
-  - Bảng `jwt_blacklist_tokens` là nguồn chính.
+  - Bảng `jwt_blacklist_tokens` là nguồn chính. Bảng lưu SHA-256 của token (`token_digest`), không lưu token thô (#55).
   - Redis ([cache_service.rb](../../app/services/auth/jwt/cache_service.rb)) cache theo SHA256 của token, và lưu mốc "logout tất cả" của từng user.
 - **Luồng:** `AuthController` → [`Auth::AuthService`](../../app/services/auth/auth_service.rb) → các service con `Jwt::*`. `Api::Authentication` gọi `TokenValidationService.authenticate` cho mỗi request.
 - **Vai trò:** `users.role` có hai giá trị, `admin` và `customer`.
