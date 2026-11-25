@@ -17,7 +17,7 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 
 Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
 
-**Tình hình hiện tại:** 24 lỗi đã ghi nhận, 8 đã sửa. Còn mở: 0 Critical, 2 High (KI-006, KI-007), 7 Medium, 7 Low.
+**Tình hình hiện tại:** 27 lỗi đã ghi nhận, 8 đã sửa. Còn mở: 0 Critical, 3 High (KI-006, KI-007, KI-025), 8 Medium, 8 Low.
 
 ## Tổng quan
 
@@ -47,6 +47,9 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-022](#ki-022) | Medium | `POST /addresses/validate` báo mọi địa chỉ là hợp lệ | ✅ chạy thật | fixed (#49) |
 | [KI-023](#ki-023) | Low | `db:schema:load` trên MySQL lỗi khi database đã có bảng | ✅ chạy thật | open |
 | [KI-024](#ki-024) | Medium | Admin sửa order item không cập nhật tồn kho, kể cả với đơn đã giao | ✅ đọc code | open |
+| [KI-025](#ki-025) | High | Thanh toán `bank_transfer` / `cash_on_delivery` / `wallet` luôn thất bại | ✅ chạy thật | open |
+| [KI-026](#ki-026) | Low | `shipping_status` trả `not_shipped` cho đơn đã giao | ✅ chạy thật | open |
+| [KI-027](#ki-027) | Medium | Confirm đơn tính tồn kho đã giữ hai lần: đơn mua hết kho không confirm được | ✅ chạy thật | open |
 
 ---
 
@@ -194,6 +197,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - `Orders::NotificationService`, kéo theo 6 service `Order*NotificationService` và `BulkOrderNotificationService`, vì chúng chỉ được gọi từ đó.
   - `Users::AddressService`, `Categories::CategoryService`, `CartService.validate_cart_for_checkout`, `Coupon#use!`.
 - **Không có model:** bảng `payment_histories` có serializer nhưng không có model, nên các method `track_*` trong [payment.rb](../app/models/payment.rb) không bao giờ chạy.
+- **Nhánh không bao giờ chạy:** `when 'square'` trong các service thanh toán, vì enum `gateway_type` không có `square` (xem [KI-025](#ki-025)).
 - **Lớp chỉ chuyển tiếp:** `Payments::PaymentProcessorService` chỉ gọi thẳng sang core service và webhook service.
 - **Action không có route:** nhiều action trong `notifications_controller` (`unread_count`, `recent`, `send_daily_summary`…) và `stock_alerts_controller` (`resolve`, `dismiss`, `bulk_operation`…).
 - **Method công khai nhầm:** một số helper để `public` lẽ ra phải `private` (payments, payment methods, comparisons, reviews, statistics). `ShippingController#methods` ghi đè `Object#methods` của Ruby.
@@ -259,3 +263,39 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - Sửa được cả đơn đã `shipped` hay `delivered`.
 - **Lỗi phụ:** route lồng `/api/v1/orders/:order_id/items/:id` bỏ qua `order_id`. Quyền sở hữu vẫn được kiểm tra theo đơn thật của item, nên không phải lỗ hổng.
 - **Hướng sửa:** chỉ cho sửa khi đơn còn `pending`, và đi qua `Product#reduce_stock` / `add_stock` như luồng tạo và hủy đơn.
+
+### KI-025
+**Thanh toán bằng `bank_transfer`, `cash_on_delivery` hoặc `wallet` luôn thất bại** · High
+
+- **Ở đâu:** enum `gateway_type` ở [payment_method.rb:33](../app/models/payment_method.rb) có 5 loại. Nhưng `process_with_gateway` ([payment_processing_core_service.rb:66](../app/services/payments/payment_processing_core_service.rb)) chỉ xử lý `stripe`, `paypal` và `square`, các loại khác rơi vào `else`.
+- **Tái hiện:** gọi `POST /api/v1/payments` với một payment method thuộc mỗi loại.
+  - `stripe` và `paypal` trả 201, payment `completed`.
+  - Ba loại còn lại trả 422 `Unsupported gateway type: ...`. Payment bị lưu là `failed`, còn đơn bị đánh dấu `payment_failed`.
+  - Admin vẫn tạo được payment method thuộc các loại này, nên lỗi chỉ lộ ra khi khách trả tiền.
+- **Lỗi phụ:** `square` không có trong enum, nên mọi nhánh `when 'square'` đều là code chết. Có 6 câu `case` như vậy, rải ở các file:
+  - `process_with_gateway` và `process_refund_with_gateway` trong core service.
+  - `test_payment_method_connectivity` và `validate_gateway_specific_config` trong [payment_method_validation_service.rb](../app/services/payments/payment_method_validation_service.rb).
+  - Hai chỗ trong [payment_webhook_service.rb](../app/services/payments/payment_webhook_service.rb).
+- **Hướng sửa:**
+  - `cash_on_delivery` và `bank_transfer` không đi qua gateway. Tạo payment ở trạng thái `pending`, rồi admin xác nhận đã nhận tiền bằng một action riêng để chuyển sang `completed`.
+  - `wallet`: bỏ khỏi enum, hoặc giả lập như `stripe`.
+  - Gom các loại gateway vào một registry duy nhất thay cho 6 câu `case`.
+
+### KI-026
+**`shipping_status` trả `not_shipped` cho đơn đã giao** · Low
+
+- **Ở đâu:** [order.rb:98](../app/models/order.rb) `shipping_status` mở đầu bằng `return 'not_shipped' unless shipped?`. `shipped?` là predicate của enum, chỉ đúng khi `status == 'shipped'`. Vì vậy đơn `delivered` thoát ra từ dòng này, trước khi tới phép kiểm tra `delivered?`.
+- **Tái hiện:** `Order.new(status: 'delivered').shipping_status` trả `"not_shipped"`. Chỉ `shipped` cho ra `in_transit`, còn mọi trạng thái khác đều ra `not_shipped`.
+- **Ảnh hưởng:** trường `shipping_status` trong response order ([order_serializer_service.rb:23](../app/services/orders/order_serializer_service.rb)) và trong `GET /orders/:id/tracking` ([orders_controller.rb:107](../app/controllers/api/v1/orders/orders_controller.rb)) báo đơn đã giao là chưa gửi. Trường `status` trả về cùng lúc vẫn đúng.
+- **Hướng sửa:** kiểm tra `delivered?` trước. Thêm unit test cho cả 5 trạng thái.
+
+### KI-027
+**Confirm đơn kiểm tra lại phần tồn kho mà chính đơn đó đã giữ** · Medium
+
+- **Ở đâu:** [order_confirmation_service.rb:72](../app/services/orders/order_confirmation_service.rb) `check_item_availability`. Hàm này so sánh `product.stock_quantity` với `item.quantity`. Nhưng tồn kho đã bị trừ từ lúc tạo đơn, trong `with_lock` ([order_creation_service.rb](../app/services/orders/order_creation_service.rb)), nên phần của chính đơn bị tính hai lần.
+- **Hệ quả:**
+  - Đơn chỉ confirm được khi tồn kho còn lại ≥ số lượng đặt, tức tồn kho ban đầu phải ≥ 2 lần số lượng.
+  - Đơn mua sản phẩm cuối cùng (kho 1 → 0) báo `Some items are no longer available`, và **không bao giờ confirm được**.
+  - Với item có variant, hàm còn kiểm tra kho của product thay vì kho của variant.
+- **Tái hiện:** tạo đơn mua đúng số còn trong kho, rồi admin gọi `POST /orders/:id/confirm`. Phát hiện khi viết spec luồng đơn hàng cho việc 0.6 của roadmap.
+- **Hướng sửa:** lúc confirm chỉ cần kiểm tra sản phẩm còn tồn tại, vì tồn kho đã được giữ khi tạo đơn.

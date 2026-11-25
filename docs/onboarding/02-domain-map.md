@@ -23,7 +23,7 @@ Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu,
 | **Statistics** | Không có model | Không có service | Query viết trực tiếp trong [statistics_controller.rb](../../app/controllers/api/v1/statistics_controller.rb) |
 
 **Thật hay giả lập**
-- **Payment gateway:** giả lập (`SecureRandom`).
+- **Payment gateway:** giả lập (`SecureRandom`). Chỉ `stripe` và `paypal` chạy được, ba loại còn lại luôn thất bại ([KI-025](../known-issues.md#ki-025)).
 - **Email:** chỉ email xác minh tài khoản là gửi thật (`EmailVerificationMailer`). Dev dùng letter_opener, còn SMTP production chưa cấu hình. "Email" thông báo đơn hàng thực ra chỉ ghi log.
 - **Job nền:**
   - `JwtCleanupJob` chạy cron lúc 02:00 mỗi ngày ([schedule.yml](../../config/schedule.yml)).

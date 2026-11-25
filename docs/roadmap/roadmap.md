@@ -39,6 +39,7 @@ flowchart LR
 | 0.7 | Blacklist lưu `token_digest` hoặc `jti` | [KI-006](../known-issues.md#ki-006) | Spec logout pass trên **MySQL** với token thật | |
 | 0.8 | Sửa `before_send` của Sentry | [KI-009](../known-issues.md#ki-009) | Unit test lambda lọc `password` và `token` | |
 | 0.9 | Đếm lượt dùng discount một cách atomic, chặn khi vượt giới hạn | [KI-010](../known-issues.md#ki-010) | Spec đồng thời: N thread chạy song song, `used_count` ≤ giới hạn | |
+| 0.10 | Thanh toán `cash_on_delivery` / `bank_transfer`: tạo payment `pending`, admin xác nhận đã nhận tiền; bỏ `wallet` và nhánh `square`, hoặc làm cho đủ | [KI-025](../known-issues.md#ki-025) | Spec luồng COD: đặt hàng → giao → admin xác nhận → `paid`. Mọi `gateway_type` trong enum đều có spec thanh toán | |
 
 **Kỹ năng thể hiện:** phát hiện và sửa lỗi bảo mật, viết test cho tình huống đồng thời, thiết kế state machine.
 
