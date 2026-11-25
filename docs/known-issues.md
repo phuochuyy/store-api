@@ -1,6 +1,6 @@
 # Known issues
 
-> Cập nhật theo commit: `3ed8915` · Ngày: 2026-11-25
+> Cập nhật theo commit: `0b570df` · Ngày: 2026-11-25
 
 Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ được mô tả ở đây.** Các tài liệu khác (roadmap, domain map) trỏ tới mã `KI-xxx` thay vì chép lại nội dung.
 
@@ -15,15 +15,17 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 - ✅ **đọc code**: đã đọc đúng dòng code liên quan, nhưng chưa chạy.
 - ⚠️ **chưa xác minh**
 
-Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)`. Đừng xóa dòng, để giữ lịch sử.
+Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
+
+**Tình hình hiện tại:** 23 lỗi đã ghi nhận, 6 đã sửa. Còn mở: 0 Critical, 4 High (KI-004…007), 6 Medium, 7 Low.
 
 ## Tổng quan
 
 | ID | Mức độ | Tóm tắt | Xác minh | Trạng thái |
 |---|---|---|---|---|
-| [KI-001](#ki-001) | Critical | Customer tự duyệt/từ chối/hoàn tất yêu cầu đổi trả | ✅ chạy thật | open |
-| [KI-002](#ki-002) | High | Toàn bộ API variants và addresses trả 500 | ✅ chạy thật | open |
-| [KI-003](#ki-003) | High | `authorize!` không dừng action; truyền class thì luôn 403 | ✅ chạy thật | open |
+| [KI-001](#ki-001) | Critical | Customer tự duyệt/từ chối/hoàn tất yêu cầu đổi trả | ✅ chạy thật | fixed (#48, test #50) |
+| [KI-002](#ki-002) | High | Toàn bộ API variants và addresses trả 500 | ✅ chạy thật | fixed (#49) |
+| [KI-003](#ki-003) | High | `authorize!` không dừng action; truyền class thì luôn 403 | ✅ chạy thật | fixed (#48) |
 | [KI-004](#ki-004) | High | IDOR: xem được payment của người khác | ✅ chạy thật | open |
 | [KI-005](#ki-005) | High | IDOR + crash ở order items controller | ✅ chạy thật / đọc code | open |
 | [KI-006](#ki-006) | High | MySQL/Aurora: logout không thu hồi được token (JWT > 255 ký tự) | ✅ chạy thật (MySQL 8.4) | open |
@@ -40,7 +42,10 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)`. �
 | [KI-017](#ki-017) | Low | Code chết và lớp trùng lặp | ✅ đọc code | open |
 | [KI-018](#ki-018) | Low | Phân quyền và pagination làm theo nhiều kiểu khác nhau | ✅ đọc code | open |
 | [KI-019](#ki-019) | Low | `make docs` gọi rake task không tồn tại | ✅ chạy thật | open |
-| [KI-020](#ki-020) | Medium | `.gitignore` bỏ qua mọi spec mới, chỉ giữ các file trong whitelist | ✅ chạy thật | open |
+| [KI-020](#ki-020) | Medium | `.gitignore` bỏ qua mọi spec mới, chỉ giữ các file trong whitelist | ✅ chạy thật | fixed (#47) |
+| [KI-021](#ki-021) | High | Ruby 3.4.5 dính CVE-2026-132825 (có thể dẫn tới RCE) | ✅ Brakeman 8.1.1 | fixed (#46) |
+| [KI-022](#ki-022) | Medium | `POST /addresses/validate` báo mọi địa chỉ là hợp lệ | ✅ chạy thật | fixed (#49) |
+| [KI-023](#ki-023) | Low | `db:schema:load` trên MySQL lỗi khi database đã có bảng | ✅ chạy thật | open |
 
 ---
 
@@ -53,6 +58,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)`. �
 - **Vì sao:** xem [KI-003](#ki-003). `authorize!` render 403 nhưng action vẫn chạy tiếp và gọi `approve!` / `process_return`.
 - **Tái hiện:** customer gửi `PATCH /api/v1/returns/:id/approve` với return request của mình. Response trả 500 (DoubleRenderError), **nhưng trong DB `status` đã thành `approved`.** Với `complete`, hệ thống còn cộng lại tồn kho.
 - **Hướng sửa:** dùng `before_action` + policy (`ReturnRequestPolicy`), hoặc `return unless authorize!(...)`. Viết request spec cho cả hai vai trò.
+- **Đã sửa:** #48 sửa tận gốc ở [KI-003](#ki-003). Policy vốn đã chỉ cho admin, chỉ là trước đó không có tác dụng. #50 thêm contract spec: chủ yêu cầu gọi approve/reject/complete nhận 403, trạng thái và tồn kho không đổi ([returns_spec.rb](../spec/requests/api/v1/returns_spec.rb)).
 
 ### KI-002
 **Toàn bộ API variants và addresses trả 500** · High
@@ -62,13 +68,19 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)`. �
   - [addresses_controller.rb:5](../app/controllers/api/v1/addresses_controller.rb)
 - **Tái hiện:** `GET /api/v1/products/:id/variants`, `POST /api/v1/addresses/validate` và `GET /api/v1/addresses/autocomplete` đều trả 500 `undefined method 'authenticate_user!'`.
 - **Hướng sửa:** đổi lớp cha. Sau đó lỗi [KI-003](#ki-003) sẽ lộ ra ngay ở variants. Thêm một spec kiểm tra mọi controller trong `Api::V1` (trừ `HealthController`) đều kế thừa `Api::V1::BaseController`.
+- **Đã sửa:** #49 đổi lớp cha cho cả hai controller. [controller_inheritance_spec.rb](../spec/controllers/api/v1/controller_inheritance_spec.rb) chặn lỗi này quay lại, và in tên controller sai. Khi endpoint chạy được, contract spec phát hiện thêm `price` của variant trả về number thay vì string như schema (đã sửa), và lỗi [KI-022](#ki-022).
 
 ### KI-003
 **`authorize!` không dừng action; truyền class thì luôn 403** · High
 
-- **Ở đâu:** [authorization.rb:9-17](../app/controllers/concerns/api/authorization.rb). `render_error(...) && return` chỉ thoát khỏi `authorize!`, không thoát khỏi action đã gọi nó.
-- **Lỗi kèm theo:** `authorize! :create, ProductVariant` ([variants_controller.rb:24](../app/controllers/api/v1/products/variants_controller.rb)) truyền class. [`TokenValidationService.authorize`](../app/services/auth/token_validation_service.rb) dựng tên policy từ `resource.class.name`, ra `ClassPolicy` → NameError → `"Authorization policy not found"`. **Admin cũng bị chặn** (đã chạy thật).
+- **Ở đâu (trước #48):** [authorization.rb](../app/controllers/concerns/api/authorization.rb) `authorize!`. `render_error(...) && return` chỉ thoát khỏi `authorize!`, không thoát khỏi action đã gọi nó.
+- **Lỗi kèm theo:** `authorize! :create, ProductVariant` ([variants_controller.rb:23](../app/controllers/api/v1/products/variants_controller.rb)) truyền class. [`TokenValidationService.authorize`](../app/services/auth/token_validation_service.rb) dựng tên policy từ `resource.class.name`, ra `ClassPolicy` → NameError → `"Authorization policy not found"`. **Admin cũng bị chặn** (đã chạy thật).
 - **Hướng sửa:** `authorize!` trả về boolean và chỉ được gọi trong `before_action`, hoặc raise một exception riêng (`NotAuthorizedError`) để [ErrorHandling](../app/controllers/concerns/error_handling.rb) xử lý. Hỗ trợ truyền class (`resource.is_a?(Class) ? resource : resource.class`).
+- **Đã sửa:** #48 chọn cách raise.
+  - `authorize!` và `admin_only!` raise `Api::Authorization::NotAuthorizedError`, và `rescue_from` trả 403, nên action dừng dù được gọi ở đâu.
+  - `TokenValidationService.authorize` nhận cả class.
+  - Policy được tìm bằng `safe_constantize`. Code cũ `rescue NameError` nuốt luôn `NoMethodError` bên trong policy và báo nhầm thành "policy not found".
+  - Các action thử trong spec cũ tự thêm `return if performed?`, nên che mất lỗi. Spec mới đã bỏ dòng đó.
 
 ### KI-004
 **IDOR: xem được payment của người khác** · High
@@ -180,7 +192,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)`. �
   1. Policy qua `before_action` (products, brands).
   2. `admin_only!` (orders, payments, discounts, promotions, stock alerts, statistics). Lưu ý `DiscountPolicy` và `PromotionPolicy` tồn tại nhưng không được dùng.
   3. `ensure_admin!` tự viết riêng (categories).
-  4. `authorize!` gọi giữa thân action (returns, variants). Đây là nguồn gốc của [KI-003](#ki-003).
+  4. `authorize!` gọi giữa thân action (returns, variants). Đây là nguồn gốc của [KI-003](#ki-003). Từ #48, cách này đã an toàn, nhưng vẫn là một kiểu riêng cần gom về chung.
 - **Pagination có 3 dạng meta:**
   1. `Common::Pagination#pagination_meta`, giới hạn 100 bản ghi mỗi trang, có `has_next_page`/`has_prev_page`.
   2. Tự viết trong service (brands, products), không giới hạn.
@@ -199,3 +211,28 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)`. �
 - **Hệ quả:** một spec mới, ví dụ `spec/models/discount_spec.rb` hay `spec/requests/api/v1/brands_spec.rb`, **bị git bỏ qua mà không có cảnh báo nào**. Test chạy được ở máy local nhưng không bao giờ lên CI.
 - **Kiểm tra:** `git check-ignore -v spec/models/discount_spec.rb`.
 - **Tạm thời:** `git add -f <file>`. **Hướng sửa:** xóa dòng `spec/**/*_spec.rb` và toàn bộ whitelist đi kèm. Đây nên là việc đầu tiên của giai đoạn 0, vì mọi bản sửa lỗi phía sau đều cần commit spec.
+- **Đã sửa:** #47 xóa cả khối này và khối tương tự cho `spec/factories/**/*.rb`; factory mới cũng từng bị ẩn y như vậy. [bin/check-gitignore](../bin/check-gitignore) chạy trong job `lint` của CI và trong `bin/ci`. Script báo lỗi, kèm số dòng của rule gây ra, nếu có rule nào ẩn file mới trong `spec/`.
+
+### KI-021
+**Ruby 3.4.5 dính CVE-2026-132825** · High
+
+- **Ở đâu:** [.ruby-version](../.ruby-version) và `FROM ruby:3.4.5-slim` trong [Dockerfile](../Dockerfile).
+- **Lỗi:** tràn bộ nhớ heap khi đổi chữ hoa/thường của chuỗi, có thể dẫn tới thực thi code từ xa. Ảnh hưởng Ruby 3.4.0 tới 3.4.12. Các nguồn ghi mức độ khác nhau: Critical hoặc High (7.4).
+- **Phát hiện thế nào:** Brakeman 8.1.1 có thêm kiểm tra `Ruby2Shell`. `bin/brakeman` chạy với `--ensure-latest`, nên CI fail ngay khi có bản Brakeman mới. Chỉ nâng Brakeman thì nó lại báo lỗ hổng này.
+- **Đã sửa:** #46 nâng lên Ruby 3.4.13 (bản vá phát hành 18/11/2026) và Brakeman 8.1.1.
+- **Bài học:** vì `--ensure-latest`, mỗi bản Brakeman mới đều làm mọi PR đỏ cho tới khi được nâng lên. Gặp job `security` đỏ hàng loạt thì kiểm tra điều này trước.
+
+### KI-022
+**`POST /api/v1/addresses/validate` báo mọi địa chỉ là hợp lệ** · Medium
+
+- **Ở đâu:** [address_validation_service.rb](../app/services/address/address_validation_service.rb) `validate`. `basic_validation` luôn trả `success: true` và báo lỗi qua `valid: false`, nhưng `validate` chỉ dừng khi `success` là false.
+- **Hệ quả:** địa chỉ thiếu city, với country code `usa`, vẫn nhận `valid: true` và được chuẩn hóa. Lỗi bị che vì endpoint trả 500 ([KI-002](#ki-002)).
+- **Đã sửa:** #49 dừng khi `valid` là false. Contract spec ở [addresses_spec.rb](../spec/requests/api/v1/addresses_spec.rb).
+
+### KI-023
+**`db:schema:load` trên MySQL lỗi khi database đã có bảng** · Low
+
+- **Tái hiện:** chạy `DB_ADAPTER=trilogy DATABASE_PORT=3307 RAILS_ENV=test bin/rails db:schema:load` hai lần. Lần hai báo `Cannot drop table 'active_storage_blobs' referenced by a foreign key constraint ... on table 'active_storage_variant_records'`.
+- **Vì sao:** MySQL không làm theo `force: :cascade` khi DROP TABLE có foreign key trỏ tới.
+- **Ảnh hưởng:** chỉ ở máy local. CI luôn nạp schema vào database trống.
+- **Tạm thời:** `bin/rails db:drop db:create db:schema:load`.

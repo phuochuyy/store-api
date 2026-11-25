@@ -1,6 +1,6 @@
 # 02 · Bản đồ domain
 
-> Cập nhật theo commit: `3ed8915`
+> Cập nhật theo commit: `0b570df`
 
 Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu, nó gọi sang domain nào, và nếu tách thành microservice thì đường ranh giới nằm ở đâu.
 

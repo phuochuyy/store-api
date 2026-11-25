@@ -1,6 +1,6 @@
 # Roadmap (chạy hoàn toàn ở local)
 
-> Cập nhật theo commit: `3ed8915` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
+> Cập nhật theo commit: `0b570df` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
 
 **Nguyên tắc**
 - Làm theo thứ tự giai đoạn. Mỗi giai đoạn gồm nhiều PR nhỏ trên nhánh riêng, PR nào cũng phải pass `bin/ci`.
@@ -27,19 +27,22 @@ flowchart LR
 ## Giai đoạn 0 · Sửa lỗi nghiêm trọng
 **Mục tiêu:** không còn lỗ hổng phân quyền nào, luồng đặt hàng đến giao hàng chạy được đầu cuối.
 
-| # | Việc | KI | Tiêu chí xong |
-|---|---|---|---|
-| 0.1 | Bỏ whitelist spec trong `.gitignore` | [KI-020](../known-issues.md#ki-020) | `git check-ignore spec/models/x_spec.rb` không còn kết quả |
-| 0.2 | Sửa `authorize!`: dừng action, hỗ trợ truyền class | [KI-003](../known-issues.md#ki-003) | Spec ở concern: action không chạy khi bị 403 |
-| 0.3 | Variants và addresses kế thừa đúng base controller | [KI-002](../known-issues.md#ki-002) | Request spec 200/401/403. Spec kiểm tra mọi controller v1 kế thừa `Api::V1::BaseController` |
-| 0.4 | Returns: chỉ admin được approve/reject/complete | [KI-001](../known-issues.md#ki-001) | Request spec: customer nhận 403 và DB không đổi |
-| 0.5 | Kiểm tra chủ sở hữu ở payments#show và order items | [KI-004](../known-issues.md#ki-004), [KI-005](../known-issues.md#ki-005) | Truy cập tài nguyên của người khác trả 404 |
-| 0.6 | Tách `payment_status` khỏi `fulfillment_status` hoặc cho phép `paid → confirmed`; bỏ `status` khỏi params của admin, thay bằng action riêng | [KI-007](../known-issues.md#ki-007), [KI-008](../known-issues.md#ki-008) | Spec luồng pending → paid → confirmed → shipped → delivered |
-| 0.7 | Blacklist lưu `token_digest` hoặc `jti` | [KI-006](../known-issues.md#ki-006) | Spec logout pass trên **MySQL** với token thật |
-| 0.8 | Sửa `before_send` của Sentry | [KI-009](../known-issues.md#ki-009) | Unit test lambda lọc `password` và `token` |
-| 0.9 | Đếm lượt dùng discount một cách atomic, chặn khi vượt giới hạn | [KI-010](../known-issues.md#ki-010) | Spec đồng thời: N thread chạy song song, `used_count` ≤ giới hạn |
+| # | Việc | KI | Tiêu chí xong | Trạng thái |
+|---|---|---|---|---|
+| 0.1 | Bỏ whitelist spec trong `.gitignore` | [KI-020](../known-issues.md#ki-020) | `git check-ignore spec/models/x_spec.rb` không còn kết quả | ✅ #47 |
+| 0.2 | Sửa `authorize!`: dừng action, hỗ trợ truyền class | [KI-003](../known-issues.md#ki-003) | Spec ở concern: action không chạy khi bị 403 | ✅ #48 |
+| 0.3 | Variants và addresses kế thừa đúng base controller | [KI-002](../known-issues.md#ki-002) | Request spec 200/401/403. Spec kiểm tra mọi controller v1 kế thừa `Api::V1::BaseController` | ✅ #49 |
+| 0.4 | Returns: chỉ admin được approve/reject/complete | [KI-001](../known-issues.md#ki-001) | Request spec: customer nhận 403 và DB không đổi | ✅ #50 |
+| 0.x | (phát sinh) Ruby 3.4.5 → 3.4.13 và Brakeman 8.1.1, để job `security` xanh lại | [KI-021](../known-issues.md#ki-021) | Brakeman 0 cảnh báo, image Docker build được | ✅ #46 |
+| 0.5 | Kiểm tra chủ sở hữu ở payments#show và order items | [KI-004](../known-issues.md#ki-004), [KI-005](../known-issues.md#ki-005) | Truy cập tài nguyên của người khác trả 404 | |
+| 0.6 | Tách `payment_status` khỏi `fulfillment_status` hoặc cho phép `paid → confirmed`; bỏ `status` khỏi params của admin, thay bằng action riêng | [KI-007](../known-issues.md#ki-007), [KI-008](../known-issues.md#ki-008) | Spec luồng pending → paid → confirmed → shipped → delivered | |
+| 0.7 | Blacklist lưu `token_digest` hoặc `jti` | [KI-006](../known-issues.md#ki-006) | Spec logout pass trên **MySQL** với token thật | |
+| 0.8 | Sửa `before_send` của Sentry | [KI-009](../known-issues.md#ki-009) | Unit test lambda lọc `password` và `token` | |
+| 0.9 | Đếm lượt dùng discount một cách atomic, chặn khi vượt giới hạn | [KI-010](../known-issues.md#ki-010) | Spec đồng thời: N thread chạy song song, `used_count` ≤ giới hạn | |
 
 **Kỹ năng thể hiện:** phát hiện và sửa lỗi bảo mật, viết test cho tình huống đồng thời, thiết kế state machine.
+
+**Đã làm được (25/11/2026):** không còn lỗi Critical nào đang mở. Mỗi bản sửa đều đi kèm spec fail trên code cũ. Coverage dòng tăng từ 37% lên 46%. Việc nên làm sớm: nâng ngưỡng coverage trong `spec_helper.rb` theo mức mới.
 
 ## Giai đoạn 1 · Đồng nhất và làm sạch
 **Mục tiêu:** chỉ còn một cách làm cho mỗi việc, và Swagger là nguồn sự thật được CI kiểm tra.

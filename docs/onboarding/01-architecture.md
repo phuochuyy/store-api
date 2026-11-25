@@ -1,6 +1,6 @@
 # 01 · Kiến trúc và quy ước code
 
-> Cập nhật theo commit: `3ed8915`
+> Cập nhật theo commit: `0b570df`
 
 ## Tổng quan
 - **Store API** là API JSON (Rails 8.1, chế độ `api_only`) cho cửa hàng bán điện thoại.
@@ -53,12 +53,12 @@ ActionController::API
             └── các controller v1
 ```
 
-- **Controller mới bắt buộc kế thừa `Api::V1::BaseController`.** Hai controller đang làm sai và hỏng hoàn toàn, xem [KI-002](../known-issues.md#ki-002).
+- **Controller mới bắt buộc kế thừa `Api::V1::BaseController`.** [controller_inheritance_spec.rb](../../spec/controllers/api/v1/controller_inheritance_spec.rb) báo lỗi nếu làm sai, vì kế thừa `ApplicationController` thì mọi request đều 500 ([KI-002](../known-issues.md#ki-002)). Chỉ `HealthController` được miễn, vì health check phải trả lời được khi không có token.
 - **Endpoint công khai** dùng `skip_before_action :authenticate_user!`. Ví dụ: `auth_controller`, `orders#track`.
 - **[ErrorHandling](../../app/controllers/concerns/error_handling.rb):**
   - `rescue_from` được Rails khớp **từ handler khai báo cuối lên đầu**, nên catch-all `StandardError` phải khai báo trước tiên.
   - `RecordNotFound` → 404, `RecordInvalid` → 422, `ParameterMissing` → 400.
-- **[Api::Authorization#authorize!](../../app/controllers/concerns/api/authorization.rb)** không dừng action ([KI-003](../known-issues.md#ki-003)). Hiện tại chỉ gọi nó trong `before_action`.
+- **[Api::Authorization](../../app/controllers/concerns/api/authorization.rb):** khi bị từ chối, `authorize!(action, record_or_class)` và `admin_only!` **raise** `NotAuthorizedError`, và `rescue_from` trả 403. Action dừng ngay, dù hai method này được gọi trong `before_action` hay giữa thân action ([KI-003](../known-issues.md#ki-003)). Không cần, và đừng viết thêm, `return if performed?`. Khi tạo mới mà chưa có record thì truyền class, ví dụ `authorize! :create, ProductVariant`.
 
 ## Định dạng response (giữ nguyên)
 

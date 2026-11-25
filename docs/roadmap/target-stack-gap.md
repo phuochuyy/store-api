@@ -1,6 +1,6 @@
 # So sánh hiện trạng với target stack
 
-> Cập nhật theo commit: `3ed8915`
+> Cập nhật theo commit: `0b570df`
 
 **Target stack** là bộ công nghệ của một vị trí Rails backend mà dự án này hướng tới:
 - **Hạ tầng:** AWS/GCP, Aurora MySQL, Elasticsearch, DynamoDB
@@ -15,7 +15,7 @@
 
 | Hạng mục target | Hiện trạng | Khoảng trống | Thay thế ở local |
 |---|---|---|---|
-| **Rails thiết kế và triển khai** | Rails 8.1, nhiều tầng rõ ràng | Lỗi phân quyền và state machine ([KI-001…007](../known-issues.md)) | — |
+| **Rails thiết kế và triển khai** | Rails 8.1, nhiều tầng rõ ràng | Lỗi phân quyền đã sửa (#47–#50). Còn IDOR và state machine ([KI-004…008](../known-issues.md)) | — |
 | **API design và tài liệu (Swagger)** | OpenAPI viết tay, 3 contract spec | YAML và JSON lệch nhau, phần lớn endpoint chưa có contract test ([KI-015](../known-issues.md#ki-015)) | rswag, CI kiểm tra drift |
 | **Aurora MySQL** | Đã chạy MySQL 8.4 qua Trilogy, CI test cả hai DB | Token dài hơn VARCHAR(255) ([KI-006](../known-issues.md#ki-006)). Dev vẫn mặc định PostgreSQL | MySQL 8.4 trong compose (cùng dòng với Aurora MySQL 3) |
 | **Elasticsearch** | searchkick, có fallback về SQL, reindex qua alias | Chỉ áp dụng cho Product. Chưa có analyzer tiếng Việt và facet | ES 9.5 trong compose |
@@ -30,7 +30,7 @@
 | **Datadog (APM, metrics, log)** | Log JSON (lograge), có request_id | Chưa có metrics và tracing | OpenTelemetry → Jaeger/Tempo, Prometheus + Grafana (yabeda). Datadog có trial nếu muốn demo |
 | **Bugsnag (error tracking)** | Sentry SDK có, nhưng chưa lọc PII ([KI-009](../known-issues.md#ki-009)) | Chưa có môi trường chạy thử | GlitchTip tự host, tương thích Sentry SDK |
 | **Phát hiện vấn đề từ log** | Có request_id, user_id trong log | Chưa có nơi tập trung log | Loki + Grafana |
-| **Đo hiệu quả để cải thiện chất lượng** | Coverage có ratchet 37% | Chưa có SLO, chưa đo latency | k6 load test + dashboard |
+| **Đo hiệu quả để cải thiện chất lượng** | Coverage 46% (ngưỡng ratchet vẫn 37%) | Chưa có SLO, chưa đo latency | k6 load test + dashboard |
 | **Kinh nghiệm OSS và viết bài ra bên ngoài** | — | — | Blog viết từ các giai đoạn của roadmap |
 
 ## Gợi ý chọn middleware (để lập luận khi phỏng vấn)

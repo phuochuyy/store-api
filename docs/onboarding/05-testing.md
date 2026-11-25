@@ -1,8 +1,8 @@
 # 05 · Testing
 
-> Cập nhật theo commit: `3ed8915` · Kết quả gần nhất: 597 examples, 0 failures, 5 pending (Elasticsearch)
+> Cập nhật theo commit: `0b570df` · Kết quả gần nhất: 645 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
 
-> ⚠️ **Đọc trước khi viết spec mới:** `.gitignore` đang bỏ qua mọi file `*_spec.rb` không có trong whitelist ([KI-020](../known-issues.md#ki-020)). Kiểm tra bằng `git check-ignore -v <file>`. Nếu file bị ignore, dùng `git add -f`.
+Mọi file trong `spec/` đều được git theo dõi. Trước #47, spec và factory mới bị `.gitignore` ẩn mà không có cảnh báo nào ([KI-020](../known-issues.md#ki-020)). Giờ `bin/check-gitignore` chạy trong CI và trong `bin/ci` để chặn lỗi này quay lại.
 
 ## Công cụ
 - RSpec, FactoryBot, shoulda-matchers, database_cleaner.
@@ -25,23 +25,26 @@ ELASTICSEARCH_URL=http://localhost:9200 bundle exec rspec spec/services/products
 
 | Thư mục | File | Examples (ước tính) | Nội dung |
 |---|---|---|---|
-| `spec/controllers/` | 5 | ~219 | auth, orders, payments; các concern authentication và authorization |
-| `spec/models/` | 4 | ~201 | order, product, user, stock_concurrency |
-| `spec/services/` | 8 | ~148 | `auth/*`, `auth/jwt/*`, text search, Elasticsearch search |
-| `spec/requests/` | 4 | 26 `run_test!` | rswag cho carts, orders, payments; error_handling |
+| `spec/controllers/` | 6 | 225 | auth, orders, payments; các concern authentication và authorization; kiểm tra kế thừa của controller v1 |
+| `spec/models/` | 4 | 202 | order, product, user, stock_concurrency |
+| `spec/services/` | 8 | 151 | `auth/*`, `auth/jwt/*`, text search, Elasticsearch search |
+| `spec/requests/` | 7 | 67 | rswag cho carts, orders, payments, product variants, addresses, returns; error_handling |
 
-- **Coverage gần nhất:** 37,42% số dòng và 25,81% số nhánh.
-- **Ngưỡng tối thiểu:** 37% số dòng, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống.
+- **Coverage gần nhất:** 46,35% số dòng và 29,40% số nhánh. Trước giai đoạn 0 là 37,42% và 25,81%.
+- **Ngưỡng tối thiểu:** 37% số dòng, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống. **Ngưỡng chưa được nâng theo** mức 46% hiện tại; nên nâng lên khoảng 45%.
 
 **Hoàn toàn chưa có test:**
-- **Controller:** brands, categories, products, variants, returns, discounts, promotions, shipping, tax, addresses, users.
+- **Controller:** brands, categories, products, discounts, promotions, shipping, tax, users.
 - **Model:** 30 trên 33 model, trong đó có Payment, ReturnRequest, Discount, Coupon, Promotion, StockAlert.
 - **Service:** tất cả service của Orders, Payments, Discounts, Returns, StockAlerts, Carts, Shipping, Tax và Users. Một phần được phủ gián tiếp qua controller spec và request spec.
 
 Phần lớn lỗi trong [known-issues.md](../known-issues.md) nằm đúng ở những vùng chưa có test này.
 
 ## Viết request spec theo kiểu contract (khuyến nghị cho mọi endpoint mới)
-Mẫu tham khảo: [spec/requests/api/v1/carts_spec.rb](../../spec/requests/api/v1/carts_spec.rb).
+Mẫu tham khảo:
+- [carts_spec.rb](../../spec/requests/api/v1/carts_spec.rb): mẫu cơ bản.
+- [returns_spec.rb](../../spec/requests/api/v1/returns_spec.rb): kiểm tra **ba vai trò** (chủ sở hữu, customer khác, admin) và khẳng định dữ liệu không đổi khi bị 403/404.
+- [product_variants_spec.rb](../../spec/requests/api/v1/product_variants_spec.rb): response có `data` là mảng hoặc là một object.
 
 ```ruby
 require 'swagger_helper'

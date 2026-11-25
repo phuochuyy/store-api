@@ -1,6 +1,6 @@
 # 03 · Data model
 
-> Cập nhật theo commit: `3ed8915` · Nguồn sự thật: [db/schema.rb](../../db/schema.rb)
+> Cập nhật theo commit: `0b570df` · Nguồn sự thật: [db/schema.rb](../../db/schema.rb)
 
 Tài liệu này chỉ tóm tắt và giải thích lý do. Muốn biết chính xác các cột, đọc `schema.rb`.
 

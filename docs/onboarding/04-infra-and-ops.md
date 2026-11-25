@@ -1,12 +1,12 @@
 # 04 · Hạ tầng và vận hành
 
-> Cập nhật theo commit: `3ed8915`
+> Cập nhật theo commit: `0b570df`
 
 ## Môi trường local
 
 | Thành phần | Phiên bản | Cách chạy | Cổng |
 |---|---|---|---|
-| Ruby | 3.4.5 ([.ruby-version](../../.ruby-version)), Bundler 2.7.1 | Cài trên máy qua mise/rbenv | — |
+| Ruby | 3.4.13 ([.ruby-version](../../.ruby-version)), Bundler 2.7.1 | Cài trên máy qua mise/rbenv (`mise install`). Trước #46 là 3.4.5, dính [KI-021](../known-issues.md#ki-021) | — |
 | PostgreSQL | 15 | `docker compose up -d` (service `db`) | 5433 |
 | Redis | 7 | `docker compose up -d` (service `redis`) | 6379 |
 | MySQL | 8.4, tùy chọn | `docker compose --profile mysql up -d mysql` | 3307 |
@@ -42,8 +42,8 @@ bundle exec sidekiq
 | Job | Nội dung |
 |---|---|
 | `test` | Matrix `postgresql` × `mysql`, `fail-fast: false`. Mỗi lượt chạy đều khởi động đủ PG 15, MySQL 8.4, Redis 7 và ES 9.5.5. Các bước: `db:schema:load` → `rspec` với `COVERAGE=true` → upload artifact coverage |
-| `lint` | `bin/rubocop -f github` |
-| `security` | `brakeman --exit-on-warn` và `bundler-audit check --update` |
+| `lint` | `bin/rubocop -f github`, rồi `bin/check-gitignore` (báo lỗi nếu `.gitignore` ẩn file mới trong `spec/`) |
+| `security` | `brakeman --exit-on-warn` và `bundler-audit check --update`. `bin/brakeman` có `--ensure-latest`, nên **job này đỏ ngay khi có bản Brakeman mới**, cho tới khi nâng phiên bản ([KI-021](../known-issues.md#ki-021)) |
 | `docker` | Chạy sau 3 job trên. Build image (buildx, cache GHA) rồi smoke test bằng `bin/rails --version`. Không push image |
 
 - Dependabot cập nhật gem và GitHub Actions hằng ngày.
@@ -51,7 +51,7 @@ bundle exec sidekiq
 
 ## Container
 - **[Dockerfile](../../Dockerfile)** là bản cho **development**:
-  - Chỉ có một stage, dùng `ruby:3.4.5-slim`.
+  - Chỉ có một stage, dùng `ruby:3.4.13-slim`.
   - `RAILS_ENV=development`, chạy bằng root.
   - Chỉ có client của PostgreSQL. jemalloc được cấu hình trong entrypoint nhưng không được cài.
 - **[bin/docker-entrypoint](../../bin/docker-entrypoint)** chỉ hỗ trợ PostgreSQL: chờ `psql` sẵn sàng rồi chạy `db:prepare`.
