@@ -1,6 +1,6 @@
 # Known issues
 
-> Cập nhật theo commit: `c3a3853` · Ngày: 2026-11-25
+> Cập nhật theo commit: `0cbef93` · Ngày: 2026-11-25
 
 Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ được mô tả ở đây.** Các tài liệu khác (roadmap, domain map) trỏ tới mã `KI-xxx` thay vì chép lại nội dung.
 
@@ -17,7 +17,7 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 
 Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
 
-**Tình hình hiện tại:** 32 lỗi đã ghi nhận, 14 đã sửa. Còn mở: 0 Critical, 2 High (KI-025, KI-030), 6 Medium, 10 Low.
+**Tình hình hiện tại:** 33 lỗi đã ghi nhận, 15 đã sửa. Còn mở: 0 Critical, 1 High (KI-030), 6 Medium, 11 Low.
 
 ## Tổng quan
 
@@ -47,7 +47,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-022](#ki-022) | Medium | `POST /addresses/validate` báo mọi địa chỉ là hợp lệ | ✅ chạy thật | fixed (#49) |
 | [KI-023](#ki-023) | Low | `db:schema:load` trên MySQL lỗi khi database đã có bảng | ✅ chạy thật | open |
 | [KI-024](#ki-024) | Medium | Admin sửa order item không cập nhật tồn kho, kể cả với đơn đã giao | ✅ đọc code | open |
-| [KI-025](#ki-025) | High | Thanh toán `bank_transfer` / `cash_on_delivery` / `wallet` luôn thất bại | ✅ chạy thật | open |
+| [KI-025](#ki-025) | High | Thanh toán `bank_transfer` / `cash_on_delivery` / `wallet` luôn thất bại | ✅ chạy thật | fixed (#60) |
 | [KI-026](#ki-026) | Low | `shipping_status` trả `not_shipped` cho đơn đã giao | ✅ chạy thật | open |
 | [KI-027](#ki-027) | Medium | Confirm đơn tính tồn kho đã giữ hai lần: đơn mua hết kho không confirm được | ✅ chạy thật | fixed (#53) |
 | [KI-028](#ki-028) | Low | CI: spec Elasticsearch thỉnh thoảng fail với "index already exists" | ✅ chạy thật (CI) | open |
@@ -55,6 +55,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-030](#ki-030) | High | `POST /promotions/:id/apply` luôn trả 500; cả `apply` lẫn `applicable` không kiểm tra chủ đơn | ✅ chạy thật | open |
 | [KI-031](#ki-031) | Medium | Promotion tặng sản phẩm thêm order item nhưng không trừ tồn kho | ✅ đọc code | open |
 | [KI-032](#ki-032) | Medium | Áp được mã giảm giá cho đơn đã giao hoặc đã hủy | ✅ chạy thật | open |
+| [KI-033](#ki-033) | Low | Thanh toán offline: không hoàn tiền được qua API, payment `pending` không được dọn | ✅ đọc code | open |
 
 ---
 
@@ -234,7 +235,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - `Orders::NotificationService`, kéo theo 6 service `Order*NotificationService` và `BulkOrderNotificationService`, vì chúng chỉ được gọi từ đó.
   - `Users::AddressService`, `Categories::CategoryService`, `CartService.validate_cart_for_checkout`, `Coupon#use!`.
 - **Không có model:** bảng `payment_histories` có serializer nhưng không có model, nên các method `track_*` trong [payment.rb](../app/models/payment.rb) không bao giờ chạy.
-- **Nhánh không bao giờ chạy:** `when 'square'` trong các service thanh toán, vì enum `gateway_type` không có `square` (xem [KI-025](#ki-025)).
+- **Nhánh không bao giờ chạy:** `when 'square'` trong [payment_webhook_service.rb](../app/services/payments/payment_webhook_service.rb), vì enum `gateway_type` không có `square`. Các nhánh ở service khác đã xóa ở #60 ([KI-025](#ki-025)).
 - **Lớp chỉ chuyển tiếp:** `Payments::PaymentProcessorService` chỉ gọi thẳng sang core service và webhook service.
 - **Action không có route:** nhiều action trong `notifications_controller` (`unread_count`, `recent`, `send_daily_summary`…) và `stock_alerts_controller` (`resolve`, `dismiss`, `bulk_operation`…).
 - **Method công khai nhầm:** một số helper để `public` lẽ ra phải `private` (payments, payment methods, comparisons, reviews, statistics). `ShippingController#methods` ghi đè `Object#methods` của Ruby.
@@ -304,7 +305,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 ### KI-025
 **Thanh toán bằng `bank_transfer`, `cash_on_delivery` hoặc `wallet` luôn thất bại** · High
 
-- **Ở đâu:** enum `gateway_type` ở [payment_method.rb:33](../app/models/payment_method.rb) có 5 loại. Nhưng `process_with_gateway` ([payment_processing_core_service.rb:66](../app/services/payments/payment_processing_core_service.rb)) chỉ xử lý `stripe`, `paypal` và `square`, các loại khác rơi vào `else`.
+- **Ở đâu (trước #60):** enum `gateway_type` ở [payment_method.rb:33](../app/models/payment_method.rb) có 5 loại. Nhưng `process_with_gateway` ([payment_processing_core_service.rb:66](../app/services/payments/payment_processing_core_service.rb)) chỉ xử lý `stripe`, `paypal` và `square`, các loại khác rơi vào `else`.
 - **Tái hiện:** gọi `POST /api/v1/payments` với một payment method thuộc mỗi loại.
   - `stripe` và `paypal` trả 201, payment `completed`.
   - Ba loại còn lại trả 422 `Unsupported gateway type: ...`. Payment bị lưu là `failed`, còn `payment_status` của đơn thành `payment_failed`.
@@ -317,6 +318,13 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - `cash_on_delivery` và `bank_transfer` không đi qua gateway. Tạo payment ở trạng thái `pending`, rồi admin xác nhận đã nhận tiền bằng một action riêng để chuyển sang `completed`.
   - `wallet`: bỏ khỏi enum, hoặc giả lập như `stripe`.
   - Gom các loại gateway vào một registry duy nhất thay cho 6 câu `case`.
+- **Đã sửa:** #60.
+  - `cash_on_delivery` và `bank_transfer` (`PaymentMethod#offline?`) được ghi `pending`, và đơn vẫn `unpaid`. Admin xác nhận đã nhận tiền bằng `POST /api/v1/payments/:id/confirm` ([offline_payment_service.rb](../app/services/payments/offline_payment_service.rb), chạy dưới khóa của đơn).
+  - `wallet` được giả lập như các gateway online khác, vì seed có sẵn một phương thức `wallet`.
+  - Đã xóa nhánh `square` ở core service và validation service. Hai nhánh trong webhook service vẫn còn, thuộc [KI-011](#ki-011).
+  - Kèm một lỗi phát hiện khi sửa: `POST /payments` trả về payment **đầu tiên** của đơn với phương thức đó (`find_by`). Khi trả lại sau một lần thất bại, response hiện payment đã thất bại. Giờ response trả đúng payment vừa tạo.
+  - [payment_gateways_spec.rb](../spec/requests/api/v1/payment_gateways_spec.rb) trả tiền bằng từng `gateway_type` qua API, kèm một test buộc danh sách phủ đủ enum. Luồng COD đầu cuối nằm trong [order_lifecycle_spec.rb](../spec/requests/api/v1/order_lifecycle_spec.rb).
+  - Phần còn thiếu ghi ở [KI-033](#ki-033).
 
 ### KI-026
 **`shipping_status` trả `not_shipped` cho đơn đã giao** · Low
@@ -380,3 +388,12 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Tái hiện:** chủ đơn gọi `POST /orders/:id/apply_discount` cho một đơn `delivered` / `paid`, hoặc một đơn `cancelled`. Cả hai đều nhận 200, và `total_amount` giảm sau khi đã thanh toán.
 - **Liên quan:** hủy đơn không trả lượt dùng mã. Cách này an toàn, vì không bao giờ vượt giới hạn, nhưng mã bị hao lượt theo các đơn đã hủy.
 - **Hướng sửa:** chỉ cho áp hoặc gỡ mã khi đơn còn `pending` và chưa trả tiền. Khi hủy đơn thì gọi `release_usage!`.
+
+### KI-033
+**Thanh toán offline: không hoàn tiền được qua API, payment `pending` không được dọn** · Low
+
+- **Hoàn tiền:** `PaymentMethod#supports_refunds?` chỉ gồm `stripe`, `paypal` và `wallet`. Payment COD hoặc chuyển khoản đã hoàn tất nhận 422 "Payment cannot be refunded", nên phải hoàn tiền thủ công ngoài hệ thống và không có bản ghi nào.
+- **Payment treo:** khi đơn bị hủy, hoặc được trả bằng cách khác, payment offline đang `pending` vẫn nằm nguyên. Endpoint `confirm` từ chối chúng (422 "Order cannot be paid"), nhưng không ai chuyển chúng sang `cancelled`.
+- **Hướng sửa:**
+  - Thêm action hoàn tiền thủ công: admin ghi nhận đã trả lại tiền, payment chuyển sang `refunded`.
+  - Khi hủy đơn, hoặc khi một payment khác hoàn tất, chuyển các payment offline `pending` của đơn sang `cancelled`.

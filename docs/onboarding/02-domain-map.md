@@ -1,6 +1,6 @@
 # 02 · Bản đồ domain
 
-> Cập nhật theo commit: `c3a3853`
+> Cập nhật theo commit: `0cbef93`
 
 Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu, nó gọi sang domain nào, và nếu tách thành microservice thì đường ranh giới nằm ở đâu.
 
@@ -23,7 +23,7 @@ Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu,
 | **Statistics** | Không có model | Không có service | Query viết trực tiếp trong [statistics_controller.rb](../../app/controllers/api/v1/statistics_controller.rb) |
 
 **Thật hay giả lập**
-- **Payment gateway:** giả lập (`SecureRandom`). Chỉ `stripe` và `paypal` chạy được, ba loại còn lại luôn thất bại ([KI-025](../known-issues.md#ki-025)).
+- **Payment gateway:** gateway online (`stripe`, `paypal`, `wallet`) được giả lập bằng `SecureRandom`, nên thanh toán hoàn tất ngay. Với phương thức offline (`cash_on_delivery`, `bank_transfer`), payment chờ ở `pending` cho tới khi admin xác nhận đã nhận tiền qua `POST /payments/:id/confirm` (#60, [KI-025](../known-issues.md#ki-025)).
 - **Email:** chỉ email xác minh tài khoản là gửi thật (`EmailVerificationMailer`). Dev dùng letter_opener, còn SMTP production chưa cấu hình. "Email" thông báo đơn hàng thực ra chỉ ghi log.
 - **Job nền:**
   - `JwtCleanupJob` chạy cron lúc 02:00 mỗi ngày ([schedule.yml](../../config/schedule.yml)).
@@ -56,7 +56,7 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
   [*] --> unpaid
-  unpaid --> paid: Payment completed
+  unpaid --> paid: Payment completed (online, hoặc admin xác nhận tiền offline)
   unpaid --> payment_failed: Payment failed/cancelled
   payment_failed --> paid: lần trả sau thành công
   paid --> partially_refunded: hoàn một phần
