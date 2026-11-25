@@ -57,6 +57,34 @@ RSpec.describe 'Order discounts', type: :request do
     expect(response).to have_http_status(:ok)
   end
 
+  # A discount changes what the customer owes, so it can only change before the order is paid.
+  {
+    'delivered and paid' => [:delivered, { payment_status: 'paid' }],
+    'cancelled' => [:cancelled, {}]
+  }.each do |state, (trait, attributes)|
+    it "refuses a code on an order that is #{state}" do
+      order = create(:order, :with_items, trait, user: create(:user), **attributes)
+      apply(order)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body['message']).to eq(Order::DISCOUNT_LOCKED_ERROR)
+      expect(order.reload.discount_id).to be_nil
+      expect(discount.reload.used_count).to eq(0)
+    end
+  end
+
+  it 'keeps the discount of an order that has been paid' do
+    order = new_order
+    apply(order)
+    order.update!(payment_status: 'paid')
+    remove(order)
+
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.parsed_body['message']).to eq(Order::DISCOUNT_LOCKED_ERROR)
+    expect(order.reload.discount_code).to eq('SAVE10')
+    expect(discount.reload.used_count).to eq(1)
+  end
+
   it 'gives the old code its use back when the order switches codes' do
     order = new_order
     apply(order)
