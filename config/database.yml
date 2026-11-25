@@ -96,12 +96,14 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# docker-compose.prod.yml passes DATABASE_HOST, DATABASE_PORT, DATABASE_USERNAME, DATABASE_PASSWORD
+# and DATABASE_NAME. STORE_API_DATABASE_PASSWORD (the Rails default name) still works.
 production:
   primary: &primary_production
     <<: *default
-    database: store_api_production
-    username: store_api
-    password: <%= ENV["STORE_API_DATABASE_PASSWORD"] %>
+    database: <%= ENV.fetch("DATABASE_NAME", "store_api_production") %>
+    username: <%= ENV.fetch("DATABASE_USERNAME", "store_api") %>
+    password: <%= ENV["DATABASE_PASSWORD"] || ENV["STORE_API_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
     database: store_api_production_cache
