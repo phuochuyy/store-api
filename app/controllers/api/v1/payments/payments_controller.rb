@@ -4,9 +4,10 @@ module Api
   module V1
     module Payments
       class PaymentsController < Api::V1::BaseController
+        # admin_only! first, so a customer gets 403 on admin actions without the payment being looked up.
+        before_action :admin_only!, only: %i[index update destroy refund]
         before_action :set_payment, only: %i[show update destroy refund]
         before_action :set_order, only: %i[create]
-        before_action :admin_only!, only: %i[index update destroy refund]
 
         def index
           @payments = build_payments_query
@@ -162,9 +163,13 @@ module Api
           }
         end
 
+        # Customers only see payments of their own orders. Another user's payment answers 404,
+        # not 403, so its existence is not confirmed.
         def set_payment
           @payment = Payment.find_by(id: params[:id])
-          render_error('Payment not found', :not_found) unless @payment
+          return if @payment && (current_user.admin? || @payment.order.user_id == current_user.id)
+
+          render_error('Payment not found', :not_found)
         end
 
         def set_order
