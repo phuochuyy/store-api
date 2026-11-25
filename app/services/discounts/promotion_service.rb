@@ -65,6 +65,7 @@ module Discounts
         promotion = Promotion.find(promotion_id)
         return { success: false, error: 'Promotion not found' } unless promotion
         return { success: false, error: 'Promotion not available' } unless promotion.available?
+        return { success: false, error: Order::DISCOUNT_LOCKED_ERROR } unless order.discount_editable?
 
         unless promotion.applies_to_order?(order)
           return { success: false, error: 'Promotion does not apply to this order' }

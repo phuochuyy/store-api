@@ -150,37 +150,42 @@ class Order < ApplicationRecord
   end
 
   # Discount (called from OrdersController)
+  DISCOUNT_LOCKED_ERROR = 'Discounts can only change while the order is pending and unpaid'.freeze
+  SWITCH_DISCOUNT_ERRORS = { locked: DISCOUNT_LOCKED_ERROR, limit_reached: 'Discount usage limit reached' }.freeze
+
+  # A discount or promotion changes what the customer owes, so it can only change while the order
+  # is still being placed: pending, and not paid yet.
+  def discount_editable?
+    pending? && (unpaid? || payment_failed?)
+  end
+
   def apply_discount(discount_code)
+    return { success: false, error: DISCOUNT_LOCKED_ERROR } unless discount_editable?
+
     discount = Discount.available.find_by(code: discount_code.upcase)
-    return { success: false, error: 'Invalid discount code' } unless discount
-
-    unless discount.meets_minimum_amount?(subtotal_amount)
-      return { success: false,
-               error: 'Discount does not meet minimum amount requirement' }
-    end
-
-    unless discount.applies_to_items?(order_items)
-      return { success: false,
-               error: 'Discount does not apply to items in this order' }
-    end
+    refusal = discount_refusal(discount)
+    return { success: false, error: refusal } if refusal
 
     calculated_discount = discount.amount_off(subtotal_amount)
     return { success: false, error: 'No discount applicable' } if calculated_discount <= 0
 
     outcome = with_lock { switch_discount_to(discount, calculated_discount) }
-    return { success: false, error: 'Discount usage limit reached' } if outcome == :limit_reached
+    return { success: false, error: SWITCH_DISCOUNT_ERRORS[outcome] } if SWITCH_DISCOUNT_ERRORS.key?(outcome)
 
     { success: true, discount_amount: calculated_discount, discount: discount }
   end
 
   # Gives the discount's use back (see Discount#release_usage!).
   def remove_discount
-    with_lock do
+    removed = with_lock do
+      next false unless discount_editable?
+
       discount&.release_usage!
       update!(discount: nil, discount_code: nil, discount_amount: 0)
       update_total_amount
+      true
     end
-    { success: true }
+    removed ? { success: true } : { success: false, error: DISCOUNT_LOCKED_ERROR }
   end
 
   def total_items
@@ -224,10 +229,21 @@ class Order < ApplicationRecord
 
   private
 
+  # Why the code cannot be used on this order, or nil.
+  def discount_refusal(discount)
+    return 'Invalid discount code' unless discount
+    return 'Discount does not meet minimum amount requirement' unless discount.meets_minimum_amount?(subtotal_amount)
+
+    'Discount does not apply to items in this order' unless discount.applies_to_items?(order_items)
+  end
+
   # Runs under the order's row lock, so two requests on the same order cannot both take a use.
   # An order holds at most one use of one discount: re-applying the same code takes nothing, and
-  # switching codes gives the previous one back. Returns :limit_reached when no use is left.
+  # switching codes gives the previous one back. Returns :locked when the order moved on meanwhile
+  # (see #discount_editable?), and :limit_reached when no use is left.
   def switch_discount_to(new_discount, amount)
+    return :locked unless discount_editable?
+
     if discount_id != new_discount.id
       return :limit_reached unless new_discount.claim_usage!
 

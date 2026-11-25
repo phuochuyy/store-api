@@ -143,7 +143,7 @@ module Api
                              order: order_serializer(@order.reload)
                            }, 'Discount removed successfully')
           else
-            render_error('Failed to remove discount', :unprocessable_content)
+            render_error(result[:error], :unprocessable_content)
           end
         end
 
