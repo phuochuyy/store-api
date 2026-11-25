@@ -2,6 +2,8 @@
 
 module Discounts
   class PromotionBenefitService
+    class OutOfStockError < StandardError; end
+
     class << self
       # Apply promotion benefit to order
       # @param order [Order] Order to apply benefit to
@@ -21,6 +23,8 @@ module Discounts
             promotion: PromotionSerializer.new(promotion).as_json
           }
         end
+      rescue OutOfStockError => e
+        { success: false, error: e.message }
       rescue StandardError => e
         Rails.logger.error "Promotion benefit application error: #{e.message}"
         {
@@ -64,21 +68,20 @@ module Discounts
         order.update!(discount_amount: new_discount)
       end
 
+      # A free unit is its own line at price 0, even when the order already has a line for the same
+      # product: adding it to the paid line would charge for it. It leaves stock like any unit sold,
+      # so cancelling the order (which restocks every line) puts it back.
       def add_free_items(order, benefit)
         return if benefit[:free_items].blank?
 
         benefit[:free_items].each do |free_item|
-          existing_item = order.order_items.find_by(product_id: free_item[:product_id])
-
-          if existing_item
-            existing_item.update!(quantity: existing_item.quantity + free_item[:quantity])
-          else
-            order.order_items.create!(
-              product_id: free_item[:product_id],
-              quantity: free_item[:quantity],
-              unit_price: 0 # Free item
-            )
+          product = Product.find(free_item[:product_id])
+          quantity = free_item[:quantity].to_i
+          unless product.reduce_stock(quantity, reason: 'promotion_gift', reference: order)
+            raise OutOfStockError, "Not enough stock for #{product.name}"
           end
+
+          order.order_items.create!(product: product, quantity: quantity, unit_price: 0)
         end
       end
 
