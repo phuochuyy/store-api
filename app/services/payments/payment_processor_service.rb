@@ -29,6 +29,14 @@ module Payments
         )
       end
 
+      # Confirm the money of an offline payment (cash on delivery, bank transfer) arrived
+      # @param payment [Payment] The pending offline payment
+      # @param confirmed_by [User] The admin confirming it
+      # @return [Hash] Result with success status
+      def confirm_offline_payment(payment:, confirmed_by:)
+        OfflinePaymentService.confirm(payment: payment, confirmed_by: confirmed_by)
+      end
+
       # Process webhook from payment gateway
       # @param gateway_type [String] Type of payment gateway
       # @param payload [Hash] Webhook payload

@@ -177,20 +177,12 @@ RSpec.describe Api::V1::Payments::PaymentsController, type: :controller do
 
     context 'with valid parameters' do
       it 'creates payment successfully' do
-        # Mock the service to return success
-        # The service will create a payment, but we need to ensure one exists
-        # for the controller to find after the service runs
-        allow(Payments::PaymentProcessorService).to receive(:process_payment).and_return({
-                                                                                           success: true,
-                                                                                           message: 'Payment processed successfully',
-                                                                                           transaction_id: 'TXN123',
-                                                                                           gateway_response: { success: true }
-                                                                                         })
-
-        # Create a payment that matches what the controller will look for
-        # The controller calls: Payment.find_by(order: @order, payment_method: payment_method)
-        create(:payment, order: order, payment_method: payment_method, status: 'completed',
-                         transaction_id: 'TXN123')
+        # The service returns the payment it created; the controller renders that one.
+        payment = create(:payment, order: order, payment_method: payment_method, status: 'completed',
+                                   transaction_id: 'TXN123')
+        allow(Payments::PaymentProcessorService).to receive(:process_payment).and_return(
+          { success: true, message: 'Payment processed successfully', payment: payment }
+        )
 
         post :create, params: valid_payment_params
 

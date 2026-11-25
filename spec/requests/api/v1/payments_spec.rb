@@ -45,6 +45,31 @@ RSpec.describe 'Payments API (checkout)', type: :request do
         end
       end
 
+      response '201', 'cash on delivery: recorded as pending; the order stays unpaid until an admin confirms' do
+        let(:payment_method) { create(:payment_method, :cash_on_delivery) }
+
+        schema envelope({ payment: ref('Payment'), order: ref('Order') })
+        run_test! do |response|
+          payment = order.payments.sole
+          expect(payment).to have_attributes(status: 'pending', transaction_id: nil)
+          expect(response.parsed_body.dig('data', 'payment', 'id')).to eq(payment.id)
+          expect(order.reload.payment_status).to eq('unpaid')
+        end
+      end
+
+      response '201', 'a retry after a failed attempt answers with the new payment' do
+        before do
+          order.payments.create!(payment_method: payment_method, amount: order.total_amount, status: 'failed')
+          order.update!(payment_status: 'payment_failed')
+        end
+
+        schema envelope({ payment: ref('Payment'), order: ref('Order') })
+        run_test! do |response|
+          expect(response.parsed_body.dig('data', 'payment', 'status')).to eq('completed')
+          expect(order.reload.payment_status).to eq('paid')
+        end
+      end
+
       response '422', 'order is already paid (no double charge)' do
         before do
           Payments::PaymentProcessorService.process_payment(order: order, payment_method: payment_method)
@@ -206,6 +231,78 @@ RSpec.describe 'Payments API (checkout)', type: :request do
         schema ref('ErrorResponse')
         run_test! do
           expect(payment.reload.status).to eq('completed')
+        end
+      end
+    end
+  end
+
+  # Cash on delivery and bank transfers are paid outside the app: the payment waits as pending
+  # until an admin confirms the money arrived.
+  path '/api/v1/payments/{id}/confirm' do
+    parameter name: :id, in: :path, type: :integer
+
+    post 'Confirm an offline payment was received (admin)' do
+      tags 'Payments'
+      security [{ bearerAuth: [] }]
+      produces 'application/json'
+
+      let(:current_user) { admin }
+      let(:payment_method) { create(:payment_method, :cash_on_delivery) }
+      let(:payment) do
+        Payments::PaymentProcessorService.process_payment(order: order, payment_method: payment_method)
+        order.payments.sole
+      end
+      let(:id) { payment.id }
+
+      response '200', 'cash collected: payment completed and order paid' do
+        schema envelope({ payment: ref('Payment') })
+
+        run_test! do |response|
+          expect(response.parsed_body.dig('data', 'payment', 'status')).to eq('completed')
+          expect(payment.reload).to have_attributes(status: 'completed', processed_at: be_present)
+          expect(order.reload).to have_attributes(payment_status: 'paid', status: 'pending')
+        end
+      end
+
+      response '422', 'already confirmed' do
+        before { post "/api/v1/payments/#{payment.id}/confirm", headers: auth_headers(admin) }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq('Only pending offline payments can be confirmed')
+        end
+      end
+
+      response '422', 'online payments are confirmed by the gateway' do
+        let(:payment_method) { create(:payment_method, gateway_type: 'stripe') }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq('Only pending offline payments can be confirmed')
+        end
+      end
+
+      response '422', 'the order was paid another way in the meantime' do
+        before do
+          payment
+          Payments::PaymentProcessorService.process_payment(order: order, payment_method: create(:payment_method))
+        end
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq('Order cannot be paid')
+          expect(payment.reload.status).to eq('pending')
+          expect(order.payments.successful.count).to eq(1)
+        end
+      end
+
+      response '403', 'customers cannot confirm their own payment' do
+        let(:current_user) { customer }
+
+        schema ref('ErrorResponse')
+        run_test! do
+          expect(payment.reload.status).to eq('pending')
+          expect(order.reload.payment_status).to eq('unpaid')
         end
       end
     end

@@ -5,8 +5,8 @@ module Api
     module Payments
       class PaymentsController < Api::V1::BaseController
         # admin_only! first, so a customer gets 403 on admin actions without the payment being looked up.
-        before_action :admin_only!, only: %i[index update destroy refund]
-        before_action :set_payment, only: %i[show update destroy refund]
+        before_action :admin_only!, only: %i[index update destroy refund confirm]
+        before_action :set_payment, only: %i[show update destroy refund confirm]
         before_action :set_order, only: %i[create]
         before_action :reject_status_change, only: %i[update]
 
@@ -58,8 +58,7 @@ module Api
           )
 
           if result[:success]
-            payment = Payment.find_by(order: @order, payment_method: payment_method)
-            data = build_payment_creation_data(payment)
+            data = build_payment_creation_data(result[:payment])
             render_success(data, result[:message] || 'Payment processed successfully', :created)
           else
             render_error(result[:error], :unprocessable_content, result[:details])
@@ -113,6 +112,16 @@ module Api
           else
             render_error(result[:error], :unprocessable_content, result[:details])
           end
+        end
+
+        # POST /api/v1/payments/:id/confirm — admin: the money of a cash on delivery or bank transfer
+        # payment arrived. Completing it marks the order paid.
+        def confirm
+          result = ::Payments::PaymentProcessorService.confirm_offline_payment(payment: @payment,
+                                                                               confirmed_by: current_user)
+          return render_error(result[:error], :unprocessable_content) unless result[:success]
+
+          render_success({ payment: payment_serializer(@payment.reload) }, result[:message])
         end
 
         private

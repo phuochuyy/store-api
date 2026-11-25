@@ -75,6 +75,23 @@ RSpec.describe 'Order lifecycle', type: :request do
     expect(order_state(order_id)).to eq(%w[delivered paid])
   end
 
+  it 'cash on delivery: the cash is collected at the door and confirmed by an admin' do
+    cash = create(:payment_method, gateway_type: 'cash_on_delivery')
+    order_id = place_order
+    payment_id = api(:post, '/api/v1/payments', as: customer,
+                                                body: { order_id: order_id, payment: { payment_method_id: cash.id } })
+                 .dig('payment', 'id')
+    expect(order_state(order_id)).to eq(%w[pending unpaid])
+
+    confirm(order_id)
+    ship(order_id)
+    deliver(order_id)
+    expect(order_state(order_id)).to eq(%w[delivered unpaid])
+
+    api(:post, "/api/v1/payments/#{payment_id}/confirm", as: admin)
+    expect(order_state(order_id)).to eq(%w[delivered paid])
+  end
+
   it 'a refund after delivery keeps the order delivered' do
     order_id = place_order
     payment_id = pay(order_id).dig('payment', 'id')
