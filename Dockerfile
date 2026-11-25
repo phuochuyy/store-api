@@ -1,5 +1,5 @@
 # Development Dockerfile
-FROM ruby:3.4.5-slim
+FROM ruby:3.4.13-slim
 
 # Install system dependencies
 RUN apt-get update -qq && \
