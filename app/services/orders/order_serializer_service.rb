@@ -14,6 +14,7 @@ module Orders
           customer_phone: order.customer_phone,
           total_amount: order.total_amount,
           status: order.status,
+          payment_status: order.payment_status,
           tracking_number: order.tracking_number,
           carrier: order.carrier,
           shipped_at: order.shipped_at&.iso8601,

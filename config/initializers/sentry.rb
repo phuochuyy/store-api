@@ -13,14 +13,11 @@ Sentry.init do |config|
   # Set release version
   config.release = ENV.fetch('APP_VERSION', '1.0.0')
 
-  # Filter sensitive data
-  config.before_send = lambda do |event, _hint|
-    # Filter out sensitive parameters
-    if event.request && event.request.data
-      event.request.data = event.request.data.except('password', 'password_confirmation', 'token')
-    end
-    event
-  end
+  # Mask passwords, tokens, emails... (the app's filter_parameters) in events and breadcrumbs, at
+  # any depth. SentryScrubber lives in lib/, which is autoloaded, so it is looked up when an event
+  # is sent rather than while initializers run.
+  config.before_send = ->(event, hint) { SentryScrubber.scrub_event(event, hint) }
+  config.before_breadcrumb = ->(breadcrumb, hint) { SentryScrubber.scrub_breadcrumb(breadcrumb, hint) }
 
   # Set sample rate (0.0 to 1.0)
   config.traces_sample_rate = Rails.env.production? ? 0.1 : 1.0
@@ -33,14 +30,6 @@ Sentry.init do |config|
 
   # Only send errors in production and staging
   config.enabled_environments = %w[production staging]
-
-  # Set user context
-  config.before_send = lambda do |event, hint|
-    if hint[:scope] && hint[:scope][:user]
-      event.user = hint[:scope][:user]
-    end
-    event
-  end
 end
 
 # Only initialize Sentry if DSN is provided

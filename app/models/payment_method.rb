@@ -63,8 +63,16 @@ class PaymentMethod < ApplicationRecord
     gateway_config.present? && gateway_config.is_a?(Hash)
   end
 
+  # Paid outside the app (cash at the door, a bank transfer): there is no gateway to call, so the
+  # payment waits as pending until an admin confirms the money arrived.
+  OFFLINE_GATEWAY_TYPES = %w[cash_on_delivery bank_transfer].freeze
+
+  def offline?
+    OFFLINE_GATEWAY_TYPES.include?(gateway_type)
+  end
+
   def supports_refunds?
-    %w[stripe paypal].include?(gateway_type)
+    %w[stripe paypal wallet].include?(gateway_type)
   end
 
   def supports_partial_refunds?

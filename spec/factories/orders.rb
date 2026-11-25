@@ -38,7 +38,7 @@ FactoryBot.define do
     end
 
     trait :paid do
-      status { 'paid' }
+      payment_status { 'paid' }
     end
   end
 end

@@ -108,6 +108,9 @@ jobs:
       - name: Lint code for consistent style
         run: bin/rubocop -f github
 
+      - name: Check that .gitignore does not hide spec files
+        run: bin/check-gitignore
+
   security:
     runs-on: ubuntu-24.04
     steps:
