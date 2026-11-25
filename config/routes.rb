@@ -167,6 +167,7 @@ Rails.application.routes.draw do
         resources :payments, controller: 'payments', path: '' do
           member do
             post :refund
+            post :confirm
           end
         end
       end
