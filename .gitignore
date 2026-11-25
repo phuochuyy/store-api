@@ -60,8 +60,10 @@
 # But keep README.md in root directory
 !/README.md
 
+# Project documentation lives in docs/ and is tracked
+!/docs/**/*.md
+
 # Ignore documentation folders
-/docs/
 /swagger/v1/MISSING_APIS.md
 /spec/README.md
 /swagger/README.md
@@ -291,4 +293,3 @@ config/local_*.yml
 !.gitkeep
 
 
-docs/
