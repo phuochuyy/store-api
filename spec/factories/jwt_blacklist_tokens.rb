@@ -1,6 +1,10 @@
 FactoryBot.define do
   factory :jwt_blacklist_token do
-    token { SecureRandom.urlsafe_base64(32) }
+    transient do
+      token { SecureRandom.urlsafe_base64(32) }
+    end
+
+    token_digest { JwtBlacklistToken.digest(token) }
     expires_at { 1.hour.from_now }
     user_id { nil }
     token_type { 'access' }
@@ -11,7 +15,9 @@ FactoryBot.define do
     end
 
     trait :with_custom_token do
-      sequence(:token) { |n| "custom-token-#{n}" }
+      transient do
+        sequence(:token) { |n| "custom-token-#{n}" }
+      end
     end
 
     trait :refresh_token do

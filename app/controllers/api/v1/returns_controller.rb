@@ -104,7 +104,7 @@ module Api
           status: return_request.status,
           return_type: return_request.return_type,
           reason: return_request.reason,
-          refund_amount: return_request.refund_amount.to_f,
+          refund_amount: return_request.refund_amount, # BigDecimal, serialized as a decimal string
           total_quantity: return_request.total_quantity,
           requested_at: return_request.requested_at,
           processed_at: return_request.processed_at,
@@ -119,7 +119,7 @@ module Api
               quantity: item.quantity,
               reason: item.reason,
               condition: item.condition,
-              refund_amount: item.refund_amount.to_f
+              refund_amount: item.refund_amount
             }
           end
         }

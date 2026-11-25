@@ -257,7 +257,7 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
       it 'updates order successfully' do
         patch :update, params: {
           id: order.id,
-          order: { customer_name: 'Jane Doe', status: 'confirmed' }
+          order: { customer_name: 'Jane Doe' }
         }
 
         expect(response).to have_http_status(:ok)
@@ -266,14 +266,18 @@ RSpec.describe Api::V1::Orders::OrdersController, type: :controller do
         expect(order.reload.customer_name).to eq('Jane Doe')
       end
 
-      it 'returns error for invalid status' do
-        patch :update, params: {
-          id: order.id,
-          order: { status: 'invalid_status' }
-        }
+      # status moves through confirm/ship/deliver/cancel, which check the transition and
+      # restore stock; payment_status follows the payments.
+      [{ status: 'delivered' }, { status: 'invalid_status' }, { payment_status: 'paid' }].each do |change|
+        it "refuses #{change.keys.first} #{change.values.first} and changes nothing" do
+          original_name = order.customer_name
+          patch :update, params: { id: order.id, order: { customer_name: 'Jane Doe' }.merge(change) }
 
-        # May return 500 if exception is raised, or 422 if validation fails
-        expect([422, 500]).to include(response.status)
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(response.parsed_body['message']).to eq('Order status cannot be set directly')
+          expect(order.reload).to have_attributes(status: 'pending', payment_status: 'unpaid',
+                                                  customer_name: original_name)
+        end
       end
     end
 

@@ -2,18 +2,20 @@
 #
 # Table name: jwt_blacklist_tokens
 #
-#  id         :integer          not null, primary key
-#  token      :string           not null
-#  expires_at :datetime         not null
-#  user_id    :string
-#  token_type :string           default("access")
-#  reason     :text
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id           :integer          not null, primary key
+#  token_digest :string(64)       not null
+#  expires_at   :datetime         not null
+#  user_id      :bigint
+#  token_type   :string           default("access")
+#  reason       :text
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
 #
 
+# Revoked JWTs, stored as SHA-256 digests: a digest is always 64 characters, whatever the token
+# length (raw tokens overflowed VARCHAR(255) on MySQL), and a leaked table holds no usable token.
 class JwtBlacklistToken < ApplicationRecord
-  validates :token, presence: true, uniqueness: true
+  validates :token_digest, presence: true, uniqueness: true, length: { is: 64 }
   validates :expires_at, presence: true
   validates :token_type, inclusion: { in: %w[access refresh password_reset email_verification] }
 
@@ -21,6 +23,11 @@ class JwtBlacklistToken < ApplicationRecord
   scope :expired, -> { where(expires_at: ..Time.current) }
   scope :by_token_type, ->(type) { where(token_type: type) }
   scope :by_user, ->(user_id) { where(user_id: user_id) }
+  scope :for_token, ->(token) { where(token_digest: digest(token)) }
+
+  def self.digest(token)
+    Digest::SHA256.hexdigest(token)
+  end
 
   # Clean up expired tokens
   def self.cleanup_expired
@@ -30,7 +37,7 @@ class JwtBlacklistToken < ApplicationRecord
   def self.blacklisted?(token)
     return false if token.blank?
 
-    active.exists?(token: token)
+    active.for_token(token).exists?
   end
 
   # Add token to blacklist
@@ -39,7 +46,7 @@ class JwtBlacklistToken < ApplicationRecord
 
     expires_at ||= extract_token_expiry(token)
 
-    existing_token = find_by(token: token)
+    existing_token = for_token(token).first
     if existing_token
       update_existing_token(existing_token, user_id, token_type, reason, expires_at)
     else
@@ -69,7 +76,7 @@ class JwtBlacklistToken < ApplicationRecord
 
   def self.create_new_blacklisted_token(token, user_id, token_type, reason, expires_at)
     create!(
-      token: token,
+      token_digest: digest(token),
       user_id: user_id,
       token_type: token_type,
       reason: reason,
