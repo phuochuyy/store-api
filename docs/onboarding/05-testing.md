@@ -1,6 +1,6 @@
 # 05 · Testing
 
-> Cập nhật theo commit: `1286f04` · Kết quả gần nhất: 684 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
+> Cập nhật theo commit: `15319f3` · Kết quả gần nhất: 696 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
 
 Mọi file trong `spec/` đều được git theo dõi. Trước #47, spec và factory mới bị `.gitignore` ẩn mà không có cảnh báo nào ([KI-020](../known-issues.md#ki-020)). Giờ `bin/check-gitignore` chạy trong CI và trong `bin/ci` để chặn lỗi này quay lại.
 
@@ -26,11 +26,12 @@ ELASTICSEARCH_URL=http://localhost:9200 bundle exec rspec spec/services/products
 | Thư mục | File | Examples (ước tính) | Nội dung |
 |---|---|---|---|
 | `spec/controllers/` | 6 | 229 | auth, orders, payments; các concern authentication và authorization; kiểm tra kế thừa của controller v1 |
-| `spec/models/` | 5 | 207 | order, payment, product, user, stock_concurrency |
+| `spec/models/` | 6 | 211 | order, payment, product, user, jwt_blacklist_token, stock_concurrency |
 | `spec/services/` | 8 | 151 | `auth/*`, `auth/jwt/*`, text search, Elasticsearch search |
-| `spec/requests/` | 9 | 97 | rswag cho carts, orders, order items, payments, product variants, addresses, returns; luồng đơn hàng đầu cuối (order_lifecycle); error_handling |
+| `spec/requests/` | 10 | 101 | rswag cho carts, orders, order items, payments, product variants, addresses, returns; luồng đơn hàng đầu cuối (order_lifecycle); thu hồi token với token thật (auth_revocation); error_handling |
+| `spec/lib/` | 1 | 4 | Lọc dữ liệu nhạy cảm của Sentry, cho event đi qua pipeline thật của SDK |
 
-- **Coverage gần nhất:** 46,90% số dòng và 30,00% số nhánh. Trước giai đoạn 0 là 37,42% và 25,81%.
+- **Coverage gần nhất:** 47,47% số dòng và 30,09% số nhánh. Trước giai đoạn 0 là 37,42% và 25,81%.
 - **Ngưỡng tối thiểu:** 37% số dòng, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống. **Ngưỡng chưa được nâng theo** mức 47% hiện tại; nên nâng lên khoảng 45%.
 
 **Hoàn toàn chưa có test:**

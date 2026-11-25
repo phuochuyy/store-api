@@ -1,6 +1,6 @@
 # 03 · Data model
 
-> Cập nhật theo commit: `0b570df` · Nguồn sự thật: [db/schema.rb](../../db/schema.rb)
+> Cập nhật theo commit: `15319f3` · Nguồn sự thật: [db/schema.rb](../../db/schema.rb)
 
 Tài liệu này chỉ tóm tắt và giải thích lý do. Muốn biết chính xác các cột, đọc `schema.rb`.
 
@@ -71,8 +71,8 @@ Những điểm cần xử lý:
 
 | Rủi ro | Chi tiết | Trạng thái |
 |---|---|---|
-| `string` thành `VARCHAR(255)` | Token JWT dài 272 ký tự nên insert vào blacklist bị lỗi | **Lỗi thật**, [KI-006](../known-issues.md#ki-006) |
-| Cột token khác | `password_reset_tokens.token`, `users.email_verification_token` | Cần đo độ dài token thực tế |
+| `string` thành `VARCHAR(255)` | Token JWT dài 272 ký tự nên insert vào blacklist bị lỗi | Đã sửa (#55): lưu `token_digest` 64 ký tự, [KI-006](../known-issues.md#ki-006) |
+| Cột token khác | `password_reset_tokens.token`, `users.email_verification_token` | Đã kiểm tra: chuỗi ngẫu nhiên 43 ký tự, không vướng giới hạn |
 | Collation | MySQL `utf8mb4_0900_ai_ci` không phân biệt hoa/thường và dấu, PG thì có. Unique index và `WHERE` trên chuỗi có thể cho kết quả khác nhau | `User` đã `downcase_email`. Các cột `code` (discount, coupon) cần kiểm tra |
 | `enable_extension "plpgsql"` | MySQL bỏ qua dòng này | Vô hại |
 | Default scope `order(created_at: :desc)` trên `Order` | Ảnh hưởng mọi query, kể cả `.first` và `.last` | Lưu ý khi viết query |

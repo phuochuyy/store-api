@@ -1,6 +1,6 @@
 # 04 · Hạ tầng và vận hành
 
-> Cập nhật theo commit: `0b570df`
+> Cập nhật theo commit: `15319f3`
 
 ## Môi trường local
 
@@ -69,7 +69,7 @@ bundle exec sidekiq
 | Hạng mục | Hiện trạng | File |
 |---|---|---|
 | Log | Lograge xuất JSON gồm `time`, `request_id`, `user_id`, `ip`, `user_agent`, bỏ qua request health check. Production ghi ra stdout, gắn tag `request_id`. Header `X-Request-ID` được mở qua CORS | [lograge.rb](../../config/initializers/lograge.rb) |
-| Error tracking | Sentry, `traces_sample_rate` 0.1 ở production. **Không lọc PII** ([KI-009](../known-issues.md#ki-009)) | [sentry.rb](../../config/initializers/sentry.rb) |
+| Error tracking | Sentry, `traces_sample_rate` 0.1 ở production. Mặc định SDK không gửi request body. [SentryScrubber](../../lib/sentry_scrubber.rb) che dữ liệu nhạy cảm ở mọi độ sâu theo `filter_parameters` (#56, [KI-009](../known-issues.md#ki-009)) | [sentry.rb](../../config/initializers/sentry.rb) |
 | Health check | `/health` (OkComputer: database, redis, sidekiq, app, version) và `/api/v1/health` (tự viết) | [okcomputer.rb](../../config/initializers/okcomputer.rb) |
 | Metrics / APM | **Chưa có** (không có StatsD, Prometheus, Datadog) | — |
 | Sidekiq UI | Chưa mount | — |
