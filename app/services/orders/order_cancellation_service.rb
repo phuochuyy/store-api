@@ -15,10 +15,12 @@ module Orders
         validation_result = validate_order_for_cancellation(order)
         return validation_result unless validation_result[:success]
 
-        # Perform cancellation in transaction
+        # Stock, the discount's use and the payment all go back with the cancellation, or none do.
+        refund_note = nil
         ActiveRecord::Base.transaction do
-          # Restore stock quantities
           restore_stock_quantities(order)
+          order.discount&.release_usage!
+          refund_note = Payments::OrderRefundService.refund_cancelled_order(order)
 
           order.update!(
             status: 'cancelled',
@@ -32,7 +34,9 @@ module Orders
           Rails.logger.info "Order #{order.id} cancelled by user #{cancelled_by.id}. Reason: #{reason}"
         end
 
-        { success: true, message: 'Order cancelled successfully' }
+        { success: true, message: ['Order cancelled successfully', refund_note].compact.join('; ') }
+      rescue Payments::OrderRefundService::RefundError => e
+        { success: false, error: e.message }
       rescue StandardError => e
         Rails.logger.error "Order cancellation error: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")

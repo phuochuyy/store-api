@@ -258,11 +258,13 @@ class Payment < ApplicationRecord
     order.update!(payment_status: new_order_payment_status) if new_order_payment_status
   end
 
-  # The order payment status this payment's new status leads to, or nil to leave it as is.
+  # The order payment status this payment's new status leads to, or nil to leave it as is. A
+  # cancelled payment was withdrawn rather than declined (for instance when its order is
+  # cancelled), so it leaves the order's payment status alone.
   def order_payment_status_after_change
     case status
     when 'completed' then 'paid' if order.unpaid? || order.payment_failed?
-    when 'failed', 'cancelled' then 'payment_failed' if order.unpaid?
+    when 'failed' then 'payment_failed' if order.unpaid?
     when 'refunded', 'partially_refunded' then status
     end
   end

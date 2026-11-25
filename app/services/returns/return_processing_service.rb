@@ -75,18 +75,20 @@ module Returns
             restore_stock(return_item)
           end
 
-          # Process refund if return type is refund
-          process_refund(return_request) if return_request.return_type == 'refund'
+          # Refund the returned items when the return asks for money back
+          refund_note = process_refund(return_request) if return_request.return_type == 'refund'
 
           # Mark as completed
           return_request.complete!
 
           {
             success: true,
-            message: 'Return processed successfully',
+            message: ['Return processed successfully', refund_note].compact.join('; '),
             return_request: return_request
           }
         end
+      rescue Payments::OrderRefundService::RefundError => e
+        { success: false, error: e.message }
       rescue StandardError => e
         Rails.logger.error "Return processing error: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
@@ -140,12 +142,9 @@ module Returns
         end
       end
 
+      # @return [String, nil] a note when the money must be refunded by hand
       def process_refund(return_request)
-        # Integration with payment service to process refund
-        # This would typically call the payment gateway API
-        Rails.logger.info "Processing refund of #{return_request.refund_amount} for return request #{return_request.id}"
-        # TODO: Integrate with actual payment refund service
-        true
+        Payments::OrderRefundService.refund_return(return_request)
       end
     end
   end
