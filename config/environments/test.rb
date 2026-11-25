@@ -10,7 +10,9 @@ Rails.application.configure do
   # this is usually not necessary, and can slow down your test suite. However, it's
   # recommended that you enable it in continuous integration systems to ensure eager
   # loading is working properly before deploying your code.
-  config.eager_load = ENV['CI'].present?
+  # Coverage runs eager load too, so every app file is measured the same way locally and in CI
+  # (otherwise local coverage reads ~10 points lower and the threshold in spec_helper.rb cannot fit both).
+  config.eager_load = ENV['CI'].present? || ENV['COVERAGE'] == 'true'
 
   # Configure public file server for tests with Cache-Control for performance.
   config.public_file_server.enabled = true

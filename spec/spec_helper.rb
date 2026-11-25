@@ -5,8 +5,9 @@ if ENV['COVERAGE'] == 'true'
   SimpleCov.start 'rails' do
     enable_coverage :branch
     add_filter %w[/spec/ /config/ /db/ /vendor/]
-    # Ratchet: measured 37.4% on 2026-11-19. Raise it as coverage grows; never lower it.
-    minimum_coverage line: 37
+    # Ratchet: measured 59.5% of lines and 32.5% of branches on 2026-11-26, with the app eager
+    # loaded as in CI (config/environments/test.rb). Raise it as coverage grows; never lower it.
+    minimum_coverage line: 58, branch: 32
   end
 end
 

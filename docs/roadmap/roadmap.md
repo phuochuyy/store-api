@@ -1,6 +1,6 @@
 # Roadmap (chạy hoàn toàn ở local)
 
-> Cập nhật theo commit: `b9505c9` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
+> Cập nhật theo commit: `3cc7e59` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
 
 **Nguyên tắc**
 - Làm theo thứ tự giai đoạn. Mỗi giai đoạn gồm nhiều PR nhỏ trên nhánh riêng, PR nào cũng phải pass `bin/ci`.
@@ -50,10 +50,10 @@ flowchart LR
 - **Trên MySQL:** logout và xoay vòng refresh token đã hoạt động.
 - **Bộ đếm lượt dùng** của mã giảm giá và promotion nguyên tử, có spec chạy đồng thời.
 - **Mỗi bản sửa** đều đi kèm spec fail trên code cũ.
-- **Coverage dòng** tăng từ 37% lên 49%.
+- **Coverage dòng** tăng từ 37% lên 49% (cùng một cách đo). Khi đo giống CI, tức có eager load, con số là 59,5%.
 
 **Còn lại trước giai đoạn 1:**
-- Nâng ngưỡng coverage trong `spec_helper.rb` theo mức mới.
+- ~~Nâng ngưỡng coverage~~: đã nâng lên 58% số dòng và 32% số nhánh, và local giờ đo giống CI.
 - Xếp lịch cho các lỗi Medium còn mở: [KI-011](../known-issues.md#ki-011) (webhook), [KI-012](../known-issues.md#ki-012) (hoàn tiền khi hủy đơn hoặc đổi trả), [KI-013](../known-issues.md#ki-013) (compose production), [KI-024](../known-issues.md#ki-024) và [KI-031](../known-issues.md#ki-031) (tồn kho).
 
 ## Giai đoạn 1 · Đồng nhất và làm sạch
@@ -65,7 +65,7 @@ flowchart LR
 - **Contract test:** viết rswag cho mọi endpoint. Thêm job CI so sánh route với path trong Swagger và so sánh YAML với JSON ([KI-015](../known-issues.md#ki-015)).
 - **Bỏ N+1** trong serializer (ví dụ `products.count` ở Brand). Dùng gem `bullet` khi chạy test.
 - **Tiêu chí xong:**
-  - Coverage dòng ≥ 60%.
+  - Coverage dòng ≥ 70%, đo giống CI. Mục tiêu cũ là 60%, đặt khi local còn đo mà không eager load (lúc đó là 49%).
   - Không còn controller nào thiếu request spec.
   - CI fail khi Swagger lệch với route.
 
