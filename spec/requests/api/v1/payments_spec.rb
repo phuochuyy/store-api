@@ -77,6 +77,89 @@ RSpec.describe 'Payments API (checkout)', type: :request do
     end
   end
 
+  path '/api/v1/payments/{id}' do
+    parameter name: :id, in: :path, type: :integer
+
+    get 'Show a payment (owner of the order or admin)' do
+      tags 'Payments'
+      security [{ bearerAuth: [] }]
+      produces 'application/json'
+
+      let(:payment) do
+        Payments::PaymentProcessorService.process_payment(order: order, payment_method: payment_method)
+        order.payments.sole
+      end
+      let(:id) { payment.id }
+
+      response '200', 'the customer who owns the order' do
+        schema envelope({ payment: ref('Payment'), order: ref('Order'), payment_method: ref('PaymentMethod') })
+
+        run_test! do |response|
+          expect(response.parsed_body.dig('data', 'payment', 'id')).to eq(payment.id)
+        end
+      end
+
+      response '200', 'an admin' do
+        let(:current_user) { admin }
+
+        schema envelope({ payment: ref('Payment'), order: ref('Order'), payment_method: ref('PaymentMethod') })
+        run_test!
+      end
+
+      # 404, not 403, so the existence of another user's payment is not confirmed.
+      response '404', "another customer's payment" do
+        let(:current_user) { create(:user) }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq('Payment not found')
+          expect(response.parsed_body).not_to have_key('data')
+        end
+      end
+
+      response '404', 'unknown payment' do
+        let(:id) { 0 }
+
+        schema ref('ErrorResponse')
+        run_test!
+      end
+    end
+
+    patch 'Update a payment (admin only)' do
+      tags 'Payments'
+      security [{ bearerAuth: [] }]
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :body, in: :body, schema: {
+        type: :object, properties: { payment: { type: :object, properties: { status: { type: :string } } } }
+      }
+
+      let(:payment) do
+        Payments::PaymentProcessorService.process_payment(order: order, payment_method: payment_method)
+        order.payments.sole
+      end
+      let(:id) { payment.id }
+      let(:body) { { payment: { status: 'refunded' } } }
+
+      response '403', 'the customer who owns the order' do
+        schema ref('ErrorResponse')
+        run_test! do
+          expect(payment.reload.status).to eq('completed')
+        end
+      end
+
+      response '403', 'another customer: forbidden before the payment is looked up' do
+        let(:current_user) { create(:user) }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq('Admin access required')
+          expect(payment.reload.status).to eq('completed')
+        end
+      end
+    end
+  end
+
   path '/api/v1/payments/{id}/refund' do
     parameter name: :id, in: :path, type: :integer
 
