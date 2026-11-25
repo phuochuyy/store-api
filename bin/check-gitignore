@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Fails if .gitignore would hide new spec or factory files from git.
+# A rule like `spec/**/*_spec.rb` makes new tests silently untracked: they pass
+# locally but never reach CI. The paths below need not exist; git only matches rules.
+set -u
+
+probes=(
+  spec/models/gitignore_probe_spec.rb
+  spec/requests/api/v1/gitignore_probe_spec.rb
+  spec/services/gitignore_probe/gitignore_probe_spec.rb
+  spec/factories/gitignore_probe.rb
+  spec/support/gitignore_probe.rb
+)
+
+status=0
+git check-ignore --no-index -v "${probes[@]}" || status=$?
+
+case "$status" in
+  1) echo "OK: spec files are not ignored by .gitignore" ;;
+  0) echo "ERROR: .gitignore ignores the spec paths listed above. Remove the matching rule." >&2; exit 1 ;;
+  *) echo "ERROR: git check-ignore failed (exit $status)" >&2; exit 1 ;;
+esac
