@@ -40,8 +40,14 @@ RSpec.describe Order, type: :model do
   end
 
   describe 'enums' do
-    it 'defines status enum' do
-      expect(Order.statuses.keys).to include('pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'paid')
+    it 'defines the fulfillment status enum' do
+      expect(Order.statuses.keys).to contain_exactly('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')
+    end
+
+    it 'tracks payment separately from fulfillment' do
+      expect(Order.payment_statuses.keys)
+        .to contain_exactly('unpaid', 'paid', 'payment_failed', 'refunded', 'partially_refunded')
+      expect(Order.new).to have_attributes(status: 'pending', payment_status: 'unpaid')
     end
   end
 

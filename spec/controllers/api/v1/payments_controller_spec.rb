@@ -218,7 +218,7 @@ RSpec.describe Api::V1::Payments::PaymentsController, type: :controller do
     end
 
     context 'with order that cannot be paid' do
-      let(:unpaid_order) { create(:order, user: user, status: 'paid', total_amount: 100.00) }
+      let(:unpaid_order) { create(:order, user: user, payment_status: 'paid', total_amount: 100.00) }
       let(:unpaid_params) do
         {
           order_id: unpaid_order.id,

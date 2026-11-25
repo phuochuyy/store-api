@@ -27,24 +27,30 @@ class Order < ApplicationRecord
   validates :customer_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :customer_phone, presence: true
   validates :total_amount, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
-  validates :status, presence: true, inclusion: {
-    in: %w[pending confirmed shipped delivered cancelled paid payment_failed refunded partially_refunded]
-  }
+  validates :status, presence: true, inclusion: { in: %w[pending confirmed shipped delivered cancelled] }
 
   # Validate discount consistency
   validate :discount_code_matches_discount_id, if: -> { discount_id.present? && discount_code.present? }
 
+  # Fulfillment and payment are tracked separately: an order can be paid before or after it is
+  # confirmed or shipped (cash on delivery), and a refund does not erase how far it got.
+  # status only changes through the confirm/ship/deliver/cancel services; payment_status only
+  # through Payment (see Payment#sync_order_payment_status).
   enum :status, {
     pending: 'pending',
     confirmed: 'confirmed',
     shipped: 'shipped',
     delivered: 'delivered',
-    cancelled: 'cancelled',
+    cancelled: 'cancelled'
+  }, default: :pending
+
+  enum :payment_status, {
+    unpaid: 'unpaid',
     paid: 'paid',
     payment_failed: 'payment_failed',
     refunded: 'refunded',
     partially_refunded: 'partially_refunded'
-  }, default: :pending
+  }, default: :unpaid
 
   scope :recent, -> { order(created_at: :desc) }
 
@@ -201,29 +207,14 @@ class Order < ApplicationRecord
     successful_payments.sum(:amount)
   end
 
-  def payment_status
-    return 'unpaid' if payments.empty?
-
-    status_mapping = {
-      paid?: 'paid',
-      payment_failed?: 'payment_failed',
-      refunded?: 'refunded',
-      partially_refunded?: 'partially_refunded'
-    }
-
-    status_mapping.each do |method_name, status|
-      return status if send(method_name)
-    end
-
-    latest_payment&.status || 'pending'
-  end
-
+  # Any order that is not cancelled can be paid until a payment succeeds, whatever its
+  # fulfillment status (cash on delivery is paid after shipping).
   def can_be_paid?
-    %w[pending payment_failed].include?(status)
+    !cancelled? && (unpaid? || payment_failed?)
   end
 
   def can_be_refunded?
-    %w[paid].include?(status) && successful_payments.any?
+    paid? && successful_payments.any?
   end
 
   def payment_methods_used

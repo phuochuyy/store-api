@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_135654) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -203,9 +203,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_090000) do
     t.bigint "tax_rate_id"
     t.decimal "tax_amount", precision: 10, scale: 2, default: "0.0"
     t.decimal "tax_rate_value", precision: 5, scale: 2
+    t.string "payment_status", default: "unpaid", null: false
     t.index ["created_at"], name: "index_orders_on_created_at"
     t.index ["discount_code"], name: "index_orders_on_discount_code"
     t.index ["discount_id"], name: "index_orders_on_discount_id"
+    t.index ["payment_status"], name: "index_orders_on_payment_status"
     t.index ["shipping_method_id"], name: "index_orders_on_shipping_method_id"
     t.index ["status", "created_at"], name: "index_orders_on_status_and_created_at"
     t.index ["status"], name: "index_orders_on_status"
