@@ -1,6 +1,6 @@
 # Known issues
 
-> Cập nhật theo commit: `0b570df` · Ngày: 2026-11-25
+> Cập nhật theo commit: `1286f04` · Ngày: 2026-11-25
 
 Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ được mô tả ở đây.** Các tài liệu khác (roadmap, domain map) trỏ tới mã `KI-xxx` thay vì chép lại nội dung.
 
@@ -17,7 +17,7 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 
 Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
 
-**Tình hình hiện tại:** 23 lỗi đã ghi nhận, 6 đã sửa. Còn mở: 0 Critical, 4 High (KI-004…007), 6 Medium, 7 Low.
+**Tình hình hiện tại:** 27 lỗi đã ghi nhận, 11 đã sửa. Còn mở: 0 Critical, 2 High (KI-006, KI-025), 6 Medium, 8 Low.
 
 ## Tổng quan
 
@@ -26,11 +26,11 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-001](#ki-001) | Critical | Customer tự duyệt/từ chối/hoàn tất yêu cầu đổi trả | ✅ chạy thật | fixed (#48, test #50) |
 | [KI-002](#ki-002) | High | Toàn bộ API variants và addresses trả 500 | ✅ chạy thật | fixed (#49) |
 | [KI-003](#ki-003) | High | `authorize!` không dừng action; truyền class thì luôn 403 | ✅ chạy thật | fixed (#48) |
-| [KI-004](#ki-004) | High | IDOR: xem được payment của người khác | ✅ chạy thật | open |
-| [KI-005](#ki-005) | High | IDOR + crash ở order items controller | ✅ chạy thật / đọc code | open |
+| [KI-004](#ki-004) | High | IDOR: xem được payment của người khác | ✅ chạy thật | fixed (#52) |
+| [KI-005](#ki-005) | High | IDOR + crash ở order items controller | ✅ chạy thật | fixed (#52) |
 | [KI-006](#ki-006) | High | MySQL/Aurora: logout không thu hồi được token (JWT > 255 ký tự) | ✅ chạy thật (MySQL 8.4) | open |
-| [KI-007](#ki-007) | High | Đơn đã `paid` không thể confirm/ship (kẹt trạng thái) | ✅ chạy thật | open |
-| [KI-008](#ki-008) | Medium | Admin `PATCH` đặt `status` order/payment tùy ý, bỏ qua state machine | ✅ đọc code | open |
+| [KI-007](#ki-007) | High | Đơn đã `paid` không thể confirm/ship (kẹt trạng thái) | ✅ chạy thật | fixed (#53) |
+| [KI-008](#ki-008) | Medium | Admin `PATCH` đặt `status` order/payment tùy ý, bỏ qua state machine | ✅ đọc code | fixed (#53) |
 | [KI-009](#ki-009) | Medium | Sentry không lọc password/token (`before_send` bị ghi đè) | ✅ đọc code | open |
 | [KI-010](#ki-010) | Medium | Giới hạn lượt dùng discount không bao giờ được áp dụng | ✅ đọc code | open |
 | [KI-011](#ki-011) | Medium | Webhook thanh toán: không có route, chữ ký giả, cột không tồn tại | ✅ đọc code | open |
@@ -46,6 +46,10 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-021](#ki-021) | High | Ruby 3.4.5 dính CVE-2026-132825 (có thể dẫn tới RCE) | ✅ Brakeman 8.1.1 | fixed (#46) |
 | [KI-022](#ki-022) | Medium | `POST /addresses/validate` báo mọi địa chỉ là hợp lệ | ✅ chạy thật | fixed (#49) |
 | [KI-023](#ki-023) | Low | `db:schema:load` trên MySQL lỗi khi database đã có bảng | ✅ chạy thật | open |
+| [KI-024](#ki-024) | Medium | Admin sửa order item không cập nhật tồn kho, kể cả với đơn đã giao | ✅ đọc code | open |
+| [KI-025](#ki-025) | High | Thanh toán `bank_transfer` / `cash_on_delivery` / `wallet` luôn thất bại | ✅ chạy thật | open |
+| [KI-026](#ki-026) | Low | `shipping_status` trả `not_shipped` cho đơn đã giao | ✅ chạy thật | open |
+| [KI-027](#ki-027) | Medium | Confirm đơn tính tồn kho đã giữ hai lần: đơn mua hết kho không confirm được | ✅ chạy thật | fixed (#53) |
 
 ---
 
@@ -87,6 +91,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 
 - **Ở đâu:** [payments_controller.rb:7-9, 17](../app/controllers/api/v1/payments/payments_controller.rb). `show` không nằm trong `admin_only!` và cũng không kiểm tra `payment.order.user_id`.
 - **Tái hiện:** customer A gọi `GET /api/v1/payments/:id` với payment của customer B và nhận 200, kèm thông tin order và payment method.
+- **Đã sửa:** #52. `set_payment` trả 404 nếu người gọi không phải admin và không sở hữu đơn của payment đó. Dùng 404 thay vì 403 để không xác nhận là payment tồn tại, giống quy ước của orders và returns. `admin_only!` giờ chạy trước `set_payment`, nên customer gọi update/destroy/refund nhận 403 mà không cần tra payment. Contract spec ở [payments_spec.rb](../spec/requests/api/v1/payments_spec.rb).
 
 ### KI-005
 **Order items controller: IDOR và crash** · High
@@ -96,6 +101,16 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - `create`/`update` gọi `@order_item.phone`, một association không tồn tại (tàn dư khi model còn tên "phone"), nên ném NoMethodError (✅ đọc code).
   - Controller dùng `render json:` thô, không theo envelope `render_success`/`render_error`.
 - **Hướng sửa:** scope theo `current_user.orders` (admin thì không cần), đổi sang `product`, dùng envelope chuẩn.
+- **Thực tế tệ hơn đã ghi** (chạy thật trên code cũ):
+  - Một customer khác **xóa được** item của đơn người khác (204).
+  - Một customer khác **đổi được** `quantity` thành 99: update đã lưu xuống DB rồi mới crash ở `phone`. Response là 500, nhưng tổng tiền đơn đã thành 4950.
+- **Đã sửa:** #52.
+  - Chủ đơn và admin được **đọc**. Người khác nhận 404.
+  - Chỉ admin được **sửa** (giống update và cancel của đơn). `admin_only!` chạy trước, nên customer nhận 403.
+  - Update chỉ nhận `quantity`, đúng như Swagger mô tả. Cho đổi `product_id` sẽ giữ nguyên `unit_price` cũ.
+  - Model `OrderItem` tự tính giá và tự cập nhật tổng tiền.
+  - Response dùng envelope chuẩn. `DELETE` trả 200 thay vì 204.
+  - Contract spec ở [order_items_spec.rb](../spec/requests/api/v1/order_items_spec.rb). Phần còn lại xem [KI-024](#ki-024).
 
 ### KI-006
 **MySQL/Aurora: logout không thu hồi được token** · High
@@ -108,15 +123,26 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 ### KI-007
 **Đơn đã thanh toán bị kẹt trạng thái** · High
 
-- **Ở đâu:** khi payment chuyển sang `completed`, callback [payment.rb:254](../app/models/payment.rb) đổi order sang `paid`. Nhưng [order.rb:81](../app/models/order.rb) `can_be_confirmed?` chỉ chấp nhận `pending`, và `can_be_shipped?` chỉ chấp nhận `confirmed`.
+- **Ở đâu (trước #53):** khi payment chuyển sang `completed`, callback [payment.rb:254](../app/models/payment.rb) đổi order sang `paid`. Nhưng [order.rb:81](../app/models/order.rb) `can_be_confirmed?` chỉ chấp nhận `pending`, và `can_be_shipped?` chỉ chấp nhận `confirmed`.
 - **Hệ quả:** đơn đã trả tiền không thể confirm hay ship. Luồng thanh toán trước rồi giao hàng không đi được.
 - **Hướng sửa:** thiết kế lại state machine. Tách `payment_status` ra khỏi `fulfillment_status`, hoặc cho phép `paid → confirmed`. Xem [02-domain-map.md](onboarding/02-domain-map.md#order).
+- **Đã sửa:** #53 chọn cách tách cột.
+  - `orders.payment_status` (unpaid, paid, payment_failed, refunded, partially_refunded) là cột mới. `status` chỉ còn 5 trạng thái giao hàng.
+  - Payment chỉ cập nhật `payment_status`, không đụng `status`. Một lần trả tiền thất bại không làm đơn đã `paid` bị hạ xuống.
+  - Đơn trả tiền được ở mọi bước giao hàng, cho tới khi bị hủy hoặc đã trả xong. Hoàn tiền không xóa tiến độ giao hàng: đơn đã giao vẫn là `delivered`.
+  - Migration chuyển các trạng thái thanh toán sang cột mới, rồi khôi phục tiến độ giao hàng từ `confirmed_at` / `shipped_at` / `delivered_at` / `cancelled_at`. Đã chạy `up` và `down` trên PostgreSQL và MySQL.
+  - Spec luồng đầu cuối qua API ở [order_lifecycle_spec.rb](../spec/requests/api/v1/order_lifecycle_spec.rb).
+  - **Phá vỡ tương thích:** client đọc trạng thái thanh toán ở `payment_status`. Xem sơ đồ mới ở [02-domain-map.md](onboarding/02-domain-map.md#order).
 
 ### KI-008
 **Admin cập nhật `status` tùy ý** · Medium
 
-- **Ở đâu:** [orders_controller.rb:197](../app/controllers/api/v1/orders/orders_controller.rb) (`order_params` cho phép `status`), [payments_controller.rb:186](../app/controllers/api/v1/payments/payments_controller.rb) (`payment_update_params` cho phép `status` và `transaction_id`).
+- **Ở đâu (trước #53):** [orders_controller.rb:197](../app/controllers/api/v1/orders/orders_controller.rb) (`order_params` cho phép `status`), [payments_controller.rb:186](../app/controllers/api/v1/payments/payments_controller.rb) (`payment_update_params` cho phép `status` và `transaction_id`).
 - **Hệ quả:** bỏ qua mọi kiểm tra chuyển trạng thái, không trả lại hàng vào kho, không tạo notification. Chỉ cần đổi payment sang `refunded` là order bị đổi theo luôn.
+- **Đã sửa:** #53.
+  - `PATCH /orders/:id` chỉ nhận thông tin liên hệ của khách. `PATCH /payments/:id` chỉ nhận `gateway_response`, `failure_reason` và `metadata`.
+  - Gửi `status` (hoặc `payment_status`, `transaction_id`) nhận 422, kèm thông báo chỉ sang action đúng (confirm/ship/deliver/cancel, refund). Trước đây các trường này bị lờ đi mà không báo gì.
+  - **Phá vỡ tương thích** với client đang gửi `status` qua `PATCH`.
 
 ### KI-009
 **Sentry không lọc dữ liệu nhạy cảm** · Medium
@@ -166,7 +192,8 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - [swagger.yaml](../swagger/v1/swagger.yaml) có 88 path, còn [swagger.json](../swagger/v1/swagger.json) (do `rails swagger:merge` sinh ra, và là file `/api-docs` đang hiển thị) chỉ có 59.
 - 29 path bị thiếu gồm: variants, shipping, tax, returns, addresses, reviews, wishlists, comparisons, users/profile, users/addresses.
 - Swagger dùng `/api/v1/return_requests/...`, còn route thật là `/api/v1/returns/...`.
-- Chỉ 3 request spec (carts, orders, payments) kiểm tra response theo schema.
+- Lúc ghi nhận, chỉ 3 request spec (carts, orders, payments) kiểm tra response theo schema. Từ #49 đến #52 đã có thêm variants, addresses, returns và order items.
+- **Lỗi gõ `get::`** ở 17 operation trong 12 file `swagger/v1/paths/*.yaml`: YAML đọc thành key `"get:"`, nên các thao tác GET đó không có trong tài liệu. Tìm bằng `grep -rn 'get::' swagger/v1/paths`.
 - Lệnh kiểm tra: `ruby -ryaml -rjson -e 'y=YAML.load_file("swagger/v1/swagger.yaml");j=JSON.parse(File.read("swagger/v1/swagger.json"));p y["paths"].size, j["paths"].size'`
 
 ### KI-016
@@ -181,6 +208,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - `Orders::NotificationService`, kéo theo 6 service `Order*NotificationService` và `BulkOrderNotificationService`, vì chúng chỉ được gọi từ đó.
   - `Users::AddressService`, `Categories::CategoryService`, `CartService.validate_cart_for_checkout`, `Coupon#use!`.
 - **Không có model:** bảng `payment_histories` có serializer nhưng không có model, nên các method `track_*` trong [payment.rb](../app/models/payment.rb) không bao giờ chạy.
+- **Nhánh không bao giờ chạy:** `when 'square'` trong các service thanh toán, vì enum `gateway_type` không có `square` (xem [KI-025](#ki-025)).
 - **Lớp chỉ chuyển tiếp:** `Payments::PaymentProcessorService` chỉ gọi thẳng sang core service và webhook service.
 - **Action không có route:** nhiều action trong `notifications_controller` (`unread_count`, `recent`, `send_daily_summary`…) và `stock_alerts_controller` (`resolve`, `dismiss`, `bulk_operation`…).
 - **Method công khai nhầm:** một số helper để `public` lẽ ra phải `private` (payments, payment methods, comparisons, reviews, statistics). `ShippingController#methods` ghi đè `Object#methods` của Ruby.
@@ -236,3 +264,50 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Vì sao:** MySQL không làm theo `force: :cascade` khi DROP TABLE có foreign key trỏ tới.
 - **Ảnh hưởng:** chỉ ở máy local. CI luôn nạp schema vào database trống.
 - **Tạm thời:** `bin/rails db:drop db:create db:schema:load`.
+
+### KI-024
+**Admin sửa order item không cập nhật tồn kho** · Medium
+
+- **Ở đâu:** [orders/items_controller.rb](../app/controllers/api/v1/orders/items_controller.rb) `create`/`update`/`destroy` (chỉ admin, từ #52).
+- **Lỗi:**
+  - Thêm, bớt hoặc đổi số lượng item **không đụng tới tồn kho**. Luồng tạo đơn ([order_creation_service.rb](../app/services/orders/order_creation_service.rb)) thì có trừ kho, trong `with_lock`.
+  - Sửa được cả đơn đã `shipped` hay `delivered`.
+- **Lỗi phụ:** route lồng `/api/v1/orders/:order_id/items/:id` bỏ qua `order_id`. Quyền sở hữu vẫn được kiểm tra theo đơn thật của item, nên không phải lỗ hổng.
+- **Hướng sửa:** chỉ cho sửa khi đơn còn `pending`, và đi qua `Product#reduce_stock` / `add_stock` như luồng tạo và hủy đơn.
+
+### KI-025
+**Thanh toán bằng `bank_transfer`, `cash_on_delivery` hoặc `wallet` luôn thất bại** · High
+
+- **Ở đâu:** enum `gateway_type` ở [payment_method.rb:33](../app/models/payment_method.rb) có 5 loại. Nhưng `process_with_gateway` ([payment_processing_core_service.rb:66](../app/services/payments/payment_processing_core_service.rb)) chỉ xử lý `stripe`, `paypal` và `square`, các loại khác rơi vào `else`.
+- **Tái hiện:** gọi `POST /api/v1/payments` với một payment method thuộc mỗi loại.
+  - `stripe` và `paypal` trả 201, payment `completed`.
+  - Ba loại còn lại trả 422 `Unsupported gateway type: ...`. Payment bị lưu là `failed`, còn `payment_status` của đơn thành `payment_failed`.
+  - Admin vẫn tạo được payment method thuộc các loại này, nên lỗi chỉ lộ ra khi khách trả tiền.
+- **Lỗi phụ:** `square` không có trong enum, nên mọi nhánh `when 'square'` đều là code chết. Có 6 câu `case` như vậy, rải ở các file:
+  - `process_with_gateway` và `process_refund_with_gateway` trong core service.
+  - `test_payment_method_connectivity` và `validate_gateway_specific_config` trong [payment_method_validation_service.rb](../app/services/payments/payment_method_validation_service.rb).
+  - Hai chỗ trong [payment_webhook_service.rb](../app/services/payments/payment_webhook_service.rb).
+- **Hướng sửa:**
+  - `cash_on_delivery` và `bank_transfer` không đi qua gateway. Tạo payment ở trạng thái `pending`, rồi admin xác nhận đã nhận tiền bằng một action riêng để chuyển sang `completed`.
+  - `wallet`: bỏ khỏi enum, hoặc giả lập như `stripe`.
+  - Gom các loại gateway vào một registry duy nhất thay cho 6 câu `case`.
+
+### KI-026
+**`shipping_status` trả `not_shipped` cho đơn đã giao** · Low
+
+- **Ở đâu:** [order.rb:104](../app/models/order.rb) `shipping_status` mở đầu bằng `return 'not_shipped' unless shipped?`. `shipped?` là predicate của enum, chỉ đúng khi `status == 'shipped'`. Vì vậy đơn `delivered` thoát ra từ dòng này, trước khi tới phép kiểm tra `delivered?`.
+- **Tái hiện:** `Order.new(status: 'delivered').shipping_status` trả `"not_shipped"`. Chỉ `shipped` cho ra `in_transit`, còn mọi trạng thái khác đều ra `not_shipped`.
+- **Ảnh hưởng:** trường `shipping_status` trong response order ([order_serializer_service.rb:24](../app/services/orders/order_serializer_service.rb)) và trong `GET /orders/:id/tracking` ([orders_controller.rb:108](../app/controllers/api/v1/orders/orders_controller.rb)) báo đơn đã giao là chưa gửi. Trường `status` trả về cùng lúc vẫn đúng.
+- **Hướng sửa:** kiểm tra `delivered?` trước. Thêm unit test cho cả 5 trạng thái.
+
+### KI-027
+**Confirm đơn kiểm tra lại phần tồn kho mà chính đơn đó đã giữ** · Medium
+
+- **Ở đâu (trước #53):** [order_confirmation_service.rb:72](../app/services/orders/order_confirmation_service.rb) `check_item_availability`. Hàm này so sánh `product.stock_quantity` với `item.quantity`. Nhưng tồn kho đã bị trừ từ lúc tạo đơn, trong `with_lock` ([order_creation_service.rb](../app/services/orders/order_creation_service.rb)), nên phần của chính đơn bị tính hai lần.
+- **Hệ quả:**
+  - Đơn chỉ confirm được khi tồn kho còn lại ≥ số lượng đặt, tức tồn kho ban đầu phải ≥ 2 lần số lượng.
+  - Đơn mua sản phẩm cuối cùng (kho 1 → 0) báo `Some items are no longer available`, và **không bao giờ confirm được**.
+  - Với item có variant, hàm còn kiểm tra kho của product thay vì kho của variant.
+- **Tái hiện:** tạo đơn mua đúng số còn trong kho, rồi admin gọi `POST /orders/:id/confirm`. Phát hiện khi viết spec luồng đơn hàng cho việc 0.6 của roadmap.
+- **Hướng sửa:** lúc confirm chỉ cần kiểm tra sản phẩm còn tồn tại, vì tồn kho đã được giữ khi tạo đơn.
+- **Đã sửa:** #53. Lúc confirm, service chỉ kiểm tra sản phẩm còn tồn tại. Mỗi luồng trong [order_lifecycle_spec.rb](../spec/requests/api/v1/order_lifecycle_spec.rb) đều mua đúng sản phẩm cuối cùng trong kho.

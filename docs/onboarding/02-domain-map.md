@@ -1,6 +1,6 @@
 # 02 · Bản đồ domain
 
-> Cập nhật theo commit: `0b570df`
+> Cập nhật theo commit: `1286f04`
 
 Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu, nó gọi sang domain nào, và nếu tách thành microservice thì đường ranh giới nằm ở đâu.
 
@@ -23,7 +23,7 @@ Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu,
 | **Statistics** | Không có model | Không có service | Query viết trực tiếp trong [statistics_controller.rb](../../app/controllers/api/v1/statistics_controller.rb) |
 
 **Thật hay giả lập**
-- **Payment gateway:** giả lập (`SecureRandom`).
+- **Payment gateway:** giả lập (`SecureRandom`). Chỉ `stripe` và `paypal` chạy được, ba loại còn lại luôn thất bại ([KI-025](../known-issues.md#ki-025)).
 - **Email:** chỉ email xác minh tài khoản là gửi thật (`EmailVerificationMailer`). Dev dùng letter_opener, còn SMTP production chưa cấu hình. "Email" thông báo đơn hàng thực ra chỉ ghi log.
 - **Job nền:**
   - `JwtCleanupJob` chạy cron lúc 02:00 mỗi ngày ([schedule.yml](../../config/schedule.yml)).
@@ -32,7 +32,13 @@ Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu,
 ## State machines
 
 ### Order
-Danh sách trạng thái ở [order.rb:37-47](../../app/models/order.rb). Các bước chuyển được kiểm tra trong từng service bằng `can_be_*?`.
+Đơn có **hai cột trạng thái độc lập** (từ #53, [KI-007](../known-issues.md#ki-007)):
+- `status` theo dõi tiến độ giao hàng ([order.rb:39](../../app/models/order.rb)). Cột này chỉ đổi qua các service confirm/ship/deliver/cancel, mỗi bước được kiểm tra bằng `can_be_*?`.
+- `payment_status` theo dõi thanh toán ([order.rb:47](../../app/models/order.rb)). Cột này chỉ đổi qua callback của Payment.
+
+Thanh toán không đẩy đơn tiến hay lùi, và giao hàng không đòi phải trả tiền trước.
+
+**`status`: giao hàng**
 
 ```mermaid
 stateDiagram-v2
@@ -43,23 +49,29 @@ stateDiagram-v2
   pending --> cancelled
   confirmed --> cancelled
   shipped --> cancelled
-  pending --> paid: Payment completed (callback)
-  pending --> payment_failed: Payment failed/cancelled (callback)
-  paid --> paid: ⚠ không có lối ra (KI-007)
-  note right of paid
-    refunded / partially_refunded
-    được đặt từ BẤT KỲ trạng thái nào
-    bởi callback của Payment
-  end note
 ```
 
-- Admin có thể bỏ qua toàn bộ sơ đồ trên bằng `PATCH status` ([KI-008](../known-issues.md#ki-008)).
-- Gốc của vấn đề: `status` đang gộp hai chiều khác nhau, **thanh toán** và **giao hàng**. Hướng sửa nằm ở [roadmap giai đoạn 0](../roadmap/roadmap.md#giai-đoạn-0--sửa-lỗi-nghiêm-trọng).
+**`payment_status`: thanh toán**
+
+```mermaid
+stateDiagram-v2
+  [*] --> unpaid
+  unpaid --> paid: Payment completed
+  unpaid --> payment_failed: Payment failed/cancelled
+  payment_failed --> paid: lần trả sau thành công
+  paid --> partially_refunded: hoàn một phần
+  paid --> refunded: hoàn toàn bộ
+```
+
+- **Trả tiền** (`can_be_paid?`): đơn chưa hủy, đang `unpaid` hoặc `payment_failed`, ở bất kỳ bước giao hàng nào. Ví dụ: trả trước rồi giao, hoặc giao rồi mới thu tiền.
+- **Hoàn tiền** đi qua `POST /payments/:id/refund`, và chỉ áp dụng cho payment đang `completed`. Vì vậy sau một lần hoàn một phần thì không hoàn tiếp được. Đơn đã giao rồi được hoàn tiền thì thành `delivered / refunded`.
+- **`PATCH /orders/:id`** không đổi được trạng thái nào. Gửi `status` sẽ nhận 422 ([KI-008](../known-issues.md#ki-008)).
 
 ### Payment
 - Các trạng thái: `pending`, `processing`, `completed`, `failed`, `cancelled`, `refunded`, `partially_refunded` ([payment.rb:35](../../app/models/payment.rb)).
 - Các helper `mark_as_*!` **không kiểm tra bước chuyển hợp lệ**.
-- Callback `update_order_status` ([payment.rb:254](../../app/models/payment.rb)) cập nhật sang Order.
+- Callback `sync_order_payment_status` ([payment.rb:256](../../app/models/payment.rb)) chỉ cập nhật `payment_status` của Order, không đụng `status`.
+- `PATCH /payments/:id` không đổi được `status` hay `transaction_id`. Hoàn tiền đi qua action `refund`.
 
 ### Return request
 Guard nằm trong các method `approve!` / `reject!` / `cancel!` / `complete!` của [return_request.rb](../../app/models/return_request.rb).
@@ -99,12 +111,12 @@ flowchart TD
 | Điểm nối | Kiểu | Vị trí | Mức độ khó khi tách |
 |---|---|---|---|
 | Order → Stock | Đồng bộ, **cùng transaction DB** | `order_creation_service.rb` (bước trừ kho), `product.rb:88` | **Cao.** Cần saga hoặc cơ chế giữ hàng (reservation) |
-| Payment → Order | Callback của ActiveRecord | `payment.rb:254` | Trung bình. Chuyển thành domain event |
-| Mọi domain → Notification | Ghi trực tiếp vào bảng | `order_confirmation_service.rb:91`, `shipping_service.rb:75`, `delivery_service.rb:73`, `order_cancellation_service.rb` | **Thấp.** Không nằm trên luồng chính, chỉ cần event một chiều. Là **ứng viên tách đầu tiên** |
+| Payment → Order | Callback của ActiveRecord | `payment.rb:256` | Trung bình. Chuyển thành domain event |
+| Mọi domain → Notification | Ghi trực tiếp vào bảng | `order_confirmation_service.rb:84`, `shipping_service.rb:75`, `delivery_service.rb:73`, `order_cancellation_service.rb` | **Thấp.** Không nằm trên luồng chính, chỉ cần event một chiều. Là **ứng viên tách đầu tiên** |
 | Product → Search index | Async qua Active Job | `product.rb:43`, [reindexes_products_on_rename.rb](../../app/models/concerns/reindexes_products_on_rename.rb) | Thấp. Đã là async và có fallback sang SQL |
-| Order → Discount | Đồng bộ | `order.rb:147` | Trung bình |
+| Order → Discount | Đồng bộ | `order.rb:153` | Trung bình |
 | Stock → StockAlert | `after_update` callback | `product.rb:76, 165` | Trung bình |
 
 **Lưu ý khi đọc luồng tạo đơn:**
-- `order_create_params` chỉ nhận `customer_name`, `customer_email`, `customer_phone` ([orders_controller.rb:201](../../app/controllers/api/v1/orders/orders_controller.rb)). Vì vậy các nhánh tính phí ship và thuế trong `OrderCreationService` **không bao giờ chạy** khi gọi qua API.
+- `order_create_params` chỉ nhận `customer_name`, `customer_email`, `customer_phone` ([orders_controller.rb:213](../../app/controllers/api/v1/orders/orders_controller.rb)). Vì vậy các nhánh tính phí ship và thuế trong `OrderCreationService` **không bao giờ chạy** khi gọi qua API.
 - Việc tạo đơn **không** áp discount, **không** tạo payment, **không** gửi notification. Mỗi bước này là một endpoint riêng.
