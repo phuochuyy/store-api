@@ -77,6 +77,30 @@ RSpec.describe 'Order items API', type: :request do
           expect(response.parsed_body.dig('data', 'order_item', 'unit_price')).to eq('30.0')
           expect(order.order_items.count).to eq(2)
           expect(order.reload.total_amount).to eq(130.00)
+          expect(extra_product.reload.stock_quantity).to eq(9)
+        end
+      end
+
+      response '422', 'not enough stock left' do
+        let(:current_user) { admin }
+        let(:extra_product) { create(:product, price: 30.00, stock_quantity: 0) }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to include('Not enough stock')
+          expect(order.order_items.count).to eq(1)
+        end
+      end
+
+      response '422', 'the order has already shipped' do
+        let(:current_user) { admin }
+        let(:order) { create(:order, :shipped, user: customer) }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq(Order::ITEMS_LOCKED_ERROR)
+          expect(order.order_items.count).to eq(1)
+          expect(extra_product.reload.stock_quantity).to eq(10)
         end
       end
 
@@ -162,6 +186,42 @@ RSpec.describe 'Order items API', type: :request do
         run_test! do
           expect(order_item.reload.quantity).to eq(3)
           expect(order.reload.total_amount).to eq(150.00)
+          expect(product.reload.stock_quantity).to eq(9)
+        end
+      end
+
+      response '200', 'fewer units give the stock back' do
+        let(:current_user) { admin }
+        let(:body) { { order_item: { quantity: 1 } } }
+
+        schema envelope({ order_item: ref('OrderItem') })
+        run_test! do
+          expect(order_item.reload.quantity).to eq(1)
+          expect(product.reload.stock_quantity).to eq(11)
+        end
+      end
+
+      response '422', 'more units than the stock left' do
+        let(:current_user) { admin }
+        let(:body) { { order_item: { quantity: 13 } } }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to include('Not enough stock')
+          expect(order_item.reload.quantity).to eq(2)
+          expect(product.reload.stock_quantity).to eq(10)
+        end
+      end
+
+      response '422', 'the order has already shipped' do
+        let(:current_user) { admin }
+        let(:order) { create(:order, :shipped, user: customer) }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq(Order::ITEMS_LOCKED_ERROR)
+          expect(order_item.reload.quantity).to eq(2)
+          expect(product.reload.stock_quantity).to eq(10)
         end
       end
 
@@ -216,6 +276,19 @@ RSpec.describe 'Order items API', type: :request do
         run_test! do
           expect(OrderItem.exists?(order_item.id)).to be false
           expect(order.reload.total_amount).to eq(0)
+          expect(product.reload.stock_quantity).to eq(12)
+        end
+      end
+
+      response '422', 'the order has already shipped' do
+        let(:current_user) { admin }
+        let(:order) { create(:order, :shipped, user: customer) }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq(Order::ITEMS_LOCKED_ERROR)
+          expect(OrderItem.exists?(order_item.id)).to be true
+          expect(product.reload.stock_quantity).to eq(10)
         end
       end
 
@@ -232,6 +305,37 @@ RSpec.describe 'Order items API', type: :request do
         schema ref('ErrorResponse')
         run_test! do
           expect(OrderItem.exists?(order_item.id)).to be true
+        end
+      end
+    end
+  end
+
+  # The nested route names the order; an item of another order is not found through it.
+  path '/api/v1/orders/{order_id}/items/{id}' do
+    parameter name: :order_id, in: :path, type: :integer
+    parameter name: :id, in: :path, type: :integer
+
+    get 'Show an order item through its order (owner or admin)' do
+      tags 'Orders'
+      security [{ bearerAuth: [] }]
+      produces 'application/json'
+
+      let(:current_user) { admin }
+      let(:id) { order_item.id }
+
+      response '200', 'the item belongs to the order' do
+        let(:order_id) { order.id }
+
+        schema envelope({ order_item: ref('OrderItem') })
+        run_test!
+      end
+
+      response '404', 'the item belongs to another order' do
+        let(:order_id) { create(:order, user: customer).id }
+
+        schema ref('ErrorResponse')
+        run_test! do |response|
+          expect(response.parsed_body['message']).to eq('Order item not found')
         end
       end
     end

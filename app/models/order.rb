@@ -153,14 +153,16 @@ class Order < ApplicationRecord
   DISCOUNT_LOCKED_ERROR = 'Discounts can only change while the order is pending and unpaid'.freeze
   SWITCH_DISCOUNT_ERRORS = { locked: DISCOUNT_LOCKED_ERROR, limit_reached: 'Discount usage limit reached' }.freeze
 
-  # A discount or promotion changes what the customer owes, so it can only change while the order
-  # is still being placed: pending, and not paid yet.
-  def discount_editable?
+  ITEMS_LOCKED_ERROR = 'Items can only change while the order is pending and unpaid'.freeze
+
+  # Discounts, promotions and items all change what the customer owes, so they can only change
+  # while the order is still being placed: pending, and not paid yet (or after a failed payment).
+  def amount_editable?
     pending? && (unpaid? || payment_failed?)
   end
 
   def apply_discount(discount_code)
-    return { success: false, error: DISCOUNT_LOCKED_ERROR } unless discount_editable?
+    return { success: false, error: DISCOUNT_LOCKED_ERROR } unless amount_editable?
 
     discount = Discount.available.find_by(code: discount_code.upcase)
     refusal = discount_refusal(discount)
@@ -178,7 +180,7 @@ class Order < ApplicationRecord
   # Gives the discount's use back (see Discount#release_usage!).
   def remove_discount
     removed = with_lock do
-      next false unless discount_editable?
+      next false unless amount_editable?
 
       discount&.release_usage!
       update!(discount: nil, discount_code: nil, discount_amount: 0)
@@ -240,9 +242,9 @@ class Order < ApplicationRecord
   # Runs under the order's row lock, so two requests on the same order cannot both take a use.
   # An order holds at most one use of one discount: re-applying the same code takes nothing, and
   # switching codes gives the previous one back. Returns :locked when the order moved on meanwhile
-  # (see #discount_editable?), and :limit_reached when no use is left.
+  # (see #amount_editable?), and :limit_reached when no use is left.
   def switch_discount_to(new_discount, amount)
-    return :locked unless discount_editable?
+    return :locked unless amount_editable?
 
     if discount_id != new_discount.id
       return :limit_reached unless new_discount.claim_usage!
