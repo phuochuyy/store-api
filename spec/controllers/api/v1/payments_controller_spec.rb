@@ -367,60 +367,36 @@ RSpec.describe Api::V1::Payments::PaymentsController, type: :controller do
         request.headers['Authorization'] = "Bearer #{admin_token}"
       end
 
-      it 'updates payment successfully' do
+      it 'updates the gateway response' do
         patch :update, params: {
           id: payment.id,
-          payment: {
-            status: 'completed',
-            transaction_id: 'TXN123',
-            gateway_response: { success: true }.to_json
-          }
+          payment: { gateway_response: { success: true }.to_json }
         }
 
         expect(response).to have_http_status(:ok)
         json_response = response.parsed_body
         expect(json_response['success']).to be true
         expect(json_response['message']).to eq('Payment updated successfully')
-        expect(payment.reload.status).to eq('completed')
-        expect(payment.transaction_id).to eq('TXN123')
+        expect(payment.reload.gateway_response).to be_present
       end
 
-      it 'returns error for invalid status' do
-        patch :update, params: {
-          id: payment.id,
-          payment: {
-            status: 'invalid_status'
-          }
-        }
-
-        # May return 500 if exception is raised, or 422 if validation fails
-        expect([422, 500]).to include(response.status)
-      end
-
-      it 'updates payment to processing status' do
-        patch :update, params: {
-          id: payment.id,
-          payment: {
-            status: 'processing'
-          }
-        }
+      it 'updates the failure reason' do
+        patch :update, params: { id: payment.id, payment: { failure_reason: 'Insufficient funds' } }
 
         expect(response).to have_http_status(:ok)
-        expect(payment.reload.status).to eq('processing')
+        expect(payment.reload).to have_attributes(failure_reason: 'Insufficient funds', status: 'pending')
       end
 
-      it 'updates payment to failed status with failure_reason' do
-        patch :update, params: {
-          id: payment.id,
-          payment: {
-            status: 'failed',
-            failure_reason: 'Insufficient funds'
-          }
-        }
+      # status comes from the gateway or the refund action, which keep the order in step.
+      %w[completed processing failed invalid_status].each do |new_status|
+        it "refuses to set the status to #{new_status} directly" do
+          patch :update, params: { id: payment.id, payment: { status: new_status, failure_reason: 'x' } }
 
-        expect(response).to have_http_status(:ok)
-        expect(payment.reload.status).to eq('failed')
-        expect(payment.failure_reason).to eq('Insufficient funds')
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(response.parsed_body['message']).to eq('Payment status cannot be set directly')
+          expect(payment.reload).to have_attributes(status: 'pending', failure_reason: nil)
+          expect(order.reload.payment_status).to eq('unpaid')
+        end
       end
 
       it 'updates payment metadata' do
@@ -435,18 +411,11 @@ RSpec.describe Api::V1::Payments::PaymentsController, type: :controller do
         expect(payment.reload.metadata['customer_note']).to eq('Special instructions')
       end
 
-      it 'returns error for duplicate transaction_id' do
-        create(:payment, transaction_id: 'EXISTING123')
+      it 'refuses to set the transaction id directly' do
+        patch :update, params: { id: payment.id, payment: { transaction_id: 'TXN123' } }
 
-        patch :update, params: {
-          id: payment.id,
-          payment: {
-            transaction_id: 'EXISTING123'
-          }
-        }
-
-        # May return 422 if validation fails, or 500 if exception is raised
-        expect([422, 500]).to include(response.status)
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(payment.reload.transaction_id).to be_nil
       end
     end
 

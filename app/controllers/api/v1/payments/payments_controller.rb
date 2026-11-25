@@ -8,6 +8,7 @@ module Api
         before_action :admin_only!, only: %i[index update destroy refund]
         before_action :set_payment, only: %i[show update destroy refund]
         before_action :set_order, only: %i[create]
+        before_action :reject_status_change, only: %i[update]
 
         def index
           @payments = build_payments_query
@@ -188,14 +189,19 @@ module Api
           )
         end
 
+        # Annotations only. status and transaction_id come from the gateway (create) or the
+        # refund action, which keep the order's payment_status in step.
         def payment_update_params
-          params.expect(
-            payment: [:status,
-                      :transaction_id,
-                      :gateway_response,
-                      :failure_reason,
-                      { metadata: {} }]
-          )
+          params.expect(payment: [:gateway_response, :failure_reason, { metadata: {} }])
+        end
+
+        # Refused rather than silently ignored, so an admin is not told "updated" for a no-op.
+        def reject_status_change
+          payment = params[:payment]
+          return unless payment.respond_to?(:key?) && (payment.key?(:status) || payment.key?(:transaction_id))
+
+          render_error('Payment status cannot be set directly', :unprocessable_content,
+                       ['Payments are completed by the gateway; use the refund action to refund'])
         end
 
         def refund_params

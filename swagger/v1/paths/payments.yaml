@@ -152,8 +152,11 @@ payments:
   patch:
     tags:
       - Payments
-    summary: Update payment
-    description: Update payment information
+    summary: Update payment (admin only)
+    description: >-
+      Update a payment's annotations. The status and transaction id cannot be set directly
+      (422): payments are completed by the gateway, and refunds go through the refund action,
+      which keeps the order's payment_status in step.
     security:
       - bearerAuth: []
     parameters:
@@ -170,14 +173,21 @@ payments:
         application/json:
           schema:
             type: object
+            required:
+              - payment
             properties:
-              status:
-                type: string
-                enum: [pending, processing, completed, failed, refunded]
-                example: "completed"
-              payment_reference:
-                type: string
-                example: "PAY_123456789_UPDATED"
+              payment:
+                type: object
+                properties:
+                  gateway_response:
+                    type: string
+                    example: '{"reconciled": true}'
+                  failure_reason:
+                    type: string
+                    example: "Card declined"
+                  metadata:
+                    type: object
+                    example: { "note": "Checked with the bank" }
     responses:
       '200':
         description: Payment updated successfully
