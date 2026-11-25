@@ -4,9 +4,11 @@ module Api
   module V1
     module Payments
       class PaymentsController < Api::V1::BaseController
-        before_action :set_payment, only: %i[show update destroy refund]
+        # admin_only! first, so a customer gets 403 on admin actions without the payment being looked up.
+        before_action :admin_only!, only: %i[index update destroy refund confirm]
+        before_action :set_payment, only: %i[show update destroy refund confirm]
         before_action :set_order, only: %i[create]
-        before_action :admin_only!, only: %i[index update destroy refund]
+        before_action :reject_status_change, only: %i[update]
 
         def index
           @payments = build_payments_query
@@ -56,8 +58,7 @@ module Api
           )
 
           if result[:success]
-            payment = Payment.find_by(order: @order, payment_method: payment_method)
-            data = build_payment_creation_data(payment)
+            data = build_payment_creation_data(result[:payment])
             render_success(data, result[:message] || 'Payment processed successfully', :created)
           else
             render_error(result[:error], :unprocessable_content, result[:details])
@@ -113,6 +114,16 @@ module Api
           end
         end
 
+        # POST /api/v1/payments/:id/confirm — admin: the money of a cash on delivery or bank transfer
+        # payment arrived. Completing it marks the order paid.
+        def confirm
+          result = ::Payments::PaymentProcessorService.confirm_offline_payment(payment: @payment,
+                                                                               confirmed_by: current_user)
+          return render_error(result[:error], :unprocessable_content) unless result[:success]
+
+          render_success({ payment: payment_serializer(@payment.reload) }, result[:message])
+        end
+
         private
 
         def build_payments_query
@@ -162,9 +173,13 @@ module Api
           }
         end
 
+        # Customers only see payments of their own orders. Another user's payment answers 404,
+        # not 403, so its existence is not confirmed.
         def set_payment
           @payment = Payment.find_by(id: params[:id])
-          render_error('Payment not found', :not_found) unless @payment
+          return if @payment && (current_user.admin? || @payment.order.user_id == current_user.id)
+
+          render_error('Payment not found', :not_found)
         end
 
         def set_order
@@ -183,14 +198,19 @@ module Api
           )
         end
 
+        # Annotations only. status and transaction_id come from the gateway (create) or the
+        # refund action, which keep the order's payment_status in step.
         def payment_update_params
-          params.expect(
-            payment: [:status,
-                      :transaction_id,
-                      :gateway_response,
-                      :failure_reason,
-                      { metadata: {} }]
-          )
+          params.expect(payment: [:gateway_response, :failure_reason, { metadata: {} }])
+        end
+
+        # Refused rather than silently ignored, so an admin is not told "updated" for a no-op.
+        def reject_status_change
+          payment = params[:payment]
+          return unless payment.respond_to?(:key?) && (payment.key?(:status) || payment.key?(:transaction_id))
+
+          render_error('Payment status cannot be set directly', :unprocessable_content,
+                       ['Payments are completed by the gateway; use the refund action to refund'])
         end
 
         def refund_params
