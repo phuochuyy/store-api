@@ -1,4 +1,6 @@
 class Discount < ApplicationRecord
+  include UsageLimited
+
   # Associations
   has_many :coupons, dependent: :destroy
   has_many :orders, dependent: :nullify
@@ -39,17 +41,17 @@ class Discount < ApplicationRecord
       (end_date.nil? || end_date >= Time.current)
   end
 
-  def within_usage_limit?
-    usage_limit.nil? || used_count < usage_limit
-  end
-
   def expired?
     end_date.present? && end_date < Time.current
   end
 
   def calculate_discount(amount)
-    return 0 unless available?
+    available? ? amount_off(amount) : 0
+  end
 
+  # The discount on `amount`, whether or not a use is left (an order that already holds the
+  # last use must still be able to recompute it).
+  def amount_off(amount)
     case discount_type
     when 'percentage'
       discount = (amount * value / 100.0).round(2)
@@ -81,14 +83,6 @@ class Discount < ApplicationRecord
 
   def meets_minimum_amount?(amount)
     minimum_amount.nil? || amount >= minimum_amount
-  end
-
-  def increment_usage!
-    update!(used_count: used_count + 1)
-  end
-
-  def decrement_usage!
-    update!(used_count: used_count - 1) if used_count.positive?
   end
 
   private

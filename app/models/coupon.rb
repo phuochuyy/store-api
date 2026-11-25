@@ -43,7 +43,7 @@ class Coupon < ApplicationRecord
       self.discount_amount = discount.calculate_discount(order.total_amount)
       save!
 
-      discount.increment_usage!
+      raise 'Discount usage limit reached' unless discount.claim_usage!
     end
 
     { success: true, discount_amount: discount_amount }

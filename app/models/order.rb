@@ -164,29 +164,22 @@ class Order < ApplicationRecord
                error: 'Discount does not apply to items in this order' }
     end
 
-    # Calculate discount amount
-    calculated_discount = discount.calculate_discount(subtotal_amount)
+    calculated_discount = discount.amount_off(subtotal_amount)
     return { success: false, error: 'No discount applicable' } if calculated_discount <= 0
 
-    # Apply discount
-    update!(
-      discount: discount,
-      discount_code: discount.code,
-      discount_amount: calculated_discount
-    )
-
-    update_total_amount
+    outcome = with_lock { switch_discount_to(discount, calculated_discount) }
+    return { success: false, error: 'Discount usage limit reached' } if outcome == :limit_reached
 
     { success: true, discount_amount: calculated_discount, discount: discount }
   end
 
+  # Gives the discount's use back (see Discount#release_usage!).
   def remove_discount
-    update!(
-      discount: nil,
-      discount_code: nil,
-      discount_amount: 0
-    )
-    update_total_amount
+    with_lock do
+      discount&.release_usage!
+      update!(discount: nil, discount_code: nil, discount_amount: 0)
+      update_total_amount
+    end
     { success: true }
   end
 
@@ -230,6 +223,21 @@ class Order < ApplicationRecord
   end
 
   private
+
+  # Runs under the order's row lock, so two requests on the same order cannot both take a use.
+  # An order holds at most one use of one discount: re-applying the same code takes nothing, and
+  # switching codes gives the previous one back. Returns :limit_reached when no use is left.
+  def switch_discount_to(new_discount, amount)
+    if discount_id != new_discount.id
+      return :limit_reached unless new_discount.claim_usage!
+
+      discount&.release_usage!
+    end
+
+    update!(discount: new_discount, discount_code: new_discount.code, discount_amount: amount)
+    update_total_amount
+    :applied
+  end
 
   def discount_code_matches_discount_id
     return unless discount_id.present? && discount_code.present?

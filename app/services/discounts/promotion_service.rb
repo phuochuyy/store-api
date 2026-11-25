@@ -76,12 +76,7 @@ module Discounts
                    error: 'No benefit from this promotion' }
         end
 
-        # Apply the promotion benefit
-        result = apply_promotion_benefit(order, promotion, benefit)
-
-        promotion.increment_usage! if result[:success]
-
-        result
+        apply_with_usage(order, promotion, benefit)
       end
 
       def get_promotion_stats(promotion)
@@ -142,6 +137,20 @@ module Discounts
           total_count: promotions.total_count,
           per_page: promotions.limit_value
         }
+      end
+
+      # Takes a use before applying the benefit, atomically (see UsageLimited), and gives it back
+      # if the benefit cannot be applied. requires_new makes the rollback work inside an outer
+      # transaction too.
+      def apply_with_usage(order, promotion, benefit)
+        result = { success: false, error: 'Promotion usage limit reached' }
+        ActiveRecord::Base.transaction(requires_new: true) do
+          raise ActiveRecord::Rollback unless promotion.claim_usage!
+
+          result = apply_promotion_benefit(order, promotion, benefit)
+          raise ActiveRecord::Rollback unless result[:success]
+        end
+        result
       end
 
       def apply_promotion_benefit(order, promotion, benefit)
