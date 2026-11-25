@@ -182,8 +182,13 @@ Order:
       example: "1234567890"
     status:
       type: string
-      enum: [pending, confirmed, paid, payment_failed, shipped, delivered, cancelled, refunded, partially_refunded]
+      description: Fulfillment status. Payment is tracked separately in payment_status.
+      enum: [pending, confirmed, shipped, delivered, cancelled]
       example: "pending"
+    payment_status:
+      type: string
+      enum: [unpaid, paid, payment_failed, refunded, partially_refunded]
+      example: "unpaid"
     total_amount:
       type: string
       format: decimal
