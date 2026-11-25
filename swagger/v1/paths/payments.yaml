@@ -55,7 +55,11 @@ payments:
     tags:
       - Payments
     summary: Create payment
-    description: Create a new payment
+    description: >-
+      Pay for an order. Online gateways (stripe, paypal, wallet) settle at once: the payment is
+      completed and the order paid. Offline methods (cash_on_delivery, bank_transfer) are paid
+      outside the app: the payment stays pending and the order unpaid until an admin confirms the
+      money arrived with POST /api/v1/payments/{id}/confirm.
     security:
       - bearerAuth: []
     requestBody:
@@ -152,8 +156,11 @@ payments:
   patch:
     tags:
       - Payments
-    summary: Update payment
-    description: Update payment information
+    summary: Update payment (admin only)
+    description: >-
+      Update a payment's annotations. The status and transaction id cannot be set directly
+      (422): payments are completed by the gateway, and refunds go through the refund action,
+      which keeps the order's payment_status in step.
     security:
       - bearerAuth: []
     parameters:
@@ -170,14 +177,21 @@ payments:
         application/json:
           schema:
             type: object
+            required:
+              - payment
             properties:
-              status:
-                type: string
-                enum: [pending, processing, completed, failed, refunded]
-                example: "completed"
-              payment_reference:
-                type: string
-                example: "PAY_123456789_UPDATED"
+              payment:
+                type: object
+                properties:
+                  gateway_response:
+                    type: string
+                    example: '{"reconciled": true}'
+                  failure_reason:
+                    type: string
+                    example: "Card declined"
+                  metadata:
+                    type: object
+                    example: { "note": "Checked with the bank" }
     responses:
       '200':
         description: Payment updated successfully
@@ -310,3 +324,60 @@ payments:
           application/json:
             schema:
               $ref: './components/schemas.yaml#/ErrorResponse'
+
+  confirm_payment:
+    post:
+      tags:
+        - Payments
+      summary: Confirm an offline payment was received (admin)
+      description: >-
+        For cash on delivery and bank transfers: the money arrived, so the pending payment becomes
+        completed and the order paid. Refused with 422 for online payments, payments that are not
+        pending, and orders that cannot be paid any more (cancelled, or paid another way).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Payment ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Payment confirmed; the order is paid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Payment confirmed"
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        $ref: './components/schemas.yaml#/Payment'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'
+        '422':
+          description: Not a pending offline payment, or the order cannot be paid
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/ErrorResponse'

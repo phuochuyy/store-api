@@ -118,6 +118,20 @@ RSpec.describe Auth::TokenValidationService, type: :service do
       end
     end
 
+    context 'with a model class instead of a record' do
+      it 'looks up the policy of the class itself' do
+        result = described_class.authorize(create(:user, :admin), ProductVariant, :create)
+
+        expect(result).to eq(success: true)
+      end
+
+      it 'still applies the policy rules' do
+        result = described_class.authorize(user, ProductVariant, :create)
+
+        expect(result).to eq(success: false, error: 'Access denied')
+      end
+    end
+
     context 'with policy errors' do
       it 'handles policy errors gracefully' do
         allow_any_instance_of(UserPolicy).to receive(:show?).and_raise(StandardError, 'Policy error')
@@ -126,6 +140,15 @@ RSpec.describe Auth::TokenValidationService, type: :service do
 
         expect(result[:success]).to be false
         expect(result[:error]).to eq('Authorization failed')
+      end
+
+      # NoMethodError is a NameError; it must not be reported as a missing policy.
+      it 'reports a bug inside an existing policy as a failure, not a missing policy' do
+        allow_any_instance_of(UserPolicy).to receive(:show?).and_raise(NoMethodError, 'undefined method')
+
+        result = described_class.authorize(user, user, 'show')
+
+        expect(result).to eq(success: false, error: 'Authorization failed')
       end
     end
   end
