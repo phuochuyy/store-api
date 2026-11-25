@@ -2,9 +2,7 @@
 
 module Api
   module V1
-    class AddressesController < ApplicationController
-      before_action :authenticate_user!
-
+    class AddressesController < Api::V1::BaseController
       # POST /api/v1/addresses/validate
       # Validate an address
       def validate
