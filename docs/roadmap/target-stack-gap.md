@@ -1,6 +1,6 @@
 # So sánh hiện trạng với target stack
 
-> Cập nhật theo commit: `0cbef93`
+> Cập nhật theo commit: `b9505c9`
 
 **Target stack** là bộ công nghệ của một vị trí Rails backend mà dự án này hướng tới:
 - **Hạ tầng:** AWS/GCP, Aurora MySQL, Elasticsearch, DynamoDB
@@ -15,7 +15,7 @@
 
 | Hạng mục target | Hiện trạng | Khoảng trống | Thay thế ở local |
 |---|---|---|---|
-| **Rails thiết kế và triển khai** | Rails 8.1, nhiều tầng rõ ràng | Lỗi phân quyền, IDOR, state machine đơn hàng, logout trên MySQL và các cổng thanh toán đã sửa (#47–#60). Còn `apply` của promotion hỏng ([KI-030](../known-issues.md#ki-030)) | — |
+| **Rails thiết kế và triển khai** | Rails 8.1, nhiều tầng rõ ràng | Giai đoạn 0 xong (#46–#62): lỗi phân quyền, IDOR, state machine đơn hàng, logout trên MySQL, các cổng thanh toán và promotion. Không còn lỗi Critical hay High nào đang mở | — |
 | **API design và tài liệu (Swagger)** | OpenAPI viết tay, 3 contract spec | YAML và JSON lệch nhau, phần lớn endpoint chưa có contract test ([KI-015](../known-issues.md#ki-015)) | rswag, CI kiểm tra drift |
 | **Aurora MySQL** | Đã chạy MySQL 8.4 qua Trilogy, CI test cả hai DB | Lỗi token dài hơn VARCHAR(255) đã sửa (#55, [KI-006](../known-issues.md#ki-006)). Dev vẫn mặc định PostgreSQL | MySQL 8.4 trong compose (cùng dòng với Aurora MySQL 3) |
 | **Elasticsearch** | searchkick, có fallback về SQL, reindex qua alias | Chỉ áp dụng cho Product. Chưa có analyzer tiếng Việt và facet | ES 9.5 trong compose |

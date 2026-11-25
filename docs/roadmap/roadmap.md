@@ -1,6 +1,6 @@
 # Roadmap (chạy hoàn toàn ở local)
 
-> Cập nhật theo commit: `0cbef93` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
+> Cập nhật theo commit: `b9505c9` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
 
 **Nguyên tắc**
 - Làm theo thứ tự giai đoạn. Mỗi giai đoạn gồm nhiều PR nhỏ trên nhánh riêng, PR nào cũng phải pass `bin/ci`.
@@ -40,11 +40,21 @@ flowchart LR
 | 0.8 | Sửa `before_send` của Sentry | [KI-009](../known-issues.md#ki-009) | Unit test lambda lọc `password` và `token` | ✅ #56 |
 | 0.9 | Đếm lượt dùng discount một cách atomic, chặn khi vượt giới hạn | [KI-010](../known-issues.md#ki-010) | Spec đồng thời: N thread chạy song song, `used_count` ≤ giới hạn | ✅ #58 |
 | 0.10 | Thanh toán `cash_on_delivery` / `bank_transfer`: tạo payment `pending`, admin xác nhận đã nhận tiền; bỏ `wallet` và nhánh `square`, hoặc làm cho đủ | [KI-025](../known-issues.md#ki-025) | Spec luồng COD: đặt hàng → giao → admin xác nhận → `paid`. Mọi `gateway_type` trong enum đều có spec thanh toán | ✅ #60 |
-| 0.11 | Promotions: sửa `apply` (thiếu `set_promotion`), kiểm tra chủ đơn ở `apply` và `applicable`; chỉ cho áp mã giảm giá khi đơn còn `pending` và chưa trả tiền | [KI-030](../known-issues.md#ki-030), [KI-032](../known-issues.md#ki-032) | Request spec: chủ đơn 200, người lạ 404, đơn đã giao 422 | |
+| 0.11 | Promotions: sửa `apply` (thiếu `set_promotion`), kiểm tra chủ đơn ở `apply` và `applicable`; chỉ cho áp mã giảm giá khi đơn còn `pending` và chưa trả tiền | [KI-030](../known-issues.md#ki-030), [KI-032](../known-issues.md#ki-032) | Request spec: chủ đơn 200, người lạ 404, đơn đã giao 422 | ✅ #62 |
 
 **Kỹ năng thể hiện:** phát hiện và sửa lỗi bảo mật, viết test cho tình huống đồng thời, thiết kế state machine.
 
-**Đã làm được (25/11/2026):** không còn lỗi Critical nào đang mở. Luồng đặt hàng → thanh toán → giao hàng chạy được đầu cuối qua API, cả trả trước lẫn trả sau, với mọi phương thức thanh toán, kể cả COD và chuyển khoản (#60). Logout và xoay vòng refresh token hoạt động trên MySQL. Mỗi bản sửa đều đi kèm spec fail trên code cũ. Coverage dòng tăng từ 37% lên 49%. Việc nên làm sớm: nâng ngưỡng coverage trong `spec_helper.rb` theo mức mới.
+**Đã làm được (giai đoạn 0 xong ngày 26/11/2026):**
+- **Không còn lỗi Critical hay High nào đang mở.** Đã sửa 17 lỗi, qua 12 PR sửa code (#46–#62).
+- **Luồng mua hàng chạy được đầu cuối qua API:** đặt hàng → thanh toán → giao hàng, cả trả trước lẫn trả sau, với mọi phương thức thanh toán.
+- **Trên MySQL:** logout và xoay vòng refresh token đã hoạt động.
+- **Bộ đếm lượt dùng** của mã giảm giá và promotion nguyên tử, có spec chạy đồng thời.
+- **Mỗi bản sửa** đều đi kèm spec fail trên code cũ.
+- **Coverage dòng** tăng từ 37% lên 49%.
+
+**Còn lại trước giai đoạn 1:**
+- Nâng ngưỡng coverage trong `spec_helper.rb` theo mức mới.
+- Xếp lịch cho các lỗi Medium còn mở: [KI-011](../known-issues.md#ki-011) (webhook), [KI-012](../known-issues.md#ki-012) (hoàn tiền khi hủy đơn hoặc đổi trả), [KI-013](../known-issues.md#ki-013) (compose production), [KI-024](../known-issues.md#ki-024) và [KI-031](../known-issues.md#ki-031) (tồn kho).
 
 ## Giai đoạn 1 · Đồng nhất và làm sạch
 **Mục tiêu:** chỉ còn một cách làm cho mỗi việc, và Swagger là nguồn sự thật được CI kiểm tra.

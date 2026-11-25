@@ -1,6 +1,6 @@
 # 05 · Testing
 
-> Cập nhật theo commit: `0cbef93` · Kết quả gần nhất: 720 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
+> Cập nhật theo commit: `b9505c9` · Kết quả gần nhất: 730 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
 
 Mọi file trong `spec/` đều được git theo dõi. Trước #47, spec và factory mới bị `.gitignore` ẩn mà không có cảnh báo nào ([KI-020](../known-issues.md#ki-020)). Giờ `bin/check-gitignore` chạy trong CI và trong `bin/ci` để chặn lỗi này quay lại.
 
@@ -28,10 +28,10 @@ ELASTICSEARCH_URL=http://localhost:9200 bundle exec rspec spec/services/products
 | `spec/controllers/` | 6 | 229 | auth, orders, payments; các concern authentication và authorization; kiểm tra kế thừa của controller v1 |
 | `spec/models/` | 7 | 213 | order, payment, product, user, jwt_blacklist_token; spec đồng thời cho tồn kho (stock_concurrency) và lượt dùng mã (usage_limit_concurrency) |
 | `spec/services/` | 9 | 154 | `auth/*`, `auth/jwt/*`, `discounts/promotion_service`, text search, Elasticsearch search |
-| `spec/requests/` | 12 | 120 | rswag cho carts, orders, order items, payments, product variants, addresses, returns; luồng đơn hàng đầu cuối (order_lifecycle); thu hồi token với token thật (auth_revocation); mã giảm giá trên đơn (order_discounts); thanh toán với mọi `gateway_type` (payment_gateways); error_handling |
+| `spec/requests/` | 13 | 130 | rswag cho carts, orders, order items, payments, product variants, addresses, returns, promotions; luồng đơn hàng đầu cuối (order_lifecycle); thu hồi token với token thật (auth_revocation); mã giảm giá trên đơn (order_discounts); thanh toán với mọi `gateway_type` (payment_gateways); error_handling |
 | `spec/lib/` | 1 | 4 | Lọc dữ liệu nhạy cảm của Sentry, cho event đi qua pipeline thật của SDK |
 
-- **Coverage gần nhất:** 48,95% số dòng và 31,85% số nhánh. Trước giai đoạn 0 là 37,42% và 25,81%.
+- **Coverage gần nhất:** 49,43% số dòng và 32,53% số nhánh. Trước giai đoạn 0 là 37,42% và 25,81%.
 - **Ngưỡng tối thiểu:** 37% số dòng, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống. **Ngưỡng chưa được nâng theo** mức 49% hiện tại; nên nâng lên khoảng 47%.
 
 **Hoàn toàn chưa có test:**

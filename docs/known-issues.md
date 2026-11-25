@@ -1,6 +1,6 @@
 # Known issues
 
-> Cập nhật theo commit: `0cbef93` · Ngày: 2026-11-25
+> Cập nhật theo commit: `b9505c9` · Ngày: 2026-11-25
 
 Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ được mô tả ở đây.** Các tài liệu khác (roadmap, domain map) trỏ tới mã `KI-xxx` thay vì chép lại nội dung.
 
@@ -17,7 +17,7 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 
 Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
 
-**Tình hình hiện tại:** 33 lỗi đã ghi nhận, 15 đã sửa. Còn mở: 0 Critical, 1 High (KI-030), 6 Medium, 11 Low.
+**Tình hình hiện tại:** 34 lỗi đã ghi nhận, 17 đã sửa. Còn mở: 0 Critical, 0 High, 5 Medium, 12 Low.
 
 ## Tổng quan
 
@@ -52,10 +52,11 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-027](#ki-027) | Medium | Confirm đơn tính tồn kho đã giữ hai lần: đơn mua hết kho không confirm được | ✅ chạy thật | fixed (#53) |
 | [KI-028](#ki-028) | Low | CI: spec Elasticsearch thỉnh thoảng fail với "index already exists" | ✅ chạy thật (CI) | open |
 | [KI-029](#ki-029) | Low | "Logout mọi phiên" bỏ sót token cấp trong cùng giây với lúc logout | ✅ đọc code | open |
-| [KI-030](#ki-030) | High | `POST /promotions/:id/apply` luôn trả 500; cả `apply` lẫn `applicable` không kiểm tra chủ đơn | ✅ chạy thật | open |
+| [KI-030](#ki-030) | High | `POST /promotions/:id/apply` luôn trả 500; cả `apply` lẫn `applicable` không kiểm tra chủ đơn | ✅ chạy thật | fixed (#62) |
 | [KI-031](#ki-031) | Medium | Promotion tặng sản phẩm thêm order item nhưng không trừ tồn kho | ✅ đọc code | open |
-| [KI-032](#ki-032) | Medium | Áp được mã giảm giá cho đơn đã giao hoặc đã hủy | ✅ chạy thật | open |
+| [KI-032](#ki-032) | Medium | Áp được mã giảm giá cho đơn đã giao hoặc đã hủy | ✅ chạy thật | fixed (#62) |
 | [KI-033](#ki-033) | Low | Thanh toán offline: không hoàn tiền được qua API, payment `pending` không được dọn | ✅ đọc code | open |
+| [KI-034](#ki-034) | Low | Hủy đơn không trả lượt dùng mã giảm giá | ✅ đọc code | open |
 
 ---
 
@@ -366,28 +367,34 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 ### KI-030
 **`POST /promotions/:id/apply` luôn trả 500, và không kiểm tra chủ đơn** · High
 
-- **Ở đâu:** [promotions_controller.rb](../app/controllers/api/v1/promotions_controller.rb). `before_action :set_promotion` (dòng 4) chỉ chạy cho `show update destroy stats`, nên trong `apply` thì `@promotion` là `nil`.
+- **Ở đâu (trước #62):** [promotions_controller.rb](../app/controllers/api/v1/promotions_controller.rb). `before_action :set_promotion` (dòng 4) chỉ chạy cho `show update destroy stats`, nên trong `apply` thì `@promotion` là `nil`.
 - **Tái hiện:** bất kỳ người dùng nào gọi `POST /api/v1/promotions/:id/apply` với `order_id` cũng nhận 500 `undefined method 'id' for nil`. Tính năng áp dụng promotion qua API không dùng được.
 - **Lỗi phụ:**
   - `apply` (dòng 89) và `applicable` (dòng 77) lấy đơn bằng `Order.find(order_id)` mà không kiểm tra người gọi có phải chủ đơn không.
   - Khi sửa xong lỗi 500, ai cũng áp được promotion vào đơn của người khác (IDOR).
 - **Hướng sửa:** thêm `apply` vào `set_promotion`. Lấy đơn qua `current_user.orders`, admin thì được lấy mọi đơn. Viết request spec cho cả chủ đơn, người lạ và admin.
+- **Đã sửa:** #62.
+  - `set_promotion` chạy cho cả `apply`.
+  - Callback `set_order` lấy đơn qua `current_user.orders`, admin thì lấy được mọi đơn. Đơn của người khác trả 404.
+  - Contract spec ở [promotions_spec.rb](../spec/requests/api/v1/promotions_spec.rb).
 
 ### KI-031
 **Promotion tặng sản phẩm không trừ tồn kho** · Medium
 
 - **Ở đâu:** `add_free_items` trong [promotion_benefit_service.rb](../app/services/discounts/promotion_benefit_service.rb) (dòng 76) tạo hoặc tăng order item, nhưng không gọi `Product#reduce_stock`. Luồng tạo đơn thì có trừ kho, trong `with_lock`.
 - **Hệ quả:** quà tặng được giao mà không ai trừ kho, nên kho bị bán vượt. Khi hủy đơn, [order_cancellation_service.rb](../app/services/orders/order_cancellation_service.rb) lại **cộng** kho cho cả các item quà tặng.
-- **Ghi chú:** tách ra từ [KI-010](#ki-010). Hiện chưa gặp được qua API, vì `apply` đang hỏng ([KI-030](#ki-030)).
+- **Ghi chú:** tách ra từ [KI-010](#ki-010). Từ #62, `apply` chạy được ([KI-030](#ki-030)), nên giờ gặp được lỗi này qua API.
 - **Hướng sửa:** trừ kho cho quà tặng bằng `reduce_stock`, và thất bại nếu hết hàng.
 
 ### KI-032
 **Áp được mã giảm giá cho đơn đã giao hoặc đã hủy** · Medium
 
-- **Ở đâu:** [order.rb](../app/models/order.rb) `apply_discount` và `remove_discount` không kiểm tra `status` hay `payment_status`.
+- **Ở đâu (trước #62):** [order.rb](../app/models/order.rb) `apply_discount` và `remove_discount` không kiểm tra `status` hay `payment_status`.
 - **Tái hiện:** chủ đơn gọi `POST /orders/:id/apply_discount` cho một đơn `delivered` / `paid`, hoặc một đơn `cancelled`. Cả hai đều nhận 200, và `total_amount` giảm sau khi đã thanh toán.
-- **Liên quan:** hủy đơn không trả lượt dùng mã. Cách này an toàn, vì không bao giờ vượt giới hạn, nhưng mã bị hao lượt theo các đơn đã hủy.
-- **Hướng sửa:** chỉ cho áp hoặc gỡ mã khi đơn còn `pending` và chưa trả tiền. Khi hủy đơn thì gọi `release_usage!`.
+- **Hướng sửa:** chỉ cho áp hoặc gỡ mã khi đơn còn `pending` và chưa trả tiền.
+- **Đã sửa:** #62.
+  - `Order#discount_editable?` chỉ cho đổi mã giảm giá hoặc promotion khi đơn còn `pending` và chưa trả tiền, hoặc sau một lần trả thất bại. Các trường hợp khác trả 422. Điều kiện này được kiểm tra lại dưới khóa của đơn.
+  - Phần hủy đơn không trả lượt dùng mã được tách thành [KI-034](#ki-034).
 
 ### KI-033
 **Thanh toán offline: không hoàn tiền được qua API, payment `pending` không được dọn** · Low
@@ -397,3 +404,11 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Hướng sửa:**
   - Thêm action hoàn tiền thủ công: admin ghi nhận đã trả lại tiền, payment chuyển sang `refunded`.
   - Khi hủy đơn, hoặc khi một payment khác hoàn tất, chuyển các payment offline `pending` của đơn sang `cancelled`.
+
+### KI-034
+**Hủy đơn không trả lượt dùng mã giảm giá** · Low
+
+- **Ở đâu:** [order_cancellation_service.rb](../app/services/orders/order_cancellation_service.rb) cộng lại tồn kho, nhưng không gọi `Discount#release_usage!` cho mã mà đơn đang giữ.
+- **Hệ quả:** mã bị hao lượt theo các đơn đã hủy. Cách này an toàn, vì không bao giờ vượt giới hạn, nhưng một mã chỉ cho 100 lượt có thể hết sớm.
+- **Ghi chú:** tách ra từ [KI-032](#ki-032).
+- **Hướng sửa:** khi hủy đơn, gọi `release_usage!` trong cùng transaction với việc cộng lại tồn kho.
