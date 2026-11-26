@@ -1,3 +1,12 @@
+# Demo data: this file first wipes every table, then creates accounts with known passwords
+# (admin@example.com / password). `db:prepare` seeds any freshly created database, so in
+# production it only runs when asked for explicitly.
+if Rails.env.production? && ENV['SEED_DEMO_DATA'] != 'true'
+  warn 'Skipping demo seeds in production: they wipe all data and create known passwords. ' \
+       'Set SEED_DEMO_DATA=true to load them anyway.'
+  return
+end
+
 # Clear existing data
 # Destroy in order to respect foreign key constraints
 Coupon.destroy_all

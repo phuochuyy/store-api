@@ -74,7 +74,7 @@ module Api
           result = ::Orders::OrderCancellationService.cancel_order(@order, current_user, params[:reason])
 
           if result[:success]
-            render_success({ order: order_serializer(@order.reload) }, 'Order cancelled successfully')
+            render_success({ order: order_serializer(@order.reload) }, result[:message])
           else
             render_error(result[:error], :unprocessable_content, Array(result[:details]).presence)
           end

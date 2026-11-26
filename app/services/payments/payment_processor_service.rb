@@ -37,41 +37,10 @@ module Payments
         OfflinePaymentService.confirm(payment: payment, confirmed_by: confirmed_by)
       end
 
-      # Process webhook from payment gateway
-      # @param gateway_type [String] Type of payment gateway
-      # @param payload [Hash] Webhook payload
-      # @param signature [String] Webhook signature for verification
-      # @return [Hash] Processing result
-      def process_webhook(gateway_type:, payload:, signature: nil)
-        PaymentWebhookService.process_webhook(
-          gateway_type: gateway_type,
-          payload: payload,
-          signature: signature
-        )
-      end
-
-      # Process Stripe webhook
-      # @param payload [Hash] Stripe webhook payload
-      # @param signature [String] Stripe signature
-      # @return [Hash] Processing result
-      def process_stripe_webhook(payload:, signature:)
-        PaymentWebhookService.process_stripe_webhook(payload: payload, signature: signature)
-      end
-
-      # Process PayPal webhook
-      # @param payload [Hash] PayPal webhook payload
-      # @param signature [String] PayPal signature
-      # @return [Hash] Processing result
-      def process_paypal_webhook(payload:, signature:)
-        PaymentWebhookService.process_paypal_webhook(payload: payload, signature: signature)
-      end
-
-      # Process Square webhook
-      # @param payload [Hash] Square webhook payload
-      # @param signature [String] Square signature
-      # @return [Hash] Processing result
-      def process_square_webhook(payload:, signature:)
-        PaymentWebhookService.process_square_webhook(payload: payload, signature: signature)
+      # A payment event posted by a gateway (signed; see PaymentWebhookService)
+      # @return [Hash] { status: HTTP status symbol, body: Hash }
+      def receive_webhook(gateway:, raw_body:, signature:)
+        PaymentWebhookService.receive(gateway: gateway, raw_body: raw_body, signature: signature)
       end
 
       # @param period [String] Time period for statistics

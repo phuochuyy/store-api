@@ -164,6 +164,9 @@ Rails.application.routes.draw do
           end
         end
 
+        # Gateways post signed events here (no user token); before the :id routes.
+        post 'webhooks/:gateway', to: 'webhooks#create', as: :webhook
+
         resources :payments, controller: 'payments', path: '' do
           member do
             post :refund

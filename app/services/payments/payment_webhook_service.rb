@@ -1,186 +1,102 @@
 # frozen_string_literal: true
 
 module Payments
+  # Payment events pushed by the gateways to POST /api/v1/payments/webhooks/:gateway.
+  #
+  # The gateways are simulated, so one signing scheme serves them all: the X-Webhook-Signature
+  # header carries "sha256=" and the hex HMAC-SHA256 of the raw request body, keyed with the
+  # gateway's secret (STRIPE_WEBHOOK_SECRET, PAYPAL_WEBHOOK_SECRET). Without a secret every event is
+  # refused. Real gateways sign differently and should be verified with their own SDK.
+  #
+  # Each event is applied at most once (payment_webhook_events) and never moves a payment back:
+  # a failure does not undo a completed payment.
   class PaymentWebhookService
+    # Where each gateway puts the event type and the payment's transaction id, and which events
+    # mean what. Payloads follow the shape of the real gateways' events.
+    GATEWAYS = {
+      'stripe' => {
+        event_type: %w[type], transaction_id: %w[data object id],
+        events: { 'payment_intent.succeeded' => :succeeded, 'payment_intent.payment_failed' => :failed,
+                  'charge.dispute.created' => :disputed }
+      },
+      'paypal' => {
+        event_type: %w[event_type], transaction_id: %w[resource id],
+        events: { 'PAYMENT.SALE.COMPLETED' => :succeeded, 'PAYMENT.SALE.DENIED' => :failed,
+                  'CUSTOMER.DISPUTE.CREATED' => :disputed }
+      }
+    }.freeze
+
     class << self
-      # Process webhook from payment gateway
-      # @param gateway_type [String] Type of payment gateway
-      # @param payload [Hash] Webhook payload
-      # @param signature [String] Webhook signature for verification
-      # @return [Hash] Processing result
-      def process_webhook(gateway_type:, payload:, signature: nil)
-        return { success: false, error: 'Gateway type is required' } if gateway_type.blank?
-        return { success: false, error: 'Payload is required' } if payload.blank?
+      # @return [Hash] { status: HTTP status symbol, body: Hash }
+      def receive(gateway:, raw_body:, signature:)
+        config = GATEWAYS[gateway]
+        return reply(:not_found, error: 'Unknown gateway') unless config
 
-        verification_result = verify_webhook_signature(gateway_type, payload, signature)
-        return verification_result unless verification_result[:success]
+        secret = ENV.fetch("#{gateway.upcase}_WEBHOOK_SECRET", nil)
+        return reply(:service_unavailable, error: 'Webhook secret not configured') if secret.blank?
+        return reply(:unauthorized, error: 'Invalid signature') unless valid_signature?(raw_body, signature, secret)
 
-        process_webhook_payload(gateway_type, payload)
-      rescue StandardError => e
-        Rails.logger.error "Webhook processing error: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-
-        { success: false, error: 'Webhook processing failed', details: e.message }
-      end
-
-      # Process Stripe webhook
-      # @param payload [Hash] Stripe webhook payload
-      # @param signature [String] Stripe signature
-      # @return [Hash] Processing result
-      def process_stripe_webhook(payload:, signature:)
-        process_webhook(gateway_type: 'stripe', payload: payload, signature: signature)
-      end
-
-      # Process PayPal webhook
-      # @param payload [Hash] PayPal webhook payload
-      # @param signature [String] PayPal signature
-      # @return [Hash] Processing result
-      def process_paypal_webhook(payload:, signature:)
-        process_webhook(gateway_type: 'paypal', payload: payload, signature: signature)
-      end
-
-      # Process Square webhook
-      # @param payload [Hash] Square webhook payload
-      # @param signature [String] Square signature
-      # @return [Hash] Processing result
-      def process_square_webhook(payload:, signature:)
-        process_webhook(gateway_type: 'square', payload: payload, signature: signature)
+        apply(gateway, config, JSON.parse(raw_body))
+      rescue JSON::ParserError
+        reply(:bad_request, error: 'Invalid JSON')
       end
 
       private
 
-      def verify_webhook_signature(gateway_type, payload, signature)
-        case gateway_type
-        when 'stripe'
-          verify_stripe_signature(payload, signature)
-        when 'paypal'
-          verify_paypal_signature(payload, signature)
-        when 'square'
-          verify_square_signature(payload, signature)
-        else
-          { success: false, error: "Unsupported gateway type: #{gateway_type}" }
+      def valid_signature?(raw_body, signature, secret)
+        expected = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', secret, raw_body)}"
+        signature.present? && ActiveSupport::SecurityUtils.secure_compare(expected, signature)
+      end
+
+      def apply(gateway, config, event)
+        event_id = event['id'].to_s
+        return reply(:bad_request, error: 'Event id is missing') if event_id.blank?
+
+        event_type = event.dig(*config[:event_type])
+        action = config[:events][event_type]
+        return reply(:ok, ignored: "Unhandled event: #{event_type}") unless action
+
+        payment = find_payment(gateway, event.dig(*config[:transaction_id]))
+        return reply(:not_found, error: 'Payment not found') unless payment
+
+        # requires_new: a duplicate rolls back to its own savepoint, not an outer transaction.
+        PaymentWebhookEvent.transaction(requires_new: true) do
+          PaymentWebhookEvent.create!(gateway: gateway, event_id: event_id, event_type: event_type, payment: payment)
+          send(action, payment, event_id)
         end
+        reply(:ok, processed: true)
+      rescue ActiveRecord::RecordNotUnique
+        reply(:ok, duplicate: true)
       end
 
-      def process_webhook_payload(gateway_type, payload)
-        case gateway_type
-        when 'stripe'
-          process_stripe_payload(payload)
-        when 'paypal'
-          process_paypal_payload(payload)
-        when 'square'
-          process_square_payload(payload)
-        else
-          { success: false, error: "Unsupported gateway type: #{gateway_type}" }
-        end
+      def find_payment(gateway, transaction_id)
+        return if transaction_id.blank?
+
+        Payment.joins(:payment_method).find_by(transaction_id: transaction_id,
+                                               payment_methods: { gateway_type: gateway })
       end
 
-      def verify_stripe_signature(_payload, _signature)
-        # Mock Stripe signature verification
-        { success: true, message: 'Stripe signature verified' }
+      # The callbacks on Payment keep the order's payment_status in step.
+      def succeeded(payment, _event_id)
+        return unless %w[pending processing failed].include?(payment.status)
+
+        payment.update!(status: 'completed', processed_at: Time.current)
       end
 
-      def verify_paypal_signature(_payload, _signature)
-        # Mock PayPal signature verification
-        { success: true, message: 'PayPal signature verified' }
+      def failed(payment, _event_id)
+        return unless %w[pending processing].include?(payment.status)
+
+        payment.update!(status: 'failed', failure_reason: 'Declined by the gateway', processed_at: Time.current)
       end
 
-      def verify_square_signature(_payload, _signature)
-        # Mock Square signature verification
-        { success: true, message: 'Square signature verified' }
+      # A dispute is not lost yet, so the payment keeps its status; the dispute is recorded on it.
+      def disputed(payment, event_id)
+        dispute = { 'event_id' => event_id, 'opened_at' => Time.current.iso8601 }
+        payment.update!(metadata: (payment.metadata || {}).merge('dispute' => dispute))
       end
 
-      def process_stripe_payload(payload)
-        event_type = payload['type']
-        case event_type
-        when 'payment_intent.succeeded'
-          handle_payment_success(payload)
-        when 'payment_intent.payment_failed'
-          handle_payment_failure(payload)
-        when 'charge.dispute.created'
-          handle_chargeback(payload)
-        else
-          { success: true, message: "Unhandled Stripe event: #{event_type}" }
-        end
-      end
-
-      def process_paypal_payload(payload)
-        event_type = payload['event_type']
-        case event_type
-        when 'PAYMENT.SALE.COMPLETED'
-          handle_payment_success(payload)
-        when 'PAYMENT.SALE.DENIED'
-          handle_payment_failure(payload)
-        when 'CUSTOMER.DISPUTE.CREATED'
-          handle_chargeback(payload)
-        else
-          { success: true, message: "Unhandled PayPal event: #{event_type}" }
-        end
-      end
-
-      def process_square_payload(payload)
-        event_type = payload['type']
-        case event_type
-        when 'payment.updated'
-          handle_payment_success(payload)
-        when 'payment.failed'
-          handle_payment_failure(payload)
-        else
-          { success: true, message: "Unhandled Square event: #{event_type}" }
-        end
-      end
-
-      def handle_payment_success(payload)
-        transaction_id = extract_transaction_id(payload)
-        payment = find_payment_by_transaction_id(transaction_id)
-
-        return { success: false, error: 'Payment not found' } unless payment
-
-        payment.update!(
-          status: 'completed',
-          processed_at: Time.current,
-          gateway_response: payload
-        )
-
-        { success: true, message: 'Payment status updated to completed' }
-      end
-
-      def handle_payment_failure(payload)
-        transaction_id = extract_transaction_id(payload)
-        payment = find_payment_by_transaction_id(transaction_id)
-
-        return { success: false, error: 'Payment not found' } unless payment
-
-        payment.update!(
-          status: 'failed',
-          failure_reason: payload['failure_reason'] || 'Payment failed',
-          gateway_response: payload
-        )
-
-        { success: true, message: 'Payment status updated to failed' }
-      end
-
-      def handle_chargeback(payload)
-        transaction_id = extract_transaction_id(payload)
-        payment = find_payment_by_transaction_id(transaction_id)
-
-        return { success: false, error: 'Payment not found' } unless payment
-
-        payment.update!(
-          status: 'chargeback',
-          gateway_response: payload
-        )
-
-        { success: true, message: 'Payment status updated to chargeback' }
-      end
-
-      def extract_transaction_id(payload)
-        # Extract transaction ID based on gateway type
-        payload['id'] || payload['transaction_id'] || payload['payment_id']
-      end
-
-      def find_payment_by_transaction_id(transaction_id)
-        Payment.find_by(gateway_transaction_id: transaction_id)
+      def reply(status, **body)
+        { status: status, body: body }
       end
     end
   end
