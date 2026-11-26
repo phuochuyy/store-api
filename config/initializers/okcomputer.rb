@@ -31,7 +31,7 @@ class SidekiqCheck < OkComputer::Check
       mark_message({
         processed: stats.processed,
         failed: stats.failed,
-        busy: stats.busy,
+        busy: stats.workers_size,
         enqueued: stats.enqueued
       }.to_json)
     else

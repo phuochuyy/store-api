@@ -48,6 +48,8 @@ services:
     environment:
       - RAILS_ENV=production
       - DATABASE_HOST=db
+      # Inside the compose network Postgres listens on 5432 (5433 is only the dev host mapping).
+      - DATABASE_PORT=5432
       - DATABASE_USERNAME=${DATABASE_USER:-store_api}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - DATABASE_NAME=store_api_production
@@ -65,7 +67,9 @@ services:
     entrypoint: ./bin/docker-entrypoint
     command: ./bin/rails server -b 0.0.0.0
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
+      # /health/all (OkComputer) fails when the database or Redis is unreachable;
+      # /api/v1/health answers 200 even then.
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health/all"]
       interval: 30s
       timeout: 10s
       retries: 3
