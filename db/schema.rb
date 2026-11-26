@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_142641) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_191123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -268,6 +268,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_142641) do
     t.index ["gateway_type"], name: "index_payment_methods_on_gateway_type"
     t.index ["is_active"], name: "index_payment_methods_on_is_active"
     t.index ["name"], name: "index_payment_methods_on_name", unique: true
+  end
+
+  create_table "payment_webhook_events", force: :cascade do |t|
+    t.string "gateway", limit: 20, null: false
+    t.string "event_id", null: false
+    t.string "event_type"
+    t.bigint "payment_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["gateway", "event_id"], name: "index_payment_webhook_events_on_gateway_and_event_id", unique: true
+    t.index ["payment_id"], name: "index_payment_webhook_events_on_payment_id"
   end
 
   create_table "payments", force: :cascade do |t|
@@ -613,6 +624,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_142641) do
   add_foreign_key "orders", "users"
   add_foreign_key "password_reset_tokens", "users"
   add_foreign_key "payment_histories", "payments"
+  add_foreign_key "payment_webhook_events", "payments", on_delete: :nullify
   add_foreign_key "payments", "orders"
   add_foreign_key "payments", "payment_methods"
   add_foreign_key "product_comparison_items", "product_comparisons", on_delete: :cascade
