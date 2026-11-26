@@ -1,6 +1,6 @@
 # 04 · Hạ tầng và vận hành
 
-> Cập nhật theo commit: `15319f3`
+> Cập nhật theo commit: `b47d3cc`
 
 ## Môi trường local
 
@@ -57,7 +57,7 @@ bundle exec sidekiq
 - **[bin/docker-entrypoint](../../bin/docker-entrypoint)** chỉ hỗ trợ PostgreSQL: chờ `psql` sẵn sàng rồi chạy `db:prepare`.
 - **[docker-compose.prod.yml](../../docker-compose.prod.yml)** gồm `db`, `redis` (có password) và `web`.
   - Thiếu worker Sidekiq và Elasticsearch.
-  - **Không kết nối được DB** ([KI-013](../known-issues.md#ki-013)).
+  - Kết nối được DB, tự tạo và migrate database, healthcheck dùng `/health/all` (#66, [KI-013](../known-issues.md#ki-013)). Seed demo không chạy trong production ([KI-035](../known-issues.md#ki-035)).
 - **Makefile:**
   - [Makefile](../../Makefile) dùng cho thao tác hằng ngày.
   - [Makefile.docker](../../Makefile.docker) phải gọi bằng `make -f Makefile.docker …`.

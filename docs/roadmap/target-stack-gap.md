@@ -1,6 +1,6 @@
 # So sánh hiện trạng với target stack
 
-> Cập nhật theo commit: `3cc7e59`
+> Cập nhật theo commit: `b47d3cc`
 
 **Target stack** là bộ công nghệ của một vị trí Rails backend mà dự án này hướng tới:
 - **Hạ tầng:** AWS/GCP, Aurora MySQL, Elasticsearch, DynamoDB
@@ -21,7 +21,7 @@
 | **Elasticsearch** | searchkick, có fallback về SQL, reindex qua alias | Chỉ áp dụng cho Product. Chưa có analyzer tiếng Việt và facet | ES 9.5 trong compose |
 | **DynamoDB** | Không có | Toàn bộ | DynamoDB Local hoặc LocalStack |
 | **Microservices** | Monolith một DB, coupling qua callback và transaction | Chưa có ranh giới module, chưa có domain event | packwerk, outbox, message broker trong compose |
-| **Docker** | Dockerfile dev, compose cho dev và prod | Chưa có image production (multi-stage, non-root), prod compose hỏng ([KI-013](../known-issues.md#ki-013)) | Docker |
+| **Docker** | Dockerfile dev, compose cho dev và prod | Chưa có image production (multi-stage, non-root) và worker Sidekiq. Prod compose đã chạy được từ #66 ([KI-013](../known-issues.md#ki-013)) | Docker |
 | **Kubernetes** | Không có | Toàn bộ | kind hoặc minikube, Helm |
 | **CI/CD** | GitHub Actions: test matrix, lint, security, build image | Chưa có bước CD, chưa push image | GitHub Actions và GHCR (miễn phí cho repo public). CircleCI có gói free nếu cần so sánh |
 | **Terraform** | Không có | Toàn bộ | Terraform với provider AWS trỏ vào LocalStack |
