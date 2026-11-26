@@ -1,6 +1,6 @@
 # So sánh hiện trạng với target stack
 
-> Cập nhật theo commit: `b47d3cc`
+> Cập nhật theo commit: `2ba3302`
 
 **Target stack** là bộ công nghệ của một vị trí Rails backend mà dự án này hướng tới:
 - **Hạ tầng:** AWS/GCP, Aurora MySQL, Elasticsearch, DynamoDB
@@ -30,7 +30,7 @@
 | **Datadog (APM, metrics, log)** | Log JSON (lograge), có request_id | Chưa có metrics và tracing | OpenTelemetry → Jaeger/Tempo, Prometheus + Grafana (yabeda). Datadog có trial nếu muốn demo |
 | **Bugsnag (error tracking)** | Sentry SDK có, lọc PII ở mọi độ sâu (#56, [KI-009](../known-issues.md#ki-009)) | Chưa có môi trường chạy thử | GlitchTip tự host, tương thích Sentry SDK |
 | **Phát hiện vấn đề từ log** | Có request_id, user_id trong log | Chưa có nơi tập trung log | Loki + Grafana |
-| **Đo hiệu quả để cải thiện chất lượng** | Coverage 59,5% số dòng, ngưỡng ratchet 58% số dòng và 32% số nhánh | Chưa có SLO, chưa đo latency | k6 load test + dashboard |
+| **Đo hiệu quả để cải thiện chất lượng** | Coverage 61,4% số dòng, ngưỡng ratchet 60% số dòng và 34% số nhánh | Chưa có SLO, chưa đo latency | k6 load test + dashboard |
 | **Kinh nghiệm OSS và viết bài ra bên ngoài** | — | — | Blog viết từ các giai đoạn của roadmap |
 
 ## Gợi ý chọn middleware (để lập luận khi phỏng vấn)

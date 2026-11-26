@@ -1,6 +1,6 @@
 # Roadmap (chạy hoàn toàn ở local)
 
-> Cập nhật theo commit: `b47d3cc` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
+> Cập nhật theo commit: `2ba3302` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
 
 **Nguyên tắc**
 - Làm theo thứ tự giai đoạn. Mỗi giai đoạn gồm nhiều PR nhỏ trên nhánh riêng, PR nào cũng phải pass `bin/ci`.
@@ -53,7 +53,7 @@ flowchart LR
 - **Coverage dòng** tăng từ 37% lên 49% (cùng một cách đo). Khi đo giống CI, tức có eager load, con số là 59,5%.
 
 **Còn lại trước giai đoạn 1:**
-- ~~Nâng ngưỡng coverage~~: đã nâng lên 58% số dòng và 32% số nhánh, và local giờ đo giống CI.
+- ~~Nâng ngưỡng coverage~~: đã nâng lên 58% số dòng và 32% số nhánh ở #64, khi local bắt đầu đo giống CI. Sau đợt sửa lỗi Medium, ngưỡng được nâng tiếp lên 60% và 34%.
 - ~~Sửa các lỗi Medium còn mở~~: KI-011, KI-012, KI-013, KI-024 và KI-031 đã sửa ở #66–#70. Giờ không còn lỗi Medium nào đang mở.
 
 ## Giai đoạn 1 · Đồng nhất và làm sạch

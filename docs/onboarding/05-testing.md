@@ -1,6 +1,6 @@
 # 05 · Testing
 
-> Cập nhật theo commit: `b47d3cc` · Kết quả gần nhất: 759 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
+> Cập nhật theo commit: `2ba3302` · Kết quả gần nhất: 759 examples, 0 failures, 5 pending (Elasticsearch), trên cả PostgreSQL và MySQL
 
 Mọi file trong `spec/` đều được git theo dõi. Trước #47, spec và factory mới bị `.gitignore` ẩn mà không có cảnh báo nào ([KI-020](../known-issues.md#ki-020)). Giờ `bin/check-gitignore` chạy trong CI và trong `bin/ci` để chặn lỗi này quay lại.
 
@@ -35,7 +35,7 @@ ELASTICSEARCH_URL=http://localhost:9200 bundle exec rspec spec/services/products
 - **Coverage gần nhất:** 61,37% số dòng và 35,22% số nhánh. Con số này đo khi eager load toàn bộ app, giống CI.
   - Trước 26/11/2026, local đo mà không eager load, nên chỉ ra 49,43%. Trước giai đoạn 0, theo cách đo cũ đó, là 37,42% và 25,81%.
   - Từ nay, khi đặt `COVERAGE=true`, môi trường test tự eager load ([test.rb](../../config/environments/test.rb)), nên số ở local và trên CI khớp nhau. Chênh lệch nhỏ còn lại đến từ spec Elasticsearch, vốn chỉ chạy trên CI.
-- **Ngưỡng tối thiểu:** 58% số dòng và 32% số nhánh, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống.
+- **Ngưỡng tối thiểu:** 60% số dòng và 34% số nhánh, cấu hình trong [spec_helper.rb](../../spec/spec_helper.rb). Đây là cơ chế ratchet: mỗi khi coverage tăng thì nâng ngưỡng lên theo, không bao giờ hạ xuống.
   - Ngưỡng tính trên toàn bộ app, nên chạy một file spec lẻ với `COVERAGE=true` sẽ fail. Chỉ bật coverage khi chạy cả bộ test.
 
 **Hoàn toàn chưa có test:**
