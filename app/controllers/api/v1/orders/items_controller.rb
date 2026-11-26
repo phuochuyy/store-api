@@ -21,29 +21,29 @@ module Api
           render_success({ order_item: order_item_serializer(@order_item) }, 'Order item retrieved successfully')
         end
 
-        # OrderItem prices the item from its variant or product and keeps the order total in sync.
+        # OrderItem prices the item from its variant or product and keeps the order total in sync;
+        # OrderItemService takes the stock and refuses orders that can no longer change.
         def create
-          order_item = @order.order_items.build(order_item_create_params)
+          attributes = order_item_create_params
+          result = item_service.add(@order, product_id: attributes[:product_id], quantity: attributes[:quantity])
+          return render_error(result[:error], :unprocessable_content) unless result[:success]
 
-          if order_item.save
-            render_success({ order_item: order_item_serializer(order_item) }, 'Order item added successfully', :created)
-          else
-            render_error('Order item could not be added', :unprocessable_content, order_item.errors.full_messages)
-          end
+          render_success({ order_item: order_item_serializer(result[:order_item]) }, 'Order item added successfully',
+                         :created)
         end
 
         # Only the quantity can change: swapping the product would keep the old unit price.
         def update
-          if @order_item.update(order_item_update_params)
-            render_success({ order_item: order_item_serializer(@order_item) }, 'Order item updated successfully')
-          else
-            render_error('Order item could not be updated', :unprocessable_content,
-                         @order_item.errors.full_messages)
-          end
+          result = item_service.change_quantity(@order_item, order_item_update_params[:quantity])
+          return render_error(result[:error], :unprocessable_content) unless result[:success]
+
+          render_success({ order_item: order_item_serializer(result[:order_item]) }, 'Order item updated successfully')
         end
 
         def destroy
-          @order_item.destroy!
+          result = item_service.remove(@order_item)
+          return render_error(result[:error], :unprocessable_content) unless result[:success]
+
           render_success(nil, 'Order item removed successfully')
         end
 
@@ -55,8 +55,10 @@ module Api
           render_error('Order not found', :not_found) unless @order && visible?(@order)
         end
 
+        # Through the nested route the item must belong to the order it names.
         def set_order_item
-          @order_item = OrderItem.find_by(id: params[:id])
+          scope = params[:order_id] ? OrderItem.where(order_id: params[:order_id]) : OrderItem
+          @order_item = scope.find_by(id: params[:id])
           render_error('Order item not found', :not_found) unless @order_item && visible?(@order_item.order)
         end
 
@@ -70,6 +72,10 @@ module Api
 
         def order_item_update_params
           params.expect(order_item: %i[quantity])
+        end
+
+        def item_service
+          ::Orders::OrderItemService
         end
 
         def order_item_serializer(order_item)
