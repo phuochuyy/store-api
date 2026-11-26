@@ -1,6 +1,6 @@
 # Known issues
 
-> Cập nhật theo commit: `b9505c9` · Ngày: 2026-11-25
+> Cập nhật theo commit: `b47d3cc` · Ngày: 2026-11-25
 
 Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ được mô tả ở đây.** Các tài liệu khác (roadmap, domain map) trỏ tới mã `KI-xxx` thay vì chép lại nội dung.
 
@@ -17,7 +17,7 @@ Danh sách lỗi và rủi ro phát hiện khi đọc code. **Mỗi lỗi chỉ 
 
 Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` và thêm dòng **Đã sửa** vào phần chi tiết. Đừng xóa dòng, để giữ lịch sử.
 
-**Tình hình hiện tại:** 34 lỗi đã ghi nhận, 17 đã sửa. Còn mở: 0 Critical, 0 High, 5 Medium, 12 Low.
+**Tình hình hiện tại:** 36 lỗi đã ghi nhận, 25 đã sửa. Còn mở: 0 Critical, 0 High, 0 Medium, 11 Low.
 
 ## Tổng quan
 
@@ -33,9 +33,9 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-008](#ki-008) | Medium | Admin `PATCH` đặt `status` order/payment tùy ý, bỏ qua state machine | ✅ đọc code | fixed (#53) |
 | [KI-009](#ki-009) | Low | Sentry không lọc password/token (`before_send` bị ghi đè) | ✅ chạy thật | fixed (#56) |
 | [KI-010](#ki-010) | Medium | Giới hạn lượt dùng discount không bao giờ được áp dụng | ✅ chạy thật | fixed (#58) |
-| [KI-011](#ki-011) | Medium | Webhook thanh toán: không có route, chữ ký giả, cột không tồn tại | ✅ đọc code | open |
-| [KI-012](#ki-012) | Medium | Hoàn tất đổi trả / hủy đơn không hoàn tiền | ✅ đọc code | open |
-| [KI-013](#ki-013) | Medium | `docker-compose.prod.yml` không kết nối được DB | ✅ đọc code | open |
+| [KI-011](#ki-011) | Medium | Webhook thanh toán: không có route, chữ ký giả, cột không tồn tại | ✅ đọc code | fixed (#70) |
+| [KI-012](#ki-012) | Medium | Hoàn tất đổi trả / hủy đơn không hoàn tiền | ✅ đọc code | fixed (#69) |
+| [KI-013](#ki-013) | Medium | `docker-compose.prod.yml` không kết nối được DB | ✅ đọc code | fixed (#66) |
 | [KI-014](#ki-014) | Low | Doanh thu dashboard tính cả đơn đã hủy | ✅ đọc code | open |
 | [KI-015](#ki-015) | Low | Swagger lệch: yaml 88 path, json 59 path | ✅ chạy thật | open |
 | [KI-016](#ki-016) | Low | Blacklist JWT "fail open" khi cả Redis và DB lỗi | ✅ đọc code | open |
@@ -46,17 +46,19 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 | [KI-021](#ki-021) | High | Ruby 3.4.5 dính CVE-2026-132825 (có thể dẫn tới RCE) | ✅ Brakeman 8.1.1 | fixed (#46) |
 | [KI-022](#ki-022) | Medium | `POST /addresses/validate` báo mọi địa chỉ là hợp lệ | ✅ chạy thật | fixed (#49) |
 | [KI-023](#ki-023) | Low | `db:schema:load` trên MySQL lỗi khi database đã có bảng | ✅ chạy thật | open |
-| [KI-024](#ki-024) | Medium | Admin sửa order item không cập nhật tồn kho, kể cả với đơn đã giao | ✅ đọc code | open |
+| [KI-024](#ki-024) | Medium | Admin sửa order item không cập nhật tồn kho, kể cả với đơn đã giao | ✅ đọc code | fixed (#67) |
 | [KI-025](#ki-025) | High | Thanh toán `bank_transfer` / `cash_on_delivery` / `wallet` luôn thất bại | ✅ chạy thật | fixed (#60) |
 | [KI-026](#ki-026) | Low | `shipping_status` trả `not_shipped` cho đơn đã giao | ✅ chạy thật | open |
 | [KI-027](#ki-027) | Medium | Confirm đơn tính tồn kho đã giữ hai lần: đơn mua hết kho không confirm được | ✅ chạy thật | fixed (#53) |
 | [KI-028](#ki-028) | Low | CI: spec Elasticsearch thỉnh thoảng fail với "index already exists" | ✅ chạy thật (CI) | open |
 | [KI-029](#ki-029) | Low | "Logout mọi phiên" bỏ sót token cấp trong cùng giây với lúc logout | ✅ đọc code | open |
 | [KI-030](#ki-030) | High | `POST /promotions/:id/apply` luôn trả 500; cả `apply` lẫn `applicable` không kiểm tra chủ đơn | ✅ chạy thật | fixed (#62) |
-| [KI-031](#ki-031) | Medium | Promotion tặng sản phẩm thêm order item nhưng không trừ tồn kho | ✅ đọc code | open |
+| [KI-031](#ki-031) | Medium | Promotion tặng sản phẩm thêm order item nhưng không trừ tồn kho | ✅ đọc code | fixed (#68) |
 | [KI-032](#ki-032) | Medium | Áp được mã giảm giá cho đơn đã giao hoặc đã hủy | ✅ chạy thật | fixed (#62) |
 | [KI-033](#ki-033) | Low | Thanh toán offline: không hoàn tiền được qua API, payment `pending` không được dọn | ✅ đọc code | open |
-| [KI-034](#ki-034) | Low | Hủy đơn không trả lượt dùng mã giảm giá | ✅ đọc code | open |
+| [KI-034](#ki-034) | Low | Hủy đơn không trả lượt dùng mã giảm giá | ✅ đọc code | fixed (#69) |
+| [KI-035](#ki-035) | High | `db/seeds.rb` chạy trong production thì xóa sạch dữ liệu và tạo admin với mật khẩu biết trước | ✅ chạy thật | fixed (#66) |
+| [KI-036](#ki-036) | Low | `/health/all` luôn trả 500, vì check Sidekiq gọi method không tồn tại | ✅ chạy thật | fixed (#66) |
 
 ---
 
@@ -195,12 +197,24 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - Đặt `status: 'chargeback'` (dòng 170), giá trị này không có trong enum.
 - Không chống trùng event (thiếu idempotency).
 - Bối cảnh: mọi gateway đều là giả lập. [payment_processing_core_service.rb:129-174](../app/services/payments/payment_processing_core_service.rb) trả về `transaction_id` sinh từ `SecureRandom`.
+- **Đã sửa:** #70.
+  - Có route `POST /api/v1/payments/webhooks/:gateway` (`stripe`, `paypal`), không cần JWT.
+  - Mỗi event phải có `X-Webhook-Signature: sha256=<HMAC-SHA256 của raw body>`, với secret riêng của từng gateway (`STRIPE_WEBHOOK_SECRET`, `PAYPAL_WEBHOOK_SECRET`), so sánh theo thời gian hằng định. Sai chữ ký trả 401. Chưa cấu hình secret thì từ chối mọi event với 503 (fail closed). Gateway thật cần kiểm tra chữ ký bằng SDK của chính nó.
+  - Payment được tra bằng `transaction_id`, lấy đúng vị trí trong payload của từng gateway (Stripe `data.object.id`, PayPal `resource.id`).
+  - Bảng `payment_webhook_events`, unique trên (gateway, event_id), chống áp dụng một event hai lần, kể cả khi hai lần gửi tới cùng lúc.
+  - Event thất bại không bao giờ đưa payment đã hoàn tất về trạng thái lỗi. Dispute chỉ được ghi vào `metadata` của payment, không đặt ra trạng thái mới.
 
 ### KI-012
 **Không có luồng hoàn tiền** · Medium
 
 - Hoàn tất đổi trả có cộng lại tồn kho, nhưng phần hoàn tiền vẫn là `TODO` ([return_processing_service.rb:147](../app/services/returns/return_processing_service.rb)).
 - Hủy đơn ([order_cancellation_service.rb](../app/services/orders/order_cancellation_service.rb)) trả lại tồn kho, nhưng không refund payment và không hoàn lại lượt dùng discount.
+- **Đã sửa:** #69, qua [order_refund_service.rb](../app/services/payments/order_refund_service.rb).
+  - Hủy đơn: payment `pending` bị hủy, và mọi payment online đã hoàn tất được hoàn toàn bộ qua gateway.
+  - Hoàn tất đổi trả: `refund_amount` được hoàn trên payment đã hoàn tất gần nhất của đơn, thành `partially_refunded` nếu không phải toàn bộ.
+  - Tiền offline đã thu (COD, chuyển khoản) không có gateway để hoàn, nên response ghi rõ là cần hoàn tiền thủ công ([KI-033](#ki-033)).
+  - Gateway hoàn tiền thất bại thì trả 422, và việc hủy đơn hoặc đổi trả bị rollback.
+  - Gateway đang là giả lập, nên hoàn tiền bên trong transaction của DB là an toàn. Với gateway thật, nên tách bước này ra khỏi transaction (outbox), theo [giai đoạn 4](roadmap/roadmap.md).
 
 ### KI-013
 **`docker-compose.prod.yml` không kết nối được DB** · Medium
@@ -208,6 +222,12 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - Service `web` truyền `DATABASE_PASSWORD`, nhưng [database.yml:104](../config/database.yml) đọc `STORE_API_DATABASE_PASSWORD`.
 - Service `web` không đặt `DATABASE_PORT`, nên `database.yml` dùng mặc định **5433** (dòng 28). Postgres trong mạng compose lại lắng nghe ở 5432.
 - `Dockerfile` hiện là bản cho development (`RAILS_ENV=development`, chạy bằng root) và không có worker Sidekiq. Xem [04-infra-and-ops.md](onboarding/04-infra-and-ops.md).
+- **Đã sửa:** #66.
+  - `database.yml` đọc `DATABASE_USERNAME`, `DATABASE_PASSWORD` và `DATABASE_NAME`. Compose đặt `DATABASE_PORT=5432`.
+  - `bin/docker-entrypoint` chỉ chạy `db:prepare` khi hai tham số **cuối** là `./bin/rails server`, mà compose chạy `./bin/rails server -b 0.0.0.0`. Vì vậy trước đây database không bao giờ được tạo bảng. Giờ entrypoint so khớp hai tham số đầu.
+  - Healthcheck chuyển sang `/health/all`, vì `/api/v1/health` vẫn trả 200 khi mất kết nối DB.
+  - Đã chạy thật `docker-compose.prod.yml`: container `healthy`, DB được tạo và migrate. Khi sửa phát hiện thêm [KI-035](#ki-035) và [KI-036](#ki-036).
+  - Phần Dockerfile production (multi-stage, non-root) và worker Sidekiq vẫn thuộc [giai đoạn 6](roadmap/roadmap.md).
 
 ### KI-014
 **Doanh thu tính cả đơn đã hủy** · Low
@@ -302,6 +322,10 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
   - Sửa được cả đơn đã `shipped` hay `delivered`.
 - **Lỗi phụ:** route lồng `/api/v1/orders/:order_id/items/:id` bỏ qua `order_id`. Quyền sở hữu vẫn được kiểm tra theo đơn thật của item, nên không phải lỗ hổng.
 - **Hướng sửa:** chỉ cho sửa khi đơn còn `pending`, và đi qua `Product#reduce_stock` / `add_stock` như luồng tạo và hủy đơn.
+- **Đã sửa:** #67.
+  - [order_item_service.rb](../app/services/orders/order_item_service.rb) thêm, sửa và xóa item dưới khóa của đơn. Tồn kho thay đổi theo qua `reduce_stock` / `add_stock`. Hết kho thì trả 422 và không có gì thay đổi.
+  - Item chỉ đổi được khi `Order#amount_editable?` (đổi tên từ `discount_editable?`): đơn còn `pending` và chưa trả tiền. Các trường hợp khác trả 422.
+  - Route lồng giờ kiểm tra item có thuộc đúng đơn trong URL không, sai thì trả 404.
 
 ### KI-025
 **Thanh toán bằng `bank_transfer`, `cash_on_delivery` hoặc `wallet` luôn thất bại** · High
@@ -385,6 +409,9 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Hệ quả:** quà tặng được giao mà không ai trừ kho, nên kho bị bán vượt. Khi hủy đơn, [order_cancellation_service.rb](../app/services/orders/order_cancellation_service.rb) lại **cộng** kho cho cả các item quà tặng.
 - **Ghi chú:** tách ra từ [KI-010](#ki-010). Từ #62, `apply` chạy được ([KI-030](#ki-030)), nên giờ gặp được lỗi này qua API.
 - **Hướng sửa:** trừ kho cho quà tặng bằng `reduce_stock`, và thất bại nếu hết hàng.
+- **Đã sửa:** #68.
+  - Mỗi món tặng là một dòng item riêng giá 0, và trừ kho qua `reduce_stock`. Hết hàng thì trả 422 "Not enough stock", và lượt dùng promotion được trả lại.
+  - Lỗi kèm theo: với "mua 2 tặng 1", món tặng bị cộng vào dòng item đang tính tiền. Dòng item ghi 3 × 500, trong khi tổng đơn vẫn 1.000, vì `update_total_amount` đọc danh sách item đã cache. Mọi phép tính theo từng item, như hoàn tiền khi đổi trả, sẽ coi món tặng là đã trả tiền.
 
 ### KI-032
 **Áp được mã giảm giá cho đơn đã giao hoặc đã hủy** · Medium
@@ -404,6 +431,7 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Hướng sửa:**
   - Thêm action hoàn tiền thủ công: admin ghi nhận đã trả lại tiền, payment chuyển sang `refunded`.
   - Khi hủy đơn, hoặc khi một payment khác hoàn tất, chuyển các payment offline `pending` của đơn sang `cancelled`.
+- **Đã sửa một phần (#69):** khi hủy đơn, payment offline đang `pending` được chuyển sang `cancelled`. Còn mở: action hoàn tiền thủ công, và payment `pending` khi đơn đã trả bằng cách khác.
 
 ### KI-034
 **Hủy đơn không trả lượt dùng mã giảm giá** · Low
@@ -412,3 +440,19 @@ Khi sửa xong một lỗi, đổi cột *Trạng thái* thành `fixed (#PR)` v�
 - **Hệ quả:** mã bị hao lượt theo các đơn đã hủy. Cách này an toàn, vì không bao giờ vượt giới hạn, nhưng một mã chỉ cho 100 lượt có thể hết sớm.
 - **Ghi chú:** tách ra từ [KI-032](#ki-032).
 - **Hướng sửa:** khi hủy đơn, gọi `release_usage!` trong cùng transaction với việc cộng lại tồn kho.
+- **Đã sửa:** #69. Hủy đơn gọi `release_usage!` trong cùng transaction với việc cộng lại tồn kho.
+
+### KI-035
+**`db/seeds.rb` chạy trong production thì xóa sạch dữ liệu và tạo admin với mật khẩu biết trước** · High
+
+- **Ở đâu (trước #66):** [db/seeds.rb](../db/seeds.rb) mở đầu bằng `User.destroy_all`, `Order.destroy_all`, `Payment.destroy_all`…, rồi tạo `admin@example.com` / `password`.
+- **Tái hiện:** spec nạp seed với `Rails.env` là production. Khách hàng có sẵn bị xóa, và `admin@example.com` đăng nhập được bằng `password`.
+- **Vì sao trước đây không xảy ra:** `db:prepare` tự seed khi tạo database mới, nhưng compose production chưa bao giờ chạy tới bước đó ([KI-013](#ki-013)). Bản sửa KI-013 sẽ kích hoạt nó.
+- **Đã sửa:** #66. Seed từ chối chạy trong production, trừ khi đặt `SEED_DEMO_DATA=true`, và có in lý do ([seeds_spec.rb](../spec/db/seeds_spec.rb)).
+
+### KI-036
+**`/health/all` luôn trả 500** · Low
+
+- **Ở đâu (trước #66):** check Sidekiq trong [okcomputer.rb](../config/initializers/okcomputer.rb) gọi `Sidekiq::Stats#busy`. Sidekiq 8 không có method này; method đúng là `workers_size`.
+- **Hệ quả:** readiness check luôn fail ở mọi môi trường, nên không dùng được cho healthcheck của container.
+- **Đã sửa:** #66, kèm [health_checks_spec.rb](../spec/requests/health_checks_spec.rb).

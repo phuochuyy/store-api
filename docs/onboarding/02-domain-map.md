@@ -1,6 +1,6 @@
 # 02 · Bản đồ domain
 
-> Cập nhật theo commit: `b9505c9`
+> Cập nhật theo commit: `b47d3cc`
 
 Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu, nó gọi sang domain nào, và nếu tách thành microservice thì đường ranh giới nằm ở đâu.
 
@@ -14,10 +14,10 @@ Tài liệu này dùng khi bạn cần biết một tính năng nằm ở đâu,
 | **Inventory** | `StockMovement`, `StockAlert` | `stock_alerts/*` (9 service) | Thay đổi tồn kho của **product** sinh ra `StockMovement` và alert. Tồn kho của **variant** thì không |
 | **Cart** | `Cart` (`active` / `abandoned` / `completed`), `CartItem` | `carts/cart_service` | Không có code nào đặt `completed`. Cart không liên kết với Order |
 | **Order** | `Order`, `OrderItem` | `orders/order_{creation,confirmation,cancellation}_service`, `shipping_service`, `delivery_service` | Domain trung tâm |
-| **Payment** | `Payment`, `PaymentMethod` | `payments/payment_processing_core_service` (+ facade, webhook, `payment_method_*`) | **Toàn bộ là giả lập** ([KI-011](../known-issues.md#ki-011)) |
+| **Payment** | `Payment`, `PaymentMethod` | `payments/payment_processing_core_service` (+ facade, webhook, `payment_method_*`) | **Toàn bộ là giả lập.** Webhook có ký HMAC và chống event trùng (#70, [KI-011](../known-issues.md#ki-011)) |
 | **Pricing** | `Discount`, `Coupon`, `Promotion` | `discounts/*`, `validators/promotion_validator` | Giới hạn lượt dùng được đếm nguyên tử (#58, [KI-010](../known-issues.md#ki-010)). Mã giảm giá và promotion chỉ đổi được khi đơn còn `pending` và chưa trả tiền (#62) |
 | **Fulfilment** | `ShippingZone`, `ShippingMethod`, `ShippingZoneMethod`, `TaxRate` | `shipping/shipping_cost_calculator_service`, `tax/tax_calculator_service` | |
-| **Returns** | `ReturnRequest`, `ReturnItem` | `returns/return_processing_service` | Chưa có hoàn tiền ([KI-012](../known-issues.md#ki-012)) |
+| **Returns** | `ReturnRequest`, `ReturnItem` | `returns/return_processing_service` | Hoàn tất đổi trả thì hoàn tiền qua gateway; tiền offline cần hoàn thủ công (#69, [KI-012](../known-issues.md#ki-012)) |
 | **Notification** | `Notification` (21 loại) | Không có module riêng | Mỗi domain tự gọi `Notification.create!` |
 | **Users** | `UserAddress` | `users/profile_*`, `users/address_*`, `address/address_validation_service` | |
 | **Statistics** | Không có model | Không có service | Query viết trực tiếp trong [statistics_controller.rb](../../app/controllers/api/v1/statistics_controller.rb) |

@@ -1,6 +1,6 @@
 # Roadmap (chạy hoàn toàn ở local)
 
-> Cập nhật theo commit: `3cc7e59` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
+> Cập nhật theo commit: `b47d3cc` · Khoảng trống được phân tích ở [target-stack-gap.md](target-stack-gap.md) · Danh sách lỗi ở [known-issues.md](../known-issues.md)
 
 **Nguyên tắc**
 - Làm theo thứ tự giai đoạn. Mỗi giai đoạn gồm nhiều PR nhỏ trên nhánh riêng, PR nào cũng phải pass `bin/ci`.
@@ -54,7 +54,7 @@ flowchart LR
 
 **Còn lại trước giai đoạn 1:**
 - ~~Nâng ngưỡng coverage~~: đã nâng lên 58% số dòng và 32% số nhánh, và local giờ đo giống CI.
-- Xếp lịch cho các lỗi Medium còn mở: [KI-011](../known-issues.md#ki-011) (webhook), [KI-012](../known-issues.md#ki-012) (hoàn tiền khi hủy đơn hoặc đổi trả), [KI-013](../known-issues.md#ki-013) (compose production), [KI-024](../known-issues.md#ki-024) và [KI-031](../known-issues.md#ki-031) (tồn kho).
+- ~~Sửa các lỗi Medium còn mở~~: KI-011, KI-012, KI-013, KI-024 và KI-031 đã sửa ở #66–#70. Giờ không còn lỗi Medium nào đang mở.
 
 ## Giai đoạn 1 · Đồng nhất và làm sạch
 **Mục tiêu:** chỉ còn một cách làm cho mỗi việc, và Swagger là nguồn sự thật được CI kiểm tra.
@@ -117,7 +117,7 @@ flowchart LR
 | Việc | Công cụ | Tiêu chí xong |
 |---|---|---|
 | Dockerfile production: multi-stage, non-root, có jemalloc, bootsnap precompile | Docker | Image < 300 MB, chạy với `RAILS_ENV=production` |
-| Sửa prod compose, thêm worker Sidekiq ([KI-013](../known-issues.md#ki-013)) | Compose | `docker compose -f docker-compose.prod.yml up` thì health check xanh |
+| Thêm worker Sidekiq vào prod compose. Phần kết nối DB đã sửa ở #66 ([KI-013](../known-issues.md#ki-013)) | Compose | `docker compose -f docker-compose.prod.yml up` thì cả `web` lẫn `worker` đều healthy |
 | CD: push image lên GHCR khi merge vào main | GitHub Actions | Image được gắn tag theo SHA |
 | Helm chart gồm web, worker, migration Job, HPA | kind + Helm | `helm install` trên kind, chạy được rolling update |
 | Terraform tạo S3 (Active Storage), DynamoDB, SQS trên LocalStack | Terraform + LocalStack | `terraform apply` idempotent, có module tách riêng |
